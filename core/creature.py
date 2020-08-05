@@ -44,8 +44,8 @@ class CreatureTemplate:
     size: CreatureSize
     stats: Mapping[PrimaryAttribute, int]
 
-    def __init__(self):
-        self.name = ...
+    def __init__(self, name: str):
+        self.name = name
         self.bodyplan = ...
         self.size = ...
         self.stats = ...
@@ -63,3 +63,6 @@ class CreatureTemplate:
     def max_health(self) -> int:
         return self.size.value + self.get_attribute(PrimaryAttribute.CON)
 
+    @property
+    def initiative(self) -> int:
+        raise NotImplemented  # higher initiative helps to resolve action interruptions in this creature's favor

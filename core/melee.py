@@ -1,9 +1,8 @@
 
-from enum import IntFlag
+from enum import IntFlag, Enum
 from typing import Tuple, Collection
 
 from core.util import IntClass
-from core.combat import DamageType
 
 class MeleeRange(IntClass):
     __NAMES = [
@@ -22,7 +21,6 @@ class MeleeRange(IntClass):
         if self.value < len(self.__NAMES):
             return self.__NAMES[self.value]
         return f'{self.__NAMES[-1]} (+{self.value - len(self.__NAMES) + 1 :d})'
-
 
 class AttackForce(IntClass):
     __NAMES = [
@@ -43,6 +41,11 @@ class AttackForce(IntClass):
         return f'{self.__NAMES[-1]} (+{self.value - len(self.__NAMES) + 1 :d})'
 
 ## MeleeAttacks
+
+class DamageType(Enum):
+    slashing = 'slashing'
+    puncture = 'puncture'
+    bludgeon = 'bludgeon'
 
 class MeleeAttack:
     name: str
