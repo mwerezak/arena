@@ -1,6 +1,6 @@
 
 from enum import IntFlag, Enum
-from typing import Tuple, Collection
+from typing import Tuple, Collection, Type
 
 from core.util import IntClass
 
@@ -52,13 +52,14 @@ class MeleeAttack:
     force: AttackForce
     damtype: DamageType
     damage: ...
-    specials: Collection[...]
+    specials: Collection[Type['CombatSpecial']]
 
     def __init__(self, name: str, reach: Tuple[MeleeRange, MeleeRange], force: AttackForce, damtype: DamageType, damage: ...):
         self.name = name
         self.max_reach = max(reach)
         self.min_reach = min(reach)
         self.force = force
+        self.damtype = damtype
 
 class CombatUsage(IntFlag):
     Offensive = 0x1
@@ -67,6 +68,8 @@ class CombatUsage(IntFlag):
 class CombatSpecial:
     name: str
     usage: CombatUsage
+
+    # can_use(self, user: Creature, target: Creature, combat: MeleeCombat) -> bool - if the special can be used
 
     # __init__()  - should take parameters needed to resolve the effect of the special in combat
 

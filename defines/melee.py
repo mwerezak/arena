@@ -7,12 +7,12 @@
 # CounterAttackSpecial - (defensive) make opponent lose AP, force an attack from user
 # PressAttackSpecial - (offensive) same as CounterAttackSpecial, but on offence
 # BreakGrappleSpecial - (defensive) break out of grapple or entanglement for free
-# CloseRangeSpecial - (both) reduce melee combat separation to desired step w/o spending AP
-# OpenRangeSpecial - (defensive) increase melee combat separation to desired step w/o spending AP
+# CloseRangeSpecial - (both) reduce melee combat separation to desired step w/o spending AP (max 4 steps)
+# OpenRangeSpecial - (defensive) increase melee combat separation to desired step w/o spending AP (max 4 steps)
 
 # Specials provided by certain weapons/attacks or situations
 
-# KnockdownSpecial - (offensive) knock target prone - only when charging?
+# KnockdownSpecial - (offensive) knock target prone - also available when charging?
 # QuickGetUpSpecial - (defensive) get up from being prone w/o spending AP
 # GripTargetSpecial - (offensive) grapple target for free - only for certain natural weapons
 # EntangleSpecial - (both) use an entangling weapon

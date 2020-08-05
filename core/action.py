@@ -12,7 +12,7 @@ may be modified as the sequence resolves, for example, to append new actions to 
 
 import heapq
 from abc import ABC, abstractmethod
-from typing import Optional, Iterable, Mapping, List, Tuple
+from typing import Optional, Iterable, NamedTuple, Tuple, MutableMapping, List
 
 class Action(ABC):
     name = 'Action'
@@ -84,23 +84,32 @@ class Entity:
         return self.loop.get_current_action(self)
 
 # ActionLoop
+class _QueueItem(NamedTuple):
+    windup: float
+    action: Action
+
+    def elapse(self, amount: float) -> '_QueueItem':
+        return _QueueItem( self.windup - amount, self.action)
+
 class ActionLoop:
+    entity_actions: MutableMapping[Entity, Optional[Action]]
+    action_queue: List[_QueueItem]
     def __init__(self):
         self.elapsed = 0  # in TU
         self.entity_actions = {}
         self.action_queue = []
 
     def get_entities(self) -> Iterable[Entity]:
-        return self.entity_actions.values()
+        return iter(self.entity_actions.keys())
 
     def get_idle_entities(self) -> Iterable[Entity]:
-        return (ent for ent, action in self.entity_actions.items() if action is None)
+        return (entity for entity, action in self.entity_actions.items() if action is None)
 
-    def is_entity_idle(self, ent: Entity) -> bool:
-        return self.entity_actions[ent] is None
+    def is_entity_idle(self, entity: Entity) -> bool:
+        return self.entity_actions[entity] is None
 
-    def get_current_action(self, ent: Entity) -> Optional[Action]:
-        return self.entity_actions[ent]
+    def get_current_action(self, entity: Entity) -> Optional[Action]:
+        return self.entity_actions[entity]
 
     def schedule_action(self, entity: Entity, action: Action) -> None:
         prev_action = self.entity_actions.get(entity, None)
@@ -111,7 +120,7 @@ class ActionLoop:
         windup = action.get_windup() / entity.get_action_rate()
 
         self.entity_actions[entity] = action
-        heapq.heappush(self.action_queue, (windup, action))
+        heapq.heappush(self.action_queue, _QueueItem(windup, action))
 
     def cancel_action(self, action: Action):
         entity = action.owner
@@ -119,7 +128,7 @@ class ActionLoop:
             raise ValueError('not scheduled')
         if self.entity_actions[entity] == action:
             self.entity_actions[entity] = None
-        self.action_queue = [ item for item in self.action_queue if item[1] != action ]
+        self.action_queue = [ item for item in self.action_queue if item.action != action ]
         heapq.heapify(self.action_queue)
 
     def process_idle_entities(self) -> None:
@@ -133,13 +142,13 @@ class ActionLoop:
         if len(self.action_queue) == 0:
             return  # nothing scheduled
 
-        item: Tuple[float, Action] = heapq.heappop(self.action_queue)
-        elapsed, current_action = item
+        item = heapq.heappop(self.action_queue)
+        elapsed, current_action = item.windup, item.action
         self.elapsed += elapsed
 
         # first, update the windup counters of all other actions
         # since this does not change the ordering, this can be done by efficiently rebuilding the queue
-        self.action_queue = [ (remaining - elapsed, action) for remaining, action in self.action_queue ]
+        self.action_queue = [ item.elapse(elapsed) for item in self.action_queue ]
 
         # next, resolve the current action
         entity = current_action.owner
