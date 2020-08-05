@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Union, Tuple
+from typing import Union, MutableMapping
 
 from core.util import IntClass
 from core.bodyplan import Morphology
-from core.melee import MeleeRange
+from core.combat import MeleeCombat
 
 class CreatureSize(IntClass):
     def __init__(self, value: int):
@@ -38,8 +38,7 @@ class PrimaryAttribute(Enum):
 class Creature:
     health: float
     template: 'CreatureTemplate'
-
-    # melee_combat: Dict['Creature', 'MeleeCombat']
+    melee_combat: MutableMapping['Creature', 'MeleeCombat']
     # get_engage_range() -> MeleeRange
 
 class CreatureTemplate:
@@ -48,10 +47,10 @@ class CreatureTemplate:
     size: CreatureSize
     #stats: Mapping[PrimaryAttribute, int]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, bodyplan: Morphology, size: CreatureSize):
         self.name = name
-        self.bodyplan = ...
-        self.size = ...
+        self.bodyplan = bodyplan
+        self.size = size
         self.stats = ...
         # natural armor
         # natural weapons
@@ -70,7 +69,3 @@ class CreatureTemplate:
     @property
     def initiative(self) -> int:
         raise NotImplemented  # higher initiative helps to resolve action interruptions in this creature's favor
-
-class MeleeCombat:
-    combatants: Tuple[Creature, Creature]
-    separation: MeleeRange

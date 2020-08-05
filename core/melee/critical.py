@@ -1,3 +1,5 @@
+from enum import IntFlag
+
 class CriticalUsage(IntFlag):
     Offensive = 0x1
     Defensive = 0x2

@@ -1,5 +1,4 @@
 
-from enum import IntFlag, Enum
 from typing import Tuple, Collection, Type, Iterable
 
 from core.util import IntClass
@@ -44,15 +43,10 @@ class AttackForce(IntClass):
 
 ## MeleeAttacks
 
-class DamageType(Enum):
-    slashing = 'slashing'
-    puncture = 'puncture'
-    bludgeon = 'bludgeon'
-
 class MeleeAttack:
     name: str
     force: AttackForce
-    damtype: DamageType
+    damtype: 'DamageType'
     damage: DicePool
     criticals: Collection[Type[CriticalEffect]]
 
@@ -60,7 +54,7 @@ class MeleeAttack:
                  name: str,
                  reach: Tuple[MeleeRange, MeleeRange],
                  force: AttackForce,
-                 damtype: DamageType,
+                 damtype: 'DamageType',
                  damage: DicePool,
                  criticals: Iterable[Type[CriticalEffect]] = None):
         self.name = name

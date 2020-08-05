@@ -12,8 +12,10 @@ may be modified as the sequence resolves, for example, to append new actions to 
 
 import heapq
 from abc import ABC, abstractmethod
-from typing import Optional, Iterable, NamedTuple, Tuple, MutableMapping, List
+from typing import Optional, Iterable, NamedTuple, MutableMapping, List
 
+
+# noinspection PyMethodMayBeStatic
 class Action(ABC):
     name = 'Action'
 
