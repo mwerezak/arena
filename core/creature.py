@@ -69,3 +69,8 @@ class CreatureTemplate:
     @property
     def initiative(self) -> int:
         raise NotImplemented  # higher initiative helps to resolve action interruptions in this creature's favor
+
+    # interrupt success
+    # initiative = interrupting.owner.initiative - interrupted.owner.initiative
+    # priority = interrupted.windup/interrupting.windup + (math.log(1.5) * initiative)
+    # interrupt_chance = 1.0/(math.exp(-priority) + 1.0)
