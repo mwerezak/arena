@@ -6,7 +6,7 @@ from core.action import Action
 class DitherAction(Action):
     def __init__(self, duration: float):
         self.duration = duration  # duration in Time Units
-    def get_windup(self) -> float:
+    def get_base_windup(self) -> float:
         return self.duration
     def resolve(self) -> Optional[Action]:
         return None  # does nothing

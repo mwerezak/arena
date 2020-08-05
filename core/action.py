@@ -23,11 +23,11 @@ class Action(ABC):
     loop: 'ActionLoop' = None
 
     @abstractmethod
-    def get_windup(self) -> float:
+    def get_base_windup(self) -> float:
         """Return the windup duration, in TU"""
         ...
 
-    def setup_action(self, owner: 'Entity', loop: 'ActionLoop') -> None:
+    def setup(self, owner: 'Entity', loop: 'ActionLoop') -> None:
         """Called by the action loop to prepare the Action to be scheduled."""
         self.owner = owner
         self.loop = loop
@@ -36,6 +36,13 @@ class Action(ABC):
         """Return True if the action can be resolved.
         Called to determine whether an Entity can actually take a given action."""
         return True
+
+    def started(self) -> None:
+        """Called when the action has been scheduled"""
+        pass
+
+    def get_remaining_windup(self) -> float:
+        return self.loop.get_remaining_windup(self)
 
     @abstractmethod
     def resolve(self) -> Optional['Action']:
@@ -78,28 +85,33 @@ class Entity:
         """Allows actions to be performed quicker or slower for different entities."""
         return 1.0
 
-    def get_next_action(self) -> Optional[Action]:
-        """Called when an Entity is idle to get its next action."""
+    def idle(self) -> None:
+        """Called when an Entity is idle"""
         return None
 
     def get_current_action(self) -> Optional[Action]:
         return self.loop.get_current_action(self)
 
+    def set_current_action(self, action: Action) -> None:
+        self.loop.schedule_action(self, action)
+
 # ActionLoop
-class _QueueItem(NamedTuple):
+class ActionQueueItem(NamedTuple):
     windup: float
     action: Action
 
-    def elapse(self, amount: float) -> '_QueueItem':
-        return _QueueItem( self.windup - amount, self.action)
+    def elapse(self, amount: float) -> 'ActionQueueItem':
+        return ActionQueueItem(self.windup - amount, self.action)
 
 class ActionLoop:
     entity_actions: MutableMapping[Entity, Optional[Action]]
-    action_queue: List[_QueueItem]
+    queue_items: MutableMapping[Action, ActionQueueItem]
+    action_queue: List[ActionQueueItem]
     def __init__(self):
         self.elapsed = 0  # in TU
         self.entity_actions = {}
         self.action_queue = []
+        self.queue_items = {}
 
     def get_entities(self) -> Iterable[Entity]:
         return iter(self.entity_actions.keys())
@@ -113,32 +125,37 @@ class ActionLoop:
     def get_current_action(self, entity: Entity) -> Optional[Action]:
         return self.entity_actions[entity]
 
+    def get_remaining_windup(self, action: Action) -> Optional[float]:
+        item = self.queue_items.get(action, None)
+        if item is not None:
+            return item.windup
+        return None
+
     def schedule_action(self, entity: Entity, action: Action) -> None:
         prev_action = self.entity_actions.get(entity, None)
         if prev_action is not None:
             self.cancel_action(prev_action)
 
-        action.setup_action(entity, self)
-        windup = action.get_windup() / entity.get_action_rate()
+        action.setup(entity, self)
+        windup = action.get_base_windup() / entity.get_action_rate()
 
         self.entity_actions[entity] = action
-        heapq.heappush(self.action_queue, _QueueItem(windup, action))
+        item = ActionQueueItem(windup, action)
+        self.queue_items[action] = item
+        heapq.heappush(self.action_queue, item)
+        action.started()
 
     def cancel_action(self, action: Action):
         entity = action.owner
-        if entity is None:
-            raise ValueError('not scheduled')
-        if self.entity_actions[entity] == action:
+        if entity is not None and self.entity_actions[entity] == action:
             self.entity_actions[entity] = None
-        self.action_queue = [ item for item in self.action_queue if item.action != action ]
+        item = self.queue_items.pop(action)
+        self.action_queue.remove(item)
         heapq.heapify(self.action_queue)
 
     def process_idle_entities(self) -> None:
         for entity in self.get_idle_entities():
-            action = entity.get_next_action()
-            if action is None:
-                continue
-            self.schedule_action(entity, action)
+            entity.idle()
 
     def resolve_next(self) -> None:
         if len(self.action_queue) == 0:
@@ -146,6 +163,7 @@ class ActionLoop:
 
         item = heapq.heappop(self.action_queue)
         elapsed, current_action = item.windup, item.action
+        del self.queue_items[current_action]
         self.elapsed += elapsed
 
         # first, update the windup counters of all other actions
