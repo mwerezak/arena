@@ -1,4 +1,5 @@
 
+from core.util import IntClass
 
 
 ## Weapon

@@ -1,9 +1,9 @@
 
-from typing import Tuple
+from enum import IntFlag
+from typing import Tuple, Collection
 
 from core.util import IntClass
 from core.combat import DamageType
-
 
 class MeleeRange(IntClass):
     __NAMES = [
@@ -47,15 +47,25 @@ class AttackForce(IntClass):
 class MeleeAttack:
     name: str
     force: AttackForce
+    damtype: DamageType
     damage: ...
+    specials: Collection[...]
 
-    def __init__(self, name: str, reach: Tuple[MeleeRange, MeleeRange], force: AttackForce, damage: ...):
+    def __init__(self, name: str, reach: Tuple[MeleeRange, MeleeRange], force: AttackForce, damtype: DamageType, damage: ...):
         self.name = name
         self.max_reach = max(reach)
         self.min_reach = min(reach)
         self.force = force
 
+class CombatUsage(IntFlag):
+    Offensive = 0x1
+    Defensive = 0x2
 
+class CombatSpecial:
+    name: str
+    usage: CombatUsage
+
+    # __init__()  - should take parameters needed to resolve the effect of the special in combat
 
 # MeleeSpecials
 # Modify the results of an attack or produce some special effect
