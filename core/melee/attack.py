@@ -1,8 +1,10 @@
 
 from enum import IntFlag, Enum
-from typing import Tuple, Collection, Type
+from typing import Tuple, Collection, Type, Iterable
 
 from core.util import IntClass
+from core.dice import DicePool
+from core.melee.critical import CriticalEffect
 
 class MeleeRange(IntClass):
     __NAMES = [
@@ -51,31 +53,23 @@ class MeleeAttack:
     name: str
     force: AttackForce
     damtype: DamageType
-    damage: ...
-    specials: Collection[Type['CombatSpecial']]
+    damage: DicePool
+    criticals: Collection[Type[CriticalEffect]]
 
-    def __init__(self, name: str, reach: Tuple[MeleeRange, MeleeRange], force: AttackForce, damtype: DamageType, damage: ...):
+    def __init__(self,
+                 name: str,
+                 reach: Tuple[MeleeRange, MeleeRange],
+                 force: AttackForce,
+                 damtype: DamageType,
+                 damage: DicePool,
+                 criticals: Iterable[Type[CriticalEffect]] = None):
         self.name = name
         self.max_reach = max(reach)
         self.min_reach = min(reach)
         self.force = force
         self.damtype = damtype
-
-class CombatUsage(IntFlag):
-    Offensive = 0x1
-    Defensive = 0x2
-
-class CombatSpecial:
-    name: str
-    usage: CombatUsage
-
-    # can_use(self, user: Creature, target: Creature, combat: MeleeCombat) -> bool - if the special can be used
-
-    # __init__()  - should take parameters needed to resolve the effect of the special in combat
-
-# MeleeSpecials
-# Modify the results of an attack or produce some special effect
-
+        self.damage = damage
+        self.criticals = list(criticals) if criticals is not None else []
 
 ## Define certain values for convenience
 
