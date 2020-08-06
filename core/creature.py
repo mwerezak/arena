@@ -6,8 +6,8 @@ from core.bodyplan import Morphology
 from core.combat import MeleeCombat
 
 class CreatureSize(IntClass):
-    def __init__(self, value: int):
-        super().__init__(max(value, 0))
+    def __new__(cls, value: int):
+        return super().__new__(cls, max(value, 0))
 
     @property
     def category(self) -> 'SizeCategory':
@@ -15,7 +15,7 @@ class CreatureSize(IntClass):
         return closest
 
     def __str__(self) -> str:
-        return f'{self.category.name.lower()} ({self.value:d})'
+        return f'{self.category.name.lower()} ({self:d})'
 
 class SizeCategory(Enum):
     Tiny   = CreatureSize(2)
@@ -64,7 +64,7 @@ class CreatureTemplate:
 
     @property
     def max_health(self) -> int:
-        return self.size.value + self.get_attribute(PrimaryAttribute.CON)
+        return self.size + self.get_attribute(PrimaryAttribute.CON)
 
     @property
     def initiative(self) -> int:

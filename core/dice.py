@@ -28,15 +28,15 @@ def dicepool(*elems: Union[Number, Tuple[int, int]]) -> 'DicePool':
     return DicePool(dice_counter)
 
 class DicePool:
-    def __init__(self, dicepool = None):
+    def __init__(self, pool = None):
         ## check for the presence of a __dicepool__ magic attribute to
         ## determine if the dicepool argument is a dicepool compatible object.
-        if not dicepool:
+        if not pool:
             self.__dicepool__ = Counter()
-        elif hasattr(dicepool, "__dicepool__"):
-            self.__dicepool__ = Counter(dicepool.__dicepool__)
+        elif hasattr(pool, "__dicepool__"):
+            self.__dicepool__ = Counter(pool.__dicepool__)
         else:
-            self.__dicepool__ = Counter(dicepool)
+            self.__dicepool__ = Counter(pool)
         self.__remove_zeros()
 
     def __iter__(self) -> Iterable[Tuple[int, Number]]:
@@ -66,13 +66,13 @@ class DicePool:
         return (
             int(math.copysign(random.randint(1, sides), numdice))
             for sides, numdice in self.__dicepool__.items() if sides != 1
-            for i in range(abs(numdice))
+            for _ in range(abs(numdice))
         )
 
     def get_roll_detailed(self) -> Mapping[int, Sequence[int]]:
         """ Returns roll results organized into a dictionary """
         return {
-            sides : [ int(math.copysign(random.randint(1, sides), numdice)) for i in range(abs(numdice)) ]
+            sides : [ int(math.copysign(random.randint(1, sides), numdice)) for _ in range(abs(numdice)) ]
             for sides, numdice in self.__dicepool__.items() if sides != 1
         }
 

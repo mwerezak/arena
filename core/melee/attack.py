@@ -1,9 +1,12 @@
 
-from typing import Tuple, Collection, Type, Iterable
+from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable
 
 from core.util import IntClass
 from core.dice import DicePool
 from core.melee.critical import CriticalEffect
+
+if TYPE_CHECKING:
+    from core.combat import DamageType
 
 class MeleeRange(IntClass):
     __NAMES = [
@@ -15,13 +18,13 @@ class MeleeRange(IntClass):
         'extreme',
     ]
 
-    def __init__(self, value: int):
-        super().__init__(max(value, 0))
+    def __new__(cls, value: int):
+        return super().__new__(cls, max(value, 0))
 
     def __str__(self) -> str:
-        if self.value < len(self.__NAMES):
-            return self.__NAMES[self.value]
-        return f'{self.__NAMES[-1]} (+{self.value - len(self.__NAMES) + 1 :d})'
+        if self < len(self.__NAMES):
+            return self.__NAMES[self]
+        return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
 
 class AttackForce(IntClass):
     __NAMES = [
@@ -33,13 +36,13 @@ class AttackForce(IntClass):
         'overwhelming',
     ]
 
-    def __init__(self, value: int):
-        super().__init__(max(value, 0))
+    def __new__(cls, value: int):
+        return super().__new__(cls, max(value, 0))
 
     def __str__(self) -> str:
-        if self.value < len(self.__NAMES):
-            return self.__NAMES[self.value]
-        return f'{self.__NAMES[-1]} (+{self.value - len(self.__NAMES) + 1 :d})'
+        if self < len(self.__NAMES):
+            return self.__NAMES[self]
+        return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
 
 ## MeleeAttacks
 

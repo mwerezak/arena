@@ -1,7 +1,8 @@
 
-from enum import Enum
+from enum import Enum, IntFlag
+from copy import copy as shallow_copy
 from numbers import Number
-from typing import NamedTuple, Iterable, Any, Collection
+from typing import Iterable, Any
 
 class BodyElementType(Enum):
     HEAD = "head"
@@ -15,27 +16,54 @@ class BodyElementSpecial(Enum):
     GRASP = "grasp"
     STANCE = "stance"
 
-class BodyElement(NamedTuple):
-    id_tag: str
-    type: BodyElementType
-    name: str = None
-    exposure: float = 1.0
-    specials: Collection[BodyElementSpecial] = None
+# general rule of placement flags
+class BodyElementPlacement(IntFlag):
+    FORE    = 0x1
+    REAR    = 0x2
+    LEFT    = 0x4
+    RIGHT   = 0x8
+    CENTRAL = FORE|REAR
+    MEDIAL  = LEFT|RIGHT
+    DEFAULT = CENTRAL|MEDIAL
+
+class BodyElement:
+    def __init__(self,
+                 id_tag: str,
+                 elemtype: BodyElementType,
+                 name: str = None,
+                 placement: BodyElementPlacement = BodyElementPlacement.DEFAULT,
+                 exposure: float = 1.0,
+                 specials: Iterable[BodyElementSpecial] = None):
+        self.id_tag = id_tag
+        self.type = elemtype
+        self.name = name or id_tag
+        self.placement = placement
+        self.exposure = exposure
+        self.specials = tuple(specials) if specials is not None else ()
 
     def clone(self) -> 'BodyElement':
-        return BodyElement(*self)
+        return shallow_copy(self)
 
 class Morphology:
     SELECT_ALL = '*' # a special id tag used to select all BodyElements
 
     def __init__(self, elements: Iterable[BodyElement]):
         self.elements = { elem.id_tag : elem.clone() for elem in elements }
-
-    def __getitem__(self, id_tag: str) -> BodyElement:
-        return self.elements[id_tag]
+        self.update()
 
     def __iter__(self) -> Iterable[BodyElement]:
         return iter(self.elements.values())
+
+    def get_bodypart_ids(self) -> Iterable[str]:
+        return iter(self.elements.keys())
+
+    def get_bodypart(self, id_tag: str) -> BodyElement:
+        return self.elements[id_tag]
+
+    def update(self) -> None:
+        total_exposure = sum(elem.exposure for elem in self)
+        for elem in self:
+            elem.exposure /= total_exposure
 
     def clone(self) -> 'Morphology':
         return Morphology(self)
@@ -47,13 +75,14 @@ class Morphology:
             selected = (self.elements[id_tag] for id_tag in id_tags)
         return MorphologySelection(self, selected)
 
-    def add(self, *elements: BodyElement) -> 'Morphology':
-        for elem in elements:
-            self.elements[elem.id_tag] = elem
+    def add(self, elem: BodyElement) -> 'Morphology':
+        self.elements[elem.id_tag] = elem
+        self.update()
         return self
 
     def remove(self, id_tag: str) -> 'Morphology':
         del self.elements[id_tag]
+        self.update()
         return self
 
 class MorphologySelection:
@@ -79,8 +108,9 @@ class MorphologySelection:
             self.source.remove(elem.id_tag)
         return self
 
-    def get_bodyplan(self) -> Morphology:
-        return self.source
-
     def select(self, *args: Any) -> 'MorphologySelection':
         return self.source.select(*args)
+
+    def finalize(self) -> Morphology:
+        self.source.update()
+        return self.source

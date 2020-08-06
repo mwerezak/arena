@@ -4,8 +4,7 @@ their ability. Each contest has two (not necessarily distinct) key PrimaryAttrib
 Creatures may also have traits that grant a certain level of expertise (valid levels 1-5) in a certain contest types.
 """
 
-from abc import ABC, abstractmethod
-from typing import Tuple, Any, Iterable, Sequence
+from typing import Iterable, Sequence
 from core.creature import PrimaryAttribute
 
 class Contest:
