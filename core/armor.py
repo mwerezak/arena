@@ -2,13 +2,9 @@ from enum import Enum
 from collections import defaultdict
 from typing import NamedTuple, Mapping, Collection, Tuple, Iterable
 
+from core.equipment import Equipment
 from core.creature import CreatureTemplate, CreatureSize, SizeCategory
 from core.bodyplan import BodyElement
-
-class Equipment:
-    name: str
-    cost: float
-    encumbrance: float  # encumbrance when worn or equipped
 
 ## Armor
 
@@ -33,6 +29,7 @@ class MaterialType(Enum):
 class ArmorMaterial(NamedTuple):
     name: str
     enc_mult: float
+    cost_mult: float
     type: MaterialType
 
 class ArmorType(NamedTuple):
@@ -69,7 +66,8 @@ class ArmorComponent:
 
     @property
     def cost(self) -> float:
-        return self.type.base_cost * self.coverage/self.COVERAGE_AREA * float(self.size)/SizeCategory.Medium.value
+        size_mult = float(self.size)/SizeCategory.Medium.value
+        return self.type.base_cost * self.material.cost_mult * size_mult * self.coverage/self.COVERAGE_AREA
 
     @property
     def coverage(self) -> float:
