@@ -1,0 +1,408 @@
+Note on Armor descriptions...
+
+Suit -> Full body armor
+Armor -> Like Suit, except the legs are not covered.
+Breastplate -> Half Plate armor that covers upper and lower body
+Studded Leather -> Leather Brigandine
+
+==Merchant Princes
++Well rounded selection of infantry, archers, and cavalry.
++Melee and ranged infantry have good quality equipment for their tier.
++Low-tier units are decent
+-High-tier units are mediocre.
+-Mediocre cavalry, especially compared to the Feudal Lords.
+
+=Pike Milita
+Low-tier infantry. Has just enough training to be able to fight as a unit. Decent equipment.
+
+Polearms I
+
+Pike
+Short Sword
+Steel Helmet (30%) or Leather Helmet (40%) or Nothing (30%)
+Padded Gambeson
+Nothing (40%) or Leather Cuirass (40%) or Steel Brigandine Cuirass (20%)
+
+=Crossbow Militia
+
+Crossbow/Firearms I
+
+Low-tier archer. Has some training and decent equipment.
+Light Crossbow, 30 Bolts
+Short Sword
+Steel Helmet (30%) or Leather Helmet (40%) or Nothing (30%)
+Padded Gambeson
+Nothing (40%) or Leather Cuirass (40%) or Steel Brigandine Cuirass (20%)
+
+=Arquebusiers
+Medium-tier musketeer. Equipped with highly sought after gunpowder weapons and lightish armor, but training is squarely medium-tier.
+
+Crossbow/Firearms II
+
+Arquebus
+Short Sword
+Steel Helmet (70%) or Leather Helmet (30%)
+Padded Gambeson
+Nothing (30%) or Leather Cuirass (40%) or Steel Brigandine Cuirass (30%)
+
+=Halberdiers
+Medium-tier heavy infantry. Good quality equipment.
+
+Polearms III
+
+Halberd
+Steel Helmet (70%) or Steel Full Helmet (30%)
+Padded Gambeson
+Steel Plate Mail Armor (50%) or Steel Half-Plate Armor (30%) or Steel Breastplate (20%)
+
+=Prince's Guards
+High-tier heavy infantry.
+
+Polearms V
+
+Halberd
+Padded Gambeson
+Steel Full Helmet
+Steel Full Plate Armor (50%) or Steel Plate Mail Suit (50%)
+
+=Corsairs
+
+Swords II
+Shield II
+Evade
+
+Sabre-and-buckler equipped light infantry. Highly skilled and motivated.
+Sabre
+Small Shield (70%) or Buckler (30%)
+Steel Helmet (70%) or Leather Helmet (30%)
+Padded Gambeson
+Steel Breastplate (50%) or Steel Brigandine Cuirass (30%) or Leather Armor (20%)
+
+=Militia Lancers
+Light cavalry. Decent training though not as experienced as professional cavalry.
+
+Polarms I
+Riding I
+
+Lance (70%) or Long Spear (30%)
+Long Sword
+Medium Shield (50%) or Small Shield (50%)
+Steel Helmet (70%) or Leather Helmet (30%)
+Padded Gambeson
+Nothing (20%) or Leather Cuirass (40%) or Steel Brigandine Cuirass (40%)
+Riding Horse
+Padded Barding (30%) or Nothing (70%)
+
+=Merchants-at-Arms
+Medium-tier cavalry. Well equipped. Decent training though not as experienced as professional cavalry.
+They also do not use lances, which limits their effectiveness in a charge.
+
+Swords I
+Shields I
+Riding I
+
+Long Sword (70%) or Sabre (30%)
+Medium Shield
+Steel Helmet
+Padded Gambeson
+Full Plate Cuirass (10%) or Plate Mail Cuirass (20%) or Banded Mail Cuirass (40%) or Steel Breastplate (30%)
+Riding Horse
+Padded Barding
+
+=Lancer Condottieri
+Mercenary heavy cavalry. Trained and experienced, though not nearly at the same level as the Feudal Knights.
+
+Lances II
+Swords I
+Shields I
+Riding II
+
+Lance, Long Sword, Medium Shield
+Padded Gambeson
+Steel Helmet, Steel Breastplate (30%)
+    or Steel Helmet, Banded Mail Armor (40%)
+    or Steel Full Helmet, Plate Mail Armor (30%)
+    or Steel Full Helmet, Full Plate Armor (10%)
+War Horse
+Padded Barding (50%) or Leather Barding (30%) or Steel Brigandine Barding (20%)
+
+
+==Feudal Lords
++Powerful cavalry.
++Good low-tier archers.
+-Mediocre infantry.
+
+=Levy Spearmen
+Low-tier peasant infantry. Poorly trained and equipped.
+
+Shields I
+
+Longspear, Medium Shield
+Dagger (40%) or Short Sword (10%) or Nothing (50%)
+Tunic
+Nothing (70%) or Doublet (20%) or Gambeson (10%)
+Leather Cap (40%) or Padded Cap (40%) or Nothing (20%)
+
+=Levy Archers
+Low-tier peasant archers. They have effective bows and can use them, but otherwise poorly trained and equipped.
+
+Archery I
+
+Longbow, 30 Arrows
+Dagger (60%) or Short Sword (10%) or Nothing (30%)
+Tunic
+Nothing (80%) or Doublet (20%)
+Leather Cap (30%) or Padded Cap (20%) or Nothing (50%)
+
+=Sergant Spearmen
+Medium-tier infantry.
+
+Polearms I
+Shields I
+Swords/Maces I
+
+Longspear
+Large Shield (70%) or Medium Shield (30%)
+Short Sword (40%) or Mace (40%) or Nothing (20%)
+Steel Helmet (70%) or Leather Helmet (30%)
+Padded Gambeson
+Steel Chain Hauberk (40%) or Steel Brigandine Hauberk (60%)
+
+=Outland Rangers
+High-tier archers. Experienced, decent equipment, effective at range or in melee.
+
+Archery II
+Swords II
+Shields I
+Evade
+
+Longbow, 30 Arrows
+Short Sword (50%) or Long Sword (50%)
+Buckler (50%) or Small Shield (20%) or Nothing (30%)
+Steel Helmet (50%) or Leather Helmet (30%) or Leather Cap (20%)
+Leather Armor Suit (50%) or Padded Gambeson (50%)
+Steel Chain Shirt (Leather Brigandine Fauld) (60%) or Steel Brigandine Hauberk (40%)
+
+=Squires-at-Arms
+
+Swords I
+Shields I
+Riding I
+
+Longsword, Medium Shield
+Padded Gambeson
+Steel Chain Shirt (Leather Brigandine Fauld), Leather Helmet (30%)
+    or Steel Chain Shirt (Leather Brigandine Fauld), Steel Helmet (50%)
+    or Steel Chain Hauberk, Full Steel Helmet (20%)
+Riding Horse
+Padded Barding (50%) or Nothing (50%)
+
+=Lesser Knights
+
+Lances II
+Swords II
+Shields I
+Riding II
+
+Lance, Longsword, Medium Shield
+Full Steel Helmet
+Steel Chainmail Armor Suit
+Steel Full Plate Cuirass (20%) or Steel Plate Mail Cuirass (50%) or Nothing (30%)
+War Horse
+Steel Chain Barding (20%) or Steel Brigandine Barding (30%) or Leather Barding (30%) or Padded Barding (20%)
+
+=Knights
+
+Lances III
+Swords III
+Shields II
+Riding III
+
+Lance, Medium Shield
+Longsword (70%), Warhammer (30%)
+Full Steel Helmet
+Steel Full Plate Suit (50%) or Steel Full Plate Cuirass, Plate Mail Suit (50%)
+War Horse
+Steel Plate Mail Barding (20%) or Steel Chain Barding (30%) or Steel Brigandine Barding (50%)
+
+==Northern Barbarians
+
+=Goblin Slave Spears
+No Skills
+
+Spear (60%) or Longspear (20%) or Club (20%)
+Small Shield (50%) or Nothing (50%)
+
+=Goblin Slave Slingers
+No Skills
+
+Sling
+Dagger (20%) or Club (40%) or Nothing (40%)
+
+=Goblin Spears
+Polearm I
+Shield I
+
+Spear (50%) or Longspear, Dagger (50%)
+Small Shield (50%) or Medium Shield (50%)
+Leather Helmet (30%) or Leather Cap (50%) or Nothing (20%)
+Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
+
+=Goblin Infantry
+Mace I
+Shield I
+
+Mace (70%) or Club (30%)
+Small Shield (50%) or Medium Shield (50%)
+Leather Helmet (30%) or Leather Cap (50%) or Nothing (20%)
+Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
+
+=Goblin Enforcers
+Sword III
+Evade
+
+Short Sword, Short Sword (50%) or Dagger, Dagger (50%)
+Hide Armor (50%) or Nothing (50%)
+Iron Helmet (50%) or Leather Helmet (50%)
+Leather Cuirass (50%) or Iron Brigandine Cuirass (30%) or Nothing (20%)
+
+=Goblin Warg Rider
+Polearm II
+Sword I
+Riding II
+
+Longspear
+Short Sword (50%) or Dagger (50%)
+Small Shield (50%) or Medium Shield (50%)
+Leather Helmet (20%) or Leather Cap (30%) or Nothing (50%)
+Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
+Warg
+
+=Ogre Brute
+Mace III
+
+Greatclub
+Hide Armor (30%) or Hide Cuirass (30%) or Nothing (40%)
+
+=Orc Barbarian
+Axe/Sword/Mace II
+Shield II
+
+Battle Axe (40%) or Falchion (30%) or Mace (30%)
+Small Shield (50%) or Medium Shield (50%)
+Iron Helmet (30%) or Leather Helmet (50%) or Nothing (30%)
+Hide Armor (50%) or Leather Armor (50%)
+Iron Brigandine Cuirass (70%) or Nothing (30%)
+
+=Orc Archer
+Axe/Sword/Mace II
+Shield I
+Archery I
+
+Short Bow, 30 Arrows
+Battle Axe (40%) or Falchion (30%) or Mace (30%)
+Small Shield (50%) or Buckler (50%)
+Iron Helmet (10%) or Leather Helmet (20%) or Leather Cap (20%) or Nothing (50%)
+Hide Armor (50%) or Leather Armor (50%)
+Iron Brigandine Cuirass (30%) or Nothing (70%)
+
+==Wild Coalition
+
+=Satyr Braves
+Polearm I
+Shield I
+Evade
+Stealth I
+
+Spear (50%) or Halfspear (50%)
+Medium Shield (50%) or Small Shield (50%)
+
+=Satyr Archers
+Archery II
+Sword I
+Evade
+Stealth I
+
+Shortbow, 30 Arrows
+Short Sword (50%) or Dagger (50%)
+
+=Satyr Wardens
+Sword III
+Shield III
+Evade
+
+Scimitar, Medium Shield
+Linen Armor
+Bronze Helmet (50%) or Nothing (50%)
+Bronze Scale Hauberk (70%) or Bronze Breastplate (30%)
+
+=Satyr Sorcerers
+=Warbears
+
+=Satyr Outrider
+Polearm II
+Shield II
+Riding II
+
+Longspear, Medium Shield
+Wild Horse
+
+=Minotaur Militia
+Axe I
+
+Battle Axe
+Padded Hauberk
+
+=Minotaur Warrior
+Axe III
+
+Greataxe
+Bronze Helmet (50%) or Nothing (50%)
+Bronze Breastplate
+
+=Minotaur Champion
+Axe IV
+
+Greataxe
+Bronze Full Helmet (30%) or Bronze Helmet (70%)
+Bronze Plate Mail Armor
+
+=Gnoll Hunters (Javelins)
+Axe I
+Javelin I
+Unarmed II
+Stealth II
+
+5 Javelins
+Hatchet (70%) or Battle Axe (30%)
+Small Shield (50%) or Buckler (50%)
+Hide Cuirass (30%) or Leather Cuirass (20%) or Nothing (50%)
+
+=Gnoll Hunters (Bow)
+Archery II
+Axe I
+Unarmed I
+Stealth II
+
+Shortbow, 30 Arrows
+Hatchet (70%) or Battle Axe (30%)
+Hide Cuirass (30%) or Leather Cuirass (20%) or Nothing (50%)
+
+=Gnoll Warrior
+Axe/Mace II
+Shield I
+Unarmed II
+Evade
+
+Battle Axe (70%) or Mace (30%)
+Medium Shield (70%) or Small Shield (30%)
+Hide Cuirass (30%) or Leather Cuirass (30%) or Iron Scale Cuirass (20%) or Nothing (20%)
+
+=Gnoll Chieftain's Sons
+Axe IV
+Unarmed II
+Evade
+
+Greataxe
+Leather Armor (50%) or Nothing (50%)
+Iron Mail Cuirass (30%) or Iron Scale Cuirass (40%)
