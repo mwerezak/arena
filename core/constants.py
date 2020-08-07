@@ -1,5 +1,14 @@
 from enum import Enum
 
+class PrimaryAttribute(Enum):
+    STR = 'Strength'
+    CON = 'Constitution'
+    SIZ = 'Size'
+    DEX = 'Dexterity'
+    INT = 'Intelligence'
+    POW = 'Power'
+    CHA = 'Charisma'
+
 class IntClass(int):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self:d})'

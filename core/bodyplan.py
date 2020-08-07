@@ -2,7 +2,9 @@
 from enum import Enum, IntFlag
 from copy import copy as shallow_copy
 from numbers import Number
-from typing import Iterable, Any, Union, Collection
+from typing import Iterable, Any, Union, Collection, Tuple, Mapping
+
+from core.unarmed import NaturalWeapon
 
 class BodyElementType(Enum):
     HEAD = "head"
@@ -32,24 +34,36 @@ class BodyElement:
                  elemtype: BodyElementType,
                  name: str = None,
                  placement: BodyElementPlacement = BodyElementPlacement.DEFAULT,
-                 exposure: float = 1.0,
-                 specials: Iterable[BodyElementSpecial] = None):
+                 size: float = 1,
+                 specials: Iterable[BodyElementSpecial] = None,
+                 armor: float = 0,
+                 unarmed: Iterable[NaturalWeapon] = None):
         self.id_tag = id_tag
         self.type = elemtype
         self.name = name or id_tag
         self.placement = placement
-        self.exposure = exposure
-        self.specials: Collection[BodyElementSpecial] = tuple(specials) if specials is not None else ()
+        self.size = size
+        self.specials: Collection[BodyElementSpecial] = list(specials) if specials is not None else []
+        self.armor = armor
+        self.unarmed = list(unarmed) if unarmed is not None else []
 
     def clone(self) -> 'BodyElement':
-        return shallow_copy(self)
+        result = shallow_copy(self)
+        result.specials = list(self.specials)
+        result.unarmed = list(self.unarmed)
+        return result
 
 class Morphology:
     SELECT_ALL = '*' # a special id tag used to select all BodyElements
 
+    rel_size: Mapping[str, float]
     def __init__(self, elements: Iterable[BodyElement]):
         self.elements = { elem.id_tag : elem.clone() for elem in elements }
         self.update()
+
+    def update(self) -> None:
+        total_size = sum(bp.size for bp in self)
+        self.rel_size = { bp.id_tag : bp.size/total_size for bp in self }
 
     def __iter__(self) -> Iterable[BodyElement]:
         return iter(self.elements.values())
@@ -65,10 +79,11 @@ class Morphology:
     def get_bodypart(self, id_tag: str) -> BodyElement:
         return self.elements[id_tag]
 
-    def update(self) -> None:
-        total_exposure = sum(elem.exposure for elem in self)
-        for elem in self:
-            elem.exposure /= total_exposure
+    def get_relative_size(self, id_tag: str) -> float:
+        return self.rel_size[id_tag]
+
+    def get_proportions(self) -> Iterable[Tuple[str, float]]:
+        return iter(self.rel_size.items())
 
     def clone(self) -> 'Morphology':
         return Morphology(self)
@@ -106,6 +121,11 @@ class MorphologySelection:
             for elem in self.selected:
                 value = getattr(elem, name) + adjust
                 setattr(elem, name, value)
+        return self
+
+    def add_unarmed_attack(self, attack: NaturalWeapon) -> 'MorphologySelection':
+        for elem in self.selected:
+            elem.unarmed.append(attack)
         return self
 
     def remove(self) -> 'MorphologySelection':

@@ -1,5 +1,5 @@
 import math
-from typing import Iterable, Type, Mapping, Optional
+from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union
 
 from core.dice import dice, DicePool
 from core.combat.damage import DamageType
@@ -8,9 +8,8 @@ from core.combat.attack import MeleeAttack
 from core.constants import SizeCategory, MeleeRange
 from core.constants import *
 
-## min,max reach at Medium size
-BASE_MAX_REACH = 1.0   # REACH_SHORT
-BASE_MIN_REACH = 1.0/3 # REACH_CLOSE
+if TYPE_CHECKING:
+    from core.creature import CreatureTemplate
 
 _DAMAGE_TABLE = {
       0 : dice(0),
@@ -63,56 +62,74 @@ def _table_lookup(table: Mapping[int, DicePool], size: float) -> DicePool:
     _, k = items[0]
     return table[k]
 
-class NaturalWeapon:
-    def __init__(self, name: str, damtype: DamageType,
-                force_mod: float = 0, reach_mod: float = 0, damage_mod: float = 0, armor_pen: Optional[float] = None,
-                criticals: Iterable[Type[CriticalEffect]] = None):
+## min,max reach at Medium size
+BASE_MAX_REACH = 1.0   # REACH_SHORT
+BASE_MIN_REACH = 1.0/3 # REACH_CLOSE
+
+class NaturalWeaponTemplate:
+    def __init__(self,
+                 name: str, damtype: DamageType,
+                 force: float = 0, reach: float = 0,
+                 damage: float = 0, armpen: Optional[float] = None,
+                 criticals: Iterable[Type[CriticalEffect]] = None):
         self.name = name
         self.damtype = damtype
-        self.reach_mod = reach_mod
-        self.force_mod = force_mod  # affects both damage and armor penetration as well
-        self.damage_mod = damage_mod
-        self.armor_pen = armor_pen
+        self.reach = reach
+        self.force = force  # affects both damage and armor penetration as well
+        self.damage = damage
+        self.armpen = armpen
         self.criticals = tuple(criticals) if criticals is not None else ()
 
-    def create_attack(self, size: int) -> MeleeAttack:
-        rel_size = float(size)/float(SizeCategory.Medium.to_size())
+class NaturalWeapon:
+    def __init__(self,
+                 template: Union['NaturalWeapon', NaturalWeaponTemplate],
+                 name: str = None,
+                 force: float = 0, reach: float = 0,
+                 damage: float = 0, armpen: Optional[float] = None):
+
+        if hasattr(template, 'as_template'):
+            template = template.as_template()
+
+        self.name = name or template.name
+        self.damtype = template.damtype
+        self.criticals = template.criticals
+
+        self.reach = template.reach + reach
+        self.force = template.force + force  # affects both damage and armor penetration as well
+        self.damage = template.damage + damage
+
+        self.armpen = None
+        if template.armpen is not None or (armpen is not None and armpen >= 0): # reducing armpen on a weapon that does not have armpen should not grant it
+            self.armpen = (template.armpen or 0) + (armpen or 0)
+
+    def as_template(self) -> NaturalWeaponTemplate:
+        return NaturalWeaponTemplate(
+            self.name, self.damtype, self.force, self.reach, self.damage, self.armpen, self.criticals
+        )
+
+    def create_attack(self, creature: 'CreatureTemplate') -> MeleeAttack:
+        rel_size = float(creature.size)/float(SizeCategory.Medium.to_size())
         size_step = math.log2(rel_size)
 
-        reach_size = 2**size_step
-        max_reach = BASE_MAX_REACH * reach_size + self.reach_mod
-        min_reach = BASE_MIN_REACH * reach_size + self.reach_mod
+        reach_size = rel_size
+        max_reach = BASE_MAX_REACH * reach_size + self.reach
+        min_reach = BASE_MIN_REACH * reach_size + self.reach
 
-        damage_size = 8 * 2**(size_step + self.damage_mod + self.force_mod)
+        damage_size = 8 * 2**(size_step + self.damage + self.force)
         damage = _table_lookup(_DAMAGE_TABLE, damage_size)
 
         armor_pen = None
-        if self.damtype == DamageType.Bludgeon or self.armor_pen is not None:
-            armpen_size = 8 * 2**(size_step + (self.armor_pen or 0) + self.force_mod)
+        if self.damtype == DamageType.Bludgeon or self.armpen is not None:
+            armpen_size = 8 * 2**(size_step + (self.armpen or 0) + self.force)
             armor_pen = _table_lookup(_ARMOR_PEN_TABLE, armpen_size)
 
         return MeleeAttack(
             name = self.name,
             reach = (MeleeRange(round(max_reach)), MeleeRange(round(min_reach))),
-            force = FORCE_MEDIUM.get_step(round(size_step + self.force_mod)),
+            force = FORCE_MEDIUM.get_step(round(size_step + self.force)),
             damtype = self.damtype,
             damage = damage,
             armor_pen = armor_pen,
             criticals = self.criticals,
         )
 
-if __name__ == '__main__':
-    def print_attack(attack: MeleeAttack):
-        print(f'*** {attack.name} ***')
-        print(f'force: {attack.force}')
-        print(f'reach: {attack.max_reach}-{attack.min_reach}')
-        print(f'damage: {attack.damage}' + (f'/{attack.armor_pen}*' if attack.armor_pen is not None else ''))
-
-    UNARMED_PUNCH = NaturalWeapon('Punch', DamageType.Bludgeon, force_mod = -1)
-    print_attack(UNARMED_PUNCH.create_attack(8))
-
-    UNARMED_KICK = NaturalWeapon('Kick', DamageType.Bludgeon, force_mod = -1, reach_mod= 1)
-    print_attack(UNARMED_KICK.create_attack(8))
-
-    UNARMED_BITE = NaturalWeapon('Bite', DamageType.Puncture, damage_mod=1, reach_mod=-1)
-    print_attack(UNARMED_BITE.create_attack(16))

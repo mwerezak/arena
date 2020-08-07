@@ -6,7 +6,8 @@ Creatures may also have traits that grant a certain level of expertise (valid le
 
 from enum import Enum
 from typing import Iterable, Sequence
-from core.creature import PrimaryAttribute
+from core.constants import PrimaryAttribute
+
 
 class Contest:
     def __init__(self, name: str, key_attr: Iterable[str]):

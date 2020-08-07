@@ -68,22 +68,19 @@ class Armor:
         self.template = template
         self.creature = fitted_for
 
+        rel_sizes = dict(self.creature.bodyplan.get_proportions())
+        coverage = [ bp_tag for bp_tag in self.template.get_coverage() if bp_tag in rel_sizes.keys() ]
+
         # noinspection PyTypeChecker
         size_mult = float(self.creature.size)/SizeCategory.Medium.to_size()
         self.cost = sum(
-            self.template.base_cost * size_mult * bp.exposure/self.BASE_AREA for bp in self.__get_bodyparts()
+            self.template.base_cost * size_mult * rel_sizes[id_tag] / self.BASE_AREA for id_tag in coverage
         )
 
         self.encumbrance = {
-            bp.id_tag : self.template.base_encumbrance * bp.exposure/self.BASE_AREA for bp in self.__get_bodyparts()
+            id_tag : self.template.base_encumbrance * rel_sizes[id_tag] / self.BASE_AREA for id_tag in coverage
         }
 
         self.armor_value = {
-            bp.id_tag : self.template.armor_value for bp in self.__get_bodyparts()
+            id_tag : self.template.armor_value for id_tag in coverage
         }
-
-    def __get_bodyparts(self) -> Iterable[BodyElement]:
-        for id_tag in self.template.get_coverage():
-            if id_tag in self.creature.bodyplan:
-                yield self.creature.bodyplan.get_bodypart(id_tag)
-

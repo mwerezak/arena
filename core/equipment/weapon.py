@@ -5,7 +5,6 @@ from core.equipment import Equipment
 from core.combat.attack import MeleeAttack
 from core.constants import AttackForce, SizeCategory
 
-
 class Weapon(Equipment):
     def __init__(self,
                  name: str,
@@ -37,3 +36,15 @@ class ShieldBlock(NamedTuple):
     block_force: AttackForce
     block_bonus: int
     block_ranged: float
+
+
+"""
+_DICE_UPGRADE_TABLE = [
+    [ (1,3),  (1,4)],
+    [ (1,4),  (1,6)],
+    [ (1,6),  (1,8)],
+    [ (1,8), (1,12)],
+    [ (2,4),  (2,6)],
+    [(1,10),  (2,8)],
+]
+"""
