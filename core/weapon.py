@@ -1,8 +1,8 @@
 from copy import copy as shallow_copy
-from typing import Iterable
+from typing import Iterable, Optional, NamedTuple
 
 from core.equipment import Equipment
-from core.melee.attack import MeleeAttack
+from core.melee.attack import MeleeAttack, AttackForce
 from core.creature import SizeCategory
 
 class Weapon(Equipment):
@@ -12,7 +12,7 @@ class Weapon(Equipment):
                  encumbrance: float,
                  cost: float,
                  melee: Iterable[MeleeAttack] = None,
-                 shield: int = 0):
+                 shield: Optional['ShieldBlock'] = None):
         self.name = name
         self.size = size
         self.encumbrance = encumbrance
@@ -24,10 +24,15 @@ class Weapon(Equipment):
         return len(self.melee) > 0
 
     def is_shield(self) -> bool:
-        return self.shield > 0
+        return self.shield is not None
 
     def clone(self, name: str = None) -> 'Weapon':
         result = shallow_copy(self)
         if name is not None:
             result.name = name
         return result
+
+class ShieldBlock(NamedTuple):
+    block_force: AttackForce
+    block_bonus: int
+    block_ranged: float
