@@ -18,7 +18,7 @@ WEAPON_BROADSWORD = Weapon(
 WEAPON_LONGSWORD = Weapon(
     name = 'Longsword', size = SizeCategory.Medium, encumbrance = 2, cost = 250,
     melee = [
-        MeleeAttack('Slash',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8)),
+        MeleeAttack('Slash',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(2,4)),
         MeleeAttack('Thrust',         (REACH_LONG, REACH_MEDIUM),  FORCE_MEDIUM, DamageType.Puncture, dice(1,6)),
         MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
