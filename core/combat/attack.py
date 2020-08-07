@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
 
 from core.constants import MeleeRange, AttackForce
 from core.dice import DicePool
-from core.critical import CriticalEffect
+from core.combat.criticals import CriticalEffect
 
 if TYPE_CHECKING:
     from core.combat import DamageType

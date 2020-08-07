@@ -1,15 +1,12 @@
 import math
-from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional
+from typing import Iterable, Type, Mapping, Optional
 
 from core.dice import dice, DicePool
-from core.combat import DamageType
-from core.critical import CriticalEffect
-from core.melee.attack import MeleeAttack
-from core.constants import SizeCategory, MeleeRange, CreatureSize
+from core.combat.damage import DamageType
+from core.combat.criticals import CriticalEffect
+from core.combat.attack import MeleeAttack
+from core.constants import SizeCategory, MeleeRange
 from core.constants import *
-
-if TYPE_CHECKING:
-    from core.creature import CreatureTemplate
 
 ## min,max reach at Medium size
 BASE_MAX_REACH = 1.0   # REACH_SHORT

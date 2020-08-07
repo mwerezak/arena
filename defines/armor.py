@@ -1,4 +1,4 @@
-from core.armor import ArmorType, ArmorMaterial, MaterialType, ArmorTemplate
+from core.equipment.armor import ArmorType, ArmorMaterial, MaterialType, ArmorTemplate
 
 ARMORTYPE_HIDE       = ArmorType(1, 2.0,   20, 0.20, [MaterialType.Leather, MaterialType.Cloth])  # e.g. furs, hides
 ARMORTYPE_PADDED     = ArmorType(2, 1.0,   80, 0.15, [MaterialType.Leather, MaterialType.Cloth])  # aketon, gambeson
