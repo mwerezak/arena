@@ -51,9 +51,9 @@ Medium-tier heavy infantry. Good quality equipment.
 Polearms III
 
 Halberd
-Steel Helmet (70%) or Steel Full Helmet (30%)
+Steel Helmet
 Padded Gambeson
-Steel Plate Mail Armor (50%) or Steel Half-Plate Armor (30%) or Steel Breastplate (20%)
+Steel Plate Mail Armor (30%) or Steel Half-Plate Armor (50%) or Steel Breastplate (20%)
 
 =Prince's Guards
 High-tier heavy infantry.
@@ -62,8 +62,7 @@ Polearms V
 
 Halberd
 Padded Gambeson
-Steel Full Helmet
-Steel Full Plate Armor (50%) or Steel Plate Mail Suit (50%)
+Steel Full Plate Armor, Steel Armet (50%) or Steel Plate Mail Armor, Steel Close Helmet (50%)
 
 =Corsairs
 
@@ -121,8 +120,8 @@ Lance, Long Sword, Medium Shield
 Padded Gambeson
 Steel Helmet, Steel Breastplate (30%)
     or Steel Helmet, Banded Mail Armor (40%)
-    or Steel Full Helmet, Plate Mail Armor (30%)
-    or Steel Full Helmet, Full Plate Armor (10%)
+    or Steel Close Helmet, Plate Mail Armor (30%)
+    or Steel Armet, Full Plate Armor (10%)
 War Horse
 Padded Barding (50%) or Leather Barding (30%) or Steel Brigandine Barding (20%)
 
@@ -141,7 +140,7 @@ Longspear, Medium Shield
 Dagger (40%) or Short Sword (10%) or Nothing (50%)
 Tunic
 Nothing (70%) or Doublet (20%) or Gambeson (10%)
-Leather Cap (40%) or Padded Cap (40%) or Nothing (20%)
+Leather Helmet (40%) or Leather Cap (40%) or Nothing (20%)
 
 =Levy Archers
 Low-tier peasant archers. They have effective bows and can use them, but otherwise poorly trained and equipped.
@@ -208,9 +207,8 @@ Riding II
 Lance,
 Longsword (50%) or Broadsword (30%) or Warhammer (20%)
 Medium Shield
-Full Steel Helmet
-Steel Chainmail Armor Suit
-Steel Full Plate Cuirass (20%) or Steel Plate Mail Cuirass (50%) or Nothing (30%)
+Plate Mail Suit, Steel Close Helmet (50%) or Plate Mail Cuirass, Chain Mail Suit, Steel Great Helmet (50%)
+
 War Horse
 Steel Chain Barding (20%) or Steel Brigandine Barding (30%) or Leather Barding (30%) or Padded Barding (20%)
 
@@ -295,7 +293,7 @@ Battle Axe (40%) or Falchion (30%) or Mace (30%)
 Small Shield (50%) or Medium Shield (50%)
 Iron Helmet (30%) or Leather Helmet (50%) or Nothing (30%)
 Hide Armor (50%) or Leather Armor (50%)
-Iron Brigandine Cuirass (70%) or Nothing (30%)
+Iron Brigandine Hauberk (20%) or Iron Brigandine Cuirass (50%) or Nothing (30%)
 
 =Orc Archer
 Axe/Sword/Mace II
@@ -307,7 +305,7 @@ Battle Axe (40%) or Falchion (30%) or Mace (30%)
 Small Shield (50%) or Buckler (50%)
 Iron Helmet (10%) or Leather Helmet (20%) or Leather Cap (20%) or Nothing (50%)
 Hide Armor (50%) or Leather Armor (50%)
-Iron Brigandine Cuirass (30%) or Nothing (70%)
+Iron Brigandine Cuirass (50%) or Nothing (50%)
 
 ==Wild Coalition
 
@@ -361,6 +359,7 @@ Axe III
 
 Greataxe
 Bronze Helmet (50%) or Nothing (50%)
+Linen Hauberk
 Bronze Breastplate
 Linen Tailguard (50%)
 
@@ -369,7 +368,8 @@ Axe IV
 
 Greataxe
 Bronze Full Helmet (30%) or Bronze Helmet (70%)
-Bronze Plate Mail Armor
+Padded Hauberk
+Bronze Plate Mail Armor (70%) or Bronze Plate Mail Cuirass (30%)
 Linen Tailguard
 
 =Gnoll Hunters (Javelins)
@@ -381,7 +381,7 @@ Stealth II
 5 Javelins
 Hatchet (70%) or Battle Axe (30%)
 Small Shield (50%) or Buckler (50%)
-Hide Cuirass (30%) or Leather Cuirass (20%) or Nothing (50%)
+Leather Cuirass (50%) or Nothing (50%)
 
 =Gnoll Hunters (Bow)
 Archery II
@@ -391,7 +391,7 @@ Stealth II
 
 Shortbow, 30 Arrows
 Hatchet (70%) or Battle Axe (30%)
-Hide Cuirass (30%) or Leather Cuirass (20%) or Nothing (50%)
+Leather Cuirass (50%) or Nothing (50%)
 
 =Gnoll Warrior
 Axe/Mace II
@@ -401,7 +401,7 @@ Evade
 
 Battle Axe (70%) or Mace (30%)
 Medium Shield (70%) or Small Shield (30%)
-Hide Cuirass (30%) or Leather Cuirass (30%) or Iron Scale Cuirass (20%) or Nothing (20%)
+Leather Cuirass (50%) or Bronze Scale Cuirass (20%) or Nothing (20%)
 
 =Gnoll Chieftain's Sons
 Axe IV
@@ -410,4 +410,4 @@ Evade
 
 Greataxe
 Leather Armor (50%) or Nothing (50%)
-Iron Mail Cuirass (30%) or Iron Scale Cuirass (40%)
+Bronze Scale Hauberk (30%) or Bronze Scale Cuirass (40%)
