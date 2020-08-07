@@ -1,9 +1,9 @@
 
-from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable
+from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
 
 from core.util import IntClass
 from core.dice import DicePool
-from core.melee.critical import CriticalEffect
+from core.critical import CriticalEffect
 
 if TYPE_CHECKING:
     from core.combat import DamageType
@@ -25,6 +25,8 @@ class MeleeRange(IntClass):
         if self < len(self.__NAMES):
             return self.__NAMES[self]
         return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
+
+    CLOSE = __new__(0)
 
 class AttackForce(IntClass):
     __NAMES = [
@@ -59,6 +61,7 @@ class MeleeAttack:
                  force: AttackForce,
                  damtype: 'DamageType',
                  damage: DicePool,
+                 armor_pen: Optional[DicePool] = None,
                  criticals: Iterable[Type[CriticalEffect]] = None):
         self.name = name
         self.max_reach = max(reach)
@@ -66,25 +69,5 @@ class MeleeAttack:
         self.force = force
         self.damtype = damtype
         self.damage = damage
+        self.armor_pen = armor_pen
         self.criticals = list(criticals) if criticals is not None else []
-
-## Define certain values for convenience
-
-MeleeRange.CLOSE   = MeleeRange(0)
-MeleeRange.SHORT   = MeleeRange(1)
-MeleeRange.MEDIUM  = MeleeRange(2)
-MeleeRange.LONG    = MeleeRange(3)
-MeleeRange.VLONG   = MeleeRange(4)
-MeleeRange.EXTREME = MeleeRange(5)
-
-AttackForce.NONE   = AttackForce(0)
-AttackForce.TINY   = AttackForce(1)
-AttackForce.SMALL  = AttackForce(2)
-AttackForce.MEDIUM = AttackForce(3)
-AttackForce.LARGE  = AttackForce(4)
-AttackForce.OVERWM = AttackForce(5)
-
-
-
-
-

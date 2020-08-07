@@ -6,9 +6,9 @@ if TYPE_CHECKING:
     from core.creature import Creature
 
 class DamageType(Enum):
-    slashing = 'slashing'
-    puncture = 'puncture'
-    bludgeon = 'bludgeon'
+    Slashing = 'slashing'
+    Puncture = 'puncture'
+    Bludgeon = 'bludgeon'
 
 class MeleeCombat:
     combatants: Tuple['Creature', 'Creature']

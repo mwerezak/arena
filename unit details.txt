@@ -177,7 +177,7 @@ Shields I
 Evade
 
 Longbow, 30 Arrows
-Short Sword (50%) or Long Sword (50%)
+Shortsword (50%) or Broadsword (50%)
 Buckler (50%) or Small Shield (20%) or Nothing (30%)
 Steel Helmet (50%) or Leather Helmet (30%) or Leather Cap (20%)
 Leather Armor Suit (50%) or Padded Gambeson (50%)
@@ -189,7 +189,8 @@ Swords I
 Shields I
 Riding I
 
-Longsword, Medium Shield
+Longsword (50%) or Broadsword (50%)
+Medium Shield
 Padded Gambeson
 Steel Chain Shirt (Leather Brigandine Fauld), Leather Helmet (30%)
     or Steel Chain Shirt (Leather Brigandine Fauld), Steel Helmet (50%)
@@ -204,7 +205,9 @@ Swords II
 Shields I
 Riding II
 
-Lance, Longsword, Medium Shield
+Lance,
+Longsword (50%) or Broadsword (30%) or Warhammer (20%)
+Medium Shield
 Full Steel Helmet
 Steel Chainmail Armor Suit
 Steel Full Plate Cuirass (20%) or Steel Plate Mail Cuirass (50%) or Nothing (30%)
@@ -359,6 +362,7 @@ Axe III
 Greataxe
 Bronze Helmet (50%) or Nothing (50%)
 Bronze Breastplate
+Linen Tailguard (50%)
 
 =Minotaur Champion
 Axe IV
@@ -366,6 +370,7 @@ Axe IV
 Greataxe
 Bronze Full Helmet (30%) or Bronze Helmet (70%)
 Bronze Plate Mail Armor
+Linen Tailguard
 
 =Gnoll Hunters (Javelins)
 Axe I
