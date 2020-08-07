@@ -1,8 +1,8 @@
 from core.weapon import Weapon
 from core.melee.attack import MeleeAttack, DamageType
-from core.creature import SizeCategory
+from core.constants import SizeCategory
 from core.dice import dice
-from defines.constants import *
+from core.constants import *
 
 ## Blades
 
@@ -45,7 +45,7 @@ WEAPON_SCIMITAR = Weapon(
 WEAPON_FALCHION = Weapon(
     name = 'Falchion', size = SizeCategory.Medium, encumbrance = 3, cost = 175,
     melee = [
-        MeleeAttack('Slash',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8) + dice(1)),
+        MeleeAttack('Hack',           (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8) + dice(1)),
         MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
 )
@@ -151,34 +151,34 @@ WEAPON_HALBERD = Weapon(
 WEAPON_CLUB = Weapon(
     name = 'Club', size = SizeCategory.Small, encumbrance = 1, cost = 5,
     melee = [
-        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,6), dice(0)),
+        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,6), -dice(1,3)),
     ]
 )
 
 WEAPON_GREATCLUB = Weapon(
-    name = 'Great Club', size = SizeCategory.Large, encumbrance = 3, cost = 5,
+    name = 'Great Club', size = SizeCategory.Large, encumbrance = 3, cost = 50,
     melee = [
-        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_LARGE, DamageType.Bludgeon, dice(1,10), dice(1,3)),
+        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_LARGE, DamageType.Bludgeon, dice(1,10), dice(1)),
     ]
 )
 
 WEAPON_MACE = Weapon(
-    name = 'Mace', size = SizeCategory.Small, encumbrance = 2, cost = 100,
+    name = 'Mace', size = SizeCategory.Small, encumbrance = 1, cost = 100,
     melee = [
-        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,6), dice(1,3)),
+        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,6), dice(0)),
     ]
 )
 
 WEAPON_WARHAMMER = Weapon(
-    name = 'Warhammer', size = SizeCategory.Medium, encumbrance = 3, cost = 175,
+    name = 'Warhammer', size = SizeCategory.Medium, encumbrance = 3, cost = 180,
     melee = [
-        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,8), dice(1,4)),
+        MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,8), dice(1)),
     ]
 )
 
 WEAPON_GREAT_HAMMER = Weapon(
-    name = 'Great Hammer', size = SizeCategory.Large, encumbrance = 4, cost = 250,
+    name = 'Great Hammer', size = SizeCategory.Large, encumbrance = 5, cost = 250,
     melee = [
-        MeleeAttack('Strike', (REACH_LONG, REACH_MEDIUM), FORCE_LARGE, DamageType.Bludgeon, dice(1,10), dice(1,6)),
+        MeleeAttack('Strike', (REACH_LONG, REACH_MEDIUM), FORCE_LARGE, DamageType.Bludgeon, dice(1,10), dice(1,3)),
     ]
 )

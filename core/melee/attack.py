@@ -1,50 +1,13 @@
-
+from copy import copy as shallow_copy
 from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
 
-from core.util import IntClass
+from core.constants import MeleeRange, AttackForce
 from core.dice import DicePool
 from core.critical import CriticalEffect
 
 if TYPE_CHECKING:
     from core.combat import DamageType
 
-class MeleeRange(IntClass):
-    __NAMES = [
-        'close',
-        'short',
-        'medium',
-        'long',
-        'very long',
-        'extreme',
-    ]
-
-    def __new__(cls, value: int):
-        return super().__new__(cls, max(value, 0))
-
-    def __str__(self) -> str:
-        if self < len(self.__NAMES):
-            return self.__NAMES[self]
-        return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
-
-    CLOSE = __new__(0)
-
-class AttackForce(IntClass):
-    __NAMES = [
-        'none',
-        'tiny',
-        'small',
-        'medium',
-        'large',
-        'overwhelming',
-    ]
-
-    def __new__(cls, value: int):
-        return super().__new__(cls, max(value, 0))
-
-    def __str__(self) -> str:
-        if self < len(self.__NAMES):
-            return self.__NAMES[self]
-        return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
 
 ## MeleeAttacks
 
@@ -70,4 +33,7 @@ class MeleeAttack:
         self.damtype = damtype
         self.damage = damage
         self.armor_pen = armor_pen
-        self.criticals = list(criticals) if criticals is not None else []
+        self.criticals = tuple(criticals) if criticals is not None else ()
+
+    def clone(self) -> 'MeleeAttack':
+        return shallow_copy(self)

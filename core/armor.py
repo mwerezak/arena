@@ -3,7 +3,8 @@ from collections import defaultdict
 from typing import NamedTuple, Mapping, Collection, Tuple, Iterable
 
 from core.equipment import Equipment
-from core.creature import CreatureTemplate, CreatureSize, SizeCategory
+from core.creature import CreatureTemplate
+from core.constants import CreatureSize, SizeCategory
 from core.bodyplan import BodyElement
 
 ## Armor
@@ -69,7 +70,8 @@ class Armor:
         self.template = template
         self.creature = fitted_for
 
-        size_mult = float(self.creature.size)/SizeCategory.Medium.value
+        # noinspection PyTypeChecker
+        size_mult = float(self.creature.size)/SizeCategory.Medium.to_size()
         self.cost = sum(
             self.template.base_cost * size_mult * bp.exposure/self.BASE_AREA for bp in self.__get_bodyparts()
         )

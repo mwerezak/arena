@@ -2,7 +2,7 @@
 from enum import Enum, IntFlag
 from copy import copy as shallow_copy
 from numbers import Number
-from typing import Iterable, Any, Union
+from typing import Iterable, Any, Union, Collection
 
 class BodyElementType(Enum):
     HEAD = "head"
@@ -39,7 +39,7 @@ class BodyElement:
         self.name = name or id_tag
         self.placement = placement
         self.exposure = exposure
-        self.specials = tuple(specials) if specials is not None else ()
+        self.specials: Collection[BodyElementSpecial] = tuple(specials) if specials is not None else ()
 
     def clone(self) -> 'BodyElement':
         return shallow_copy(self)

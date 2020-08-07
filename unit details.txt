@@ -48,7 +48,7 @@ Nothing (30%) or Leather Cuirass (40%) or Steel Brigandine Cuirass (30%)
 =Halberdiers
 Medium-tier heavy infantry. Good quality equipment.
 
-Polearms III
+Polearms II
 
 Halberd
 Steel Helmet
@@ -58,7 +58,7 @@ Steel Plate Mail Armor (30%) or Steel Half-Plate Armor (50%) or Steel Breastplat
 =Prince's Guards
 High-tier heavy infantry.
 
-Polearms V
+Polearms IV
 
 Halberd
 Padded Gambeson
@@ -205,7 +205,7 @@ Shields I
 Riding II
 
 Lance,
-Longsword (50%) or Broadsword (30%) or Warhammer (20%)
+Longsword (40%) or Broadsword (30%) or Warhammer (30%)
 Medium Shield
 Plate Mail Suit, Steel Close Helmet (50%) or Plate Mail Cuirass, Chain Mail Suit, Steel Great Helmet (50%)
 
@@ -220,7 +220,7 @@ Shields II
 Riding III
 
 Lance, Medium Shield
-Longsword (70%), Warhammer (30%)
+Longsword (50%), Warhammer (50%)
 Full Steel Helmet
 Steel Full Plate Suit (50%) or Steel Full Plate Cuirass, Plate Mail Suit (50%)
 War Horse
@@ -261,6 +261,7 @@ Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
 =Goblin Enforcers
 Sword III
 Evade
+Finesse
 
 Short Sword, Short Sword (50%) or Dagger, Dagger (50%)
 Hide Armor (50%) or Nothing (50%)
@@ -312,25 +313,42 @@ Iron Brigandine Cuirass (50%) or Nothing (50%)
 =Satyr Braves
 Polearm I
 Shield I
-Evade
 Stealth I
+Evade
+Finesse
 
 Spear (50%) or Halfspear (50%)
 Medium Shield (50%) or Small Shield (50%)
+Linen Cuirass (50%) or Nothing (50%)
 
 =Satyr Archers
 Archery II
 Sword I
-Evade
 Stealth I
+Evade
+Finesse
 
 Shortbow, 30 Arrows
-Short Sword (50%) or Dagger (50%)
+Shortsword (50%) or Dagger (50%)
+
+=Satyr Warriors
+Polearm II
+Sword II
+Shield II
+Evade
+Finesse
+
+Longspear (50%) or Spear (50%)
+Shortsword
+Medium Shield
+Linen Armor
+Bronze Scale Cuirass (70%) or Nothing (30%)
 
 =Satyr Wardens
 Sword III
 Shield III
 Evade
+Finesse
 
 Scimitar, Medium Shield
 Linen Armor
@@ -364,9 +382,9 @@ Bronze Breastplate
 Linen Tailguard (50%)
 
 =Minotaur Champion
-Axe IV
+Axe/Polearm V
 
-Greataxe
+Greataxe (50%) or Halberd (50%)
 Bronze Full Helmet (30%) or Bronze Helmet (70%)
 Padded Hauberk
 Bronze Plate Mail Armor (70%) or Bronze Plate Mail Cuirass (30%)

@@ -2,8 +2,9 @@ from copy import copy as shallow_copy
 from typing import Iterable, Optional, NamedTuple
 
 from core.equipment import Equipment
-from core.melee.attack import MeleeAttack, AttackForce
-from core.creature import SizeCategory
+from core.melee.attack import MeleeAttack
+from core.constants import AttackForce, SizeCategory
+
 
 class Weapon(Equipment):
     def __init__(self,
