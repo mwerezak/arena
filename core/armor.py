@@ -39,90 +39,51 @@ class ArmorType(NamedTuple):
     fit_thresh: float  # how closely the wearer must match the fit in order to equip
     allowed_materials: Collection[MaterialType]
 
-class ArmorComponent:
-    COVERAGE_AREA = 0.15
-
-    id_tag: str
-    bodypart: BodyElement
-    size: CreatureSize
-    type: ArmorType
-    material: ArmorMaterial
-    coverage: float
-
-    def __init__(self, id_tag:str, creature: CreatureTemplate, armor_type: ArmorType, material: ArmorMaterial):
-        self.id_tag = id_tag
-        self.bodypart = creature.bodyplan.get_bodypart(id_tag)
-        self.size = creature.size
-        self.type = armor_type
+class ArmorTemplate:
+    def __init__(self, name: str, armor_type: ArmorType, material: ArmorMaterial, coverage: Iterable[str]):
+        self.name = name
+        self.armor_type = armor_type
         self.material = material
+        self.coverage = list(coverage)
+
+    def get_coverage(self) -> Iterable[str]:
+        return iter(self.coverage)
 
     @property
-    def armor_value(self) -> int:
-        return self.type.armor_value
+    def base_cost(self) -> float:
+        return self.armor_type.base_cost * self.material.cost_mult
 
     @property
-    def encumbrance(self) -> float:
-        return self.type.base_enc * self.material.enc_mult * self.coverage/self.COVERAGE_AREA
+    def base_encumbrance(self) -> float:
+        return self.armor_type.base_enc * self.material.enc_mult
 
     @property
-    def cost(self) -> float:
-        size_mult = float(self.size)/SizeCategory.Medium.value
-        return self.type.base_cost * self.material.cost_mult * size_mult * self.coverage/self.COVERAGE_AREA
+    def armor_value(self) -> float:
+        return self.armor_type.armor_value
 
-    @property
-    def coverage(self) -> float:
-        return self.bodypart.exposure
+class Armor:
+    BASE_AREA = 0.15
 
-class Armor(Equipment):
-    creature: CreatureTemplate  # the type of creature this armor is fitted for
-    layout: Mapping[str, ArmorComponent]
+    def __init__(self, template: ArmorTemplate, fitted_for: CreatureTemplate, name: str = None):
+        self.name = name or template.name
+        self.template = template
+        self.creature = fitted_for
 
-    def __init__(self, name: str, creature: CreatureTemplate, components: Iterable[Tuple[str, ArmorType, ArmorMaterial]]):
-        self.creature = creature
-        self.layout = {
-            id_tag : ArmorComponent(id_tag, creature, armor_type, material)
-            for id_tag, armor_type, material in components
-            if material.type in armor_type.allowed_materials
+        size_mult = float(self.creature.size)/SizeCategory.Medium.value
+        self.cost = sum(
+            self.template.base_cost * size_mult * bp.exposure/self.BASE_AREA for bp in self.__get_bodyparts()
+        )
+
+        self.encumbrance = {
+            bp.id_tag : self.template.base_encumbrance * bp.exposure/self.BASE_AREA for bp in self.__get_bodyparts()
         }
-        self.name = self.__create_name(name)
 
-    def __str__(self) -> str:
-        return self.name
+        self.armor_value = {
+            bp.id_tag : self.template.armor_value for bp in self.__get_bodyparts()
+        }
 
-    def __create_name(self, base_name: str) -> str:
-        total_coverage = self.get_coverage()
-        composition = defaultdict(float)
-        for component in self.get_components():
-            composition[component.material] += component.coverage/total_coverage
-        top = list(sorted(composition.keys(), key=lambda m: composition[m], reverse=True))
+    def __get_bodyparts(self) -> Iterable[BodyElement]:
+        for id_tag in self.template.get_coverage():
+            if id_tag in self.creature.bodyplan:
+                yield self.creature.bodyplan.get_bodypart(id_tag)
 
-        if len(top) >= 2:
-            pri, sec = top[:2]
-            if composition[sec] >= composition[pri] * 0.5:
-                materials = [ pri, sec ]
-            else:
-                materials = [ pri ]
-        else:
-            materials = [ top[0] ] if len(top) > 0 else []
-
-        return ' and '.join(material.name for material in materials) + ' ' + base_name
-
-    def get_components(self) -> Iterable[ArmorComponent]:
-        return iter(self.layout.values())
-
-    def get_bodypart_ids(self) -> Iterable[str]:
-        return iter(self.layout.keys())
-
-    @property
-    def encumbrance(self) -> float:
-        return sum(component.encumbrance for component in self.get_components())
-
-    @property
-    def cost(self) -> float:
-        return sum(component.cost for component in self.get_components())
-
-    def get_armor_values(self) -> Mapping[str, int]:
-        return { id_tag : component.armor_value for id_tag, component in self.layout.items() }
-
-    def get_coverage(self) -> float:
-        return sum(component.coverage for component in self.get_components())

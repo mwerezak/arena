@@ -31,3 +31,5 @@ class CriticalEffect:
 # QuickGetUpCritical - (defensive) get up from being prone w/o spending AP
 # GripTargetCritical - (offensive) grapple target for free - only for certain natural weapons
 # EntangleCritical - (both) use an entangling weapon
+
+# ImpaleCritical - (offensive) certain ranged attacks can lodge projectiles in the target

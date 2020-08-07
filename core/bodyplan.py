@@ -2,7 +2,7 @@
 from enum import Enum, IntFlag
 from copy import copy as shallow_copy
 from numbers import Number
-from typing import Iterable, Any
+from typing import Iterable, Any, Union
 
 class BodyElementType(Enum):
     HEAD = "head"
@@ -53,6 +53,11 @@ class Morphology:
 
     def __iter__(self) -> Iterable[BodyElement]:
         return iter(self.elements.values())
+
+    def __contains__(self, item: Union[BodyElement, str]):
+        if isinstance(item, str):
+            return item in self.elements.keys()
+        return item in self.elements.values()
 
     def get_bodypart_ids(self) -> Iterable[str]:
         return iter(self.elements.keys())
