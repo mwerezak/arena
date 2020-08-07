@@ -48,6 +48,11 @@ SPECIES_HUMAN = (
     CreatureTemplate('Human', BODYPLAN_HUMANLIKE)
 )
 
+SPECIES_GOBLIN = (
+    CreatureTemplate('Goblin', BODYPLAN_HUMANLIKE)
+    .attributes(DEX=+1, CON=+1, SIZ=-4, POW=-1, CHA=-2)
+)
+
 BODYPLAN_GNOLL = (
     Morphology(HUMANOID)
     .select('*')
@@ -65,7 +70,7 @@ BODYPLAN_GNOLL = (
 )
 SPECIES_GNOLL = (
     CreatureTemplate('Gnoll', BODYPLAN_GNOLL)
-        .attributes(STR=+2, CON=+1, SIZ=+1, INT=-1, CHA=-1)
+    .attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, CHA=-1)
 )
 
 BODYPLAN_SATYR = (
@@ -86,7 +91,28 @@ BODYPLAN_SATYR = (
 
 SPECIES_SATYR = (
     CreatureTemplate('Satyr', BODYPLAN_SATYR)
-        .attributes(DEX=+1, CON=+1, INT=+1, POW=+1, CHA=+1)
+    .attributes(DEX=+1, CON=+1, INT=+1, POW=+1, CHA=+1)
+)
+
+BODYPLAN_MINOTAUR = (
+    Morphology(HUMANOID)
+    .select('*')
+        .set(armor = 1) #thick hide
+    .select('tail')
+        .set(size = 2)
+    .select('l_arm', 'r_arm')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_PUNCH, force=-1))
+    .select('l_leg', 'r_leg')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_HOOF_BIPED))
+    .select('head')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_HORN))
+        .add_unarmed_attack(NaturalWeapon(UNARMED_BITE_CRUSH))
+    .finalize()
+)
+
+SPECIES_MINOTAUR = (
+    CreatureTemplate('Minotaur', BODYPLAN_MINOTAUR)
+    .attributes(STR=+4, CON=+3, SIZ=+6)
 )
 
 if __name__ == '__main__':
@@ -97,7 +123,7 @@ if __name__ == '__main__':
         print(f'reach: {attack.max_reach} - {attack.min_reach}')
         print(f'damage: {attack.damage}' + (f'/{attack.armor_pen}*' if attack.armor_pen is not None else ''))
 
-    for id_tag, attack in SPECIES_GNOLL.get_unarmed_attacks():
+    for id_tag, attack in SPECIES_MINOTAUR.get_unarmed_attacks():
         print_attack(attack)
         print(f'location: {id_tag}')
         print()

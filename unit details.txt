@@ -49,6 +49,7 @@ Nothing (30%) or Leather Cuirass (40%) or Steel Brigandine Cuirass (30%)
 Medium-tier heavy infantry. Good quality equipment.
 
 Polearms II
+Endurance II
 
 Halberd
 Steel Helmet
@@ -59,6 +60,7 @@ Steel Plate Mail Armor (30%) or Steel Half-Plate Armor (50%) or Steel Breastplat
 High-tier heavy infantry.
 
 Polearms IV
+Endurance III
 
 Halberd
 Padded Gambeson
@@ -68,6 +70,7 @@ Steel Full Plate Armor, Steel Armet (50%) or Steel Plate Mail Armor, Steel Close
 
 Swords II
 Shield II
+Endurance I
 Evade
 
 Sabre-and-buckler equipped light infantry. Highly skilled and motivated.
@@ -115,6 +118,7 @@ Lances II
 Swords I
 Shields I
 Riding II
+Endurance I
 
 Lance, Long Sword, Medium Shield
 Padded Gambeson
@@ -159,6 +163,7 @@ Medium-tier infantry.
 Polearms I
 Shields I
 Swords/Maces I
+Endurance I
 
 Longspear
 Large Shield (70%) or Medium Shield (30%)
@@ -173,6 +178,7 @@ High-tier archers. Experienced, decent equipment, effective at range or in melee
 Archery II
 Swords II
 Shields I
+Endurance II
 Evade
 
 Longbow, 30 Arrows
@@ -203,6 +209,7 @@ Lances II
 Swords II
 Shields I
 Riding II
+Endurance I
 
 Lance,
 Longsword (40%) or Broadsword (30%) or Warhammer (30%)
@@ -218,6 +225,7 @@ Lances III
 Swords III
 Shields II
 Riding III
+Endurance II
 
 Lance, Medium Shield
 Longsword (50%), Warhammer (50%)
@@ -261,6 +269,7 @@ Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
 =Goblin Enforcers
 Sword III
 Evade
+Endurance I
 Finesse
 
 Short Sword, Short Sword (50%) or Dagger, Dagger (50%)
@@ -272,6 +281,7 @@ Leather Cuirass (50%) or Iron Brigandine Cuirass (30%) or Nothing (20%)
 Polearm II
 Sword I
 Riding II
+Endurance I
 
 Longspear
 Short Sword (50%) or Dagger (50%)
@@ -282,6 +292,7 @@ Warg
 
 =Ogre Brute
 Mace III
+Endurance III
 
 Greatclub
 Hide Armor (30%) or Hide Cuirass (30%) or Nothing (40%)
@@ -289,6 +300,7 @@ Hide Armor (30%) or Hide Cuirass (30%) or Nothing (40%)
 =Orc Barbarian
 Axe/Sword/Mace II
 Shield II
+Endurance II
 
 Battle Axe (40%) or Falchion (30%) or Mace (30%)
 Small Shield (50%) or Medium Shield (50%)
@@ -300,6 +312,7 @@ Iron Brigandine Hauberk (20%) or Iron Brigandine Cuirass (50%) or Nothing (30%)
 Axe/Sword/Mace II
 Shield I
 Archery I
+Endurance II
 
 Short Bow, 30 Arrows
 Battle Axe (40%) or Falchion (30%) or Mace (30%)
@@ -314,6 +327,7 @@ Iron Brigandine Cuirass (50%) or Nothing (50%)
 Polearm I
 Shield I
 Stealth I
+Endurance I
 Evade
 Finesse
 
@@ -325,6 +339,7 @@ Linen Cuirass (50%) or Nothing (50%)
 Archery II
 Sword I
 Stealth I
+Endurance I
 Evade
 Finesse
 
@@ -335,6 +350,7 @@ Shortsword (50%) or Dagger (50%)
 Polearm II
 Sword II
 Shield II
+Endurance II
 Evade
 Finesse
 
@@ -347,6 +363,7 @@ Bronze Scale Cuirass (70%) or Nothing (30%)
 =Satyr Wardens
 Sword III
 Shield III
+Endurance III
 Evade
 Finesse
 
@@ -362,18 +379,21 @@ Bronze Scale Hauberk (70%) or Bronze Breastplate (30%)
 Polearm II
 Shield II
 Riding II
+Endurance III
 
 Longspear, Medium Shield
 Wild Horse
 
 =Minotaur Militia
 Axe I
+Endurance I
 
 Battle Axe
 Padded Hauberk
 
 =Minotaur Warrior
 Axe III
+Endurance III
 
 Greataxe
 Bronze Helmet (50%) or Nothing (50%)
@@ -383,6 +403,7 @@ Linen Tailguard (50%)
 
 =Minotaur Champion
 Axe/Polearm V
+Endurance IV
 
 Greataxe (50%) or Halberd (50%)
 Bronze Full Helmet (30%) or Bronze Helmet (70%)
@@ -395,6 +416,7 @@ Axe I
 Javelin I
 Unarmed II
 Stealth II
+Endurance II
 
 5 Javelins
 Hatchet (70%) or Battle Axe (30%)
@@ -406,6 +428,7 @@ Archery II
 Axe I
 Unarmed I
 Stealth II
+Endurance II
 
 Shortbow, 30 Arrows
 Hatchet (70%) or Battle Axe (30%)
@@ -415,6 +438,7 @@ Leather Cuirass (50%) or Nothing (50%)
 Axe/Mace II
 Shield I
 Unarmed II
+Endurance II
 Evade
 
 Battle Axe (70%) or Mace (30%)
@@ -423,7 +447,8 @@ Leather Cuirass (50%) or Bronze Scale Cuirass (20%) or Nothing (20%)
 
 =Gnoll Chieftain's Sons
 Axe IV
-Unarmed II
+Unarmed III
+Endurance III
 Evade
 
 Greataxe
