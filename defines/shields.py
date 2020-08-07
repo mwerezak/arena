@@ -1,5 +1,6 @@
 from core.equipment.weapon import Weapon, ShieldBlock
-from core.melee.attack import MeleeAttack, DamageType
+from core.combat.attack import MeleeAttack
+from core.combat.damage import DamageType
 from core.constants import SizeCategory
 from core.dice import dice
 from core.constants import *

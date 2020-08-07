@@ -1,10 +1,8 @@
 from enum import Enum
-from collections import defaultdict
-from typing import NamedTuple, Mapping, Collection, Tuple, Iterable
+from typing import NamedTuple, Collection, Iterable
 
-from core.equipment import Equipment
 from core.creature import CreatureTemplate
-from core.constants import CreatureSize, SizeCategory
+from core.constants import SizeCategory
 from core.bodyplan import BodyElement
 
 ## Armor

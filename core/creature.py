@@ -3,8 +3,7 @@ from typing import Union, Mapping, MutableMapping, Tuple, Type, Optional, Iterab
 
 from core.constants import CreatureSize
 from core.bodyplan import Morphology
-from core.combat import MeleeCombat
-from core.melee.attack import MeleeAttack
+from core.combat.attack import MeleeAttack
 from core.traits import CreatureTrait
 
 class PrimaryAttribute(Enum):
@@ -18,7 +17,7 @@ class PrimaryAttribute(Enum):
 class Creature:
     health: float
     template: 'CreatureTemplate'
-    melee_combat: MutableMapping['Creature', 'MeleeCombat']
+    # melee_combat: MutableMapping['Creature', 'MeleeCombat']
     # get_engage_range() -> MeleeRange
 
     # equipment

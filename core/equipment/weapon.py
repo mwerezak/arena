@@ -2,7 +2,7 @@ from copy import copy as shallow_copy
 from typing import Iterable, Optional, NamedTuple
 
 from core.equipment import Equipment
-from core.melee.attack import MeleeAttack
+from core.combat.attack import MeleeAttack
 from core.constants import AttackForce, SizeCategory
 
 

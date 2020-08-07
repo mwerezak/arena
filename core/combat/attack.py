@@ -6,8 +6,7 @@ from core.dice import DicePool
 from core.combat.criticals import CriticalEffect
 
 if TYPE_CHECKING:
-    from core.combat import DamageType
-
+    from core.combat.damage import DamageType
 
 ## MeleeAttacks
 

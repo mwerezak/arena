@@ -1,5 +1,6 @@
 from core.equipment.weapon import Weapon
-from core.melee.attack import MeleeAttack, DamageType
+from core.combat.attack import MeleeAttack
+from core.combat.damage import DamageType
 from core.constants import SizeCategory
 from core.dice import dice
 from core.constants import *
@@ -106,7 +107,7 @@ WEAPON_LONGSPEAR = Weapon(
 )
 
 WEAPON_HALFSPEAR = Weapon(
-    name = 'Halfspear', size = SizeCategory.Small, encumbrance = 1, cost = 20,
+    name = 'Halfspear', size = SizeCategory.Tiny, encumbrance = 1, cost = 20,
     melee = [
         MeleeAttack('Stab',  (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Puncture, dice(1,6)),
     ]
