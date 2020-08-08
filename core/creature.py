@@ -4,24 +4,27 @@ from core.constants import PrimaryAttribute, SizeCategory
 from core.bodyplan import Morphology
 from core.combat.attack import MeleeAttack
 from core.equipment import Equipment
-from core.loadout import LoadoutHint
+from core.loadout import Loadout, LoadoutHint
 from core.traits import CreatureTrait
 
 class CreatureTemplate:
-    name: str
+    def __init__(self,
+                 name: str = None,
+                 bodyplan: Morphology = None,
+                 loadout: Loadout = None,
+                 *, template: 'CreatureTemplate' = None):
 
-    def __init__(self, name: str = None, bodyplan: Morphology = None, *, template: 'CreatureTemplate' = None):
         if template is not None:
             self.name = template.name
             self.bodyplan = Morphology(template.bodyplan)
             self.attributes = dict(template.attributes)
             self.traits = dict(template.traits)
-            self.loadouts = list(template.loadouts)
+            self.loadout = template.loadout
         else:
             self.bodyplan = bodyplan
             self.attributes: MutableMapping[PrimaryAttribute, int] = {attr : 0 for attr in PrimaryAttribute}
             self.traits: MutableMapping[Type[CreatureTrait], CreatureTrait] = {}
-            self.loadouts = []
+            self.loadout = loadout
         if name is not None:
             self.name = name
 
@@ -56,6 +59,10 @@ class CreatureTemplate:
 
     def remove_trait(self, key: Any) -> 'CreatureTemplate':
         del self.traits[key]
+        return self
+
+    def set_loadout(self, loadout: Loadout) -> 'CreatureTemplate':
+        self.loadout = loadout
         return self
 
     def get_attribute(self, attr: Union[str, PrimaryAttribute]) -> int:
@@ -97,7 +104,8 @@ class Creature:
         self.health = template.max_health
         self.traits = { trait.key : trait for trait in template.get_traits() }
         self.equipment = []
-        # apply loadout
+
+        template.loadout.apply_loadout(self)
 
     def add_trait(self, trait: CreatureTrait) -> None:
         self.traits[trait.key] = trait

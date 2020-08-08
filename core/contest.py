@@ -8,11 +8,13 @@ from enum import Enum
 from typing import Iterable, Sequence
 from core.constants import PrimaryAttribute
 
-
 class Contest:
     def __init__(self, name: str, key_attr: Iterable[str]):
         self.name = name
         self.key_attr: Sequence[PrimaryAttribute] = tuple(PrimaryAttribute[s] for s in key_attr)
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__}: {self.name}>'
 
 ## Standard Contest Types
 
@@ -38,7 +40,6 @@ class CombatSkillClass(Enum):
     Shield   = 'Shields'
     Lance    = 'Lances'
     Sling    = 'Slings'
-
 
     @property
     def name(self) -> str:
@@ -82,13 +83,16 @@ class SkillLevel(Enum):
 
     @property
     def contest_mod(self) -> int:
-        return self.value
+        return self.value - 1
 
     @property
     def critical_mod(self) -> int:
-        return self.value
+        return self.value - 1
 
     def __str__(self) -> str:
         return _LEVEL_NUMERALS[self.value - 1]
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.value})'
 
 

@@ -2,8 +2,8 @@ from core.unarmed import NaturalWeaponTemplate, NaturalWeapon
 from core.combat.damage import DamageType
 from core.bodyplan import Morphology
 from core.creature import CreatureTemplate
-from core.constants import CreatureSize
 from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL
+from defines.traits import *
 
 ## Natural Weapon Templates
 
@@ -76,6 +76,9 @@ BODYPLAN_GNOLL = (
 SPECIES_GNOLL = (
     CreatureTemplate('Gnoll', BODYPLAN_GNOLL)
     .set_attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, CHA=-1)
+    .add_trait(
+        SkillTrait(SKILL_UNARMED, SkillLevel(1))
+    )
 )
 
 BODYPLAN_SATYR = (
@@ -97,6 +100,7 @@ BODYPLAN_SATYR = (
 SPECIES_SATYR = (
     CreatureTemplate('Satyr', BODYPLAN_SATYR)
     .set_attributes(DEX=+1, CON=+1, INT=+1, POW=+1, CHA=+1)
+    .add_trait(EvadeTrait, FinesseTrait)
 )
 
 BODYPLAN_MINOTAUR = (

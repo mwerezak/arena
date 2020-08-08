@@ -3,7 +3,7 @@ from typing import NamedTuple, Collection, Iterable
 
 from core.creature import CreatureTemplate
 from core.constants import SizeCategory
-from core.bodyplan import BodyElement
+from core.equipment import Equipment
 
 ## Armor
 
@@ -60,11 +60,14 @@ class ArmorTemplate:
     def armor_value(self) -> float:
         return self.armor_type.armor_value
 
-class Armor:
+    def get_name(self) -> str:
+        return self.material.name + ' ' + self.name
+
+class Armor(Equipment):
     BASE_AREA = 0.15
 
     def __init__(self, template: ArmorTemplate, fitted_for: CreatureTemplate, name: str = None):
-        self.name = name or template.name
+        self.name = name or template.get_name()
         self.template = template
         self.creature = fitted_for
 

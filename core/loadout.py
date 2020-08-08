@@ -10,9 +10,11 @@ Loadouts currently apply equipment and traits to a creature.
 
 import random
 from enum import Enum
-from typing import Iterable, NamedTuple, Tuple, Optional, Collection
+from typing import TYPE_CHECKING, Iterable, Iterator, NamedTuple, Tuple, Optional, Collection, List, Union, Any
 from core.equipment import Equipment
-from core.creature import Creature
+
+if TYPE_CHECKING:
+    from core.creature import Creature
 
 class LoadoutHint(Enum):
     PrimaryWeapon = 'primary_weapon'
@@ -23,30 +25,45 @@ class LoadoutItem(NamedTuple):
     equipment: Equipment
     hints: Collection[LoadoutHint] = ()
 
-LoadoutOption = Collection[LoadoutItem]
-LoadoutSet = Collection[Tuple[float, LoadoutOption]]
+class LoadoutGroup:
+    """Used to ensure an iterable of LoadoutItems"""
+    def __init__(self, *contents: Union[Equipment, LoadoutItem]):
+        self.contents: List[LoadoutItem] = []
+        for item in contents:
+            if not isinstance(item, LoadoutItem):
+                item = LoadoutItem(item)
+            self.contents.append(item)
 
-class Loadout:
-    def __init__(self, loadout: Iterable[LoadoutSet]):
-        self.loadout = list(loadout)
+    def __iter__(self) -> Iterator[LoadoutItem]:
+        return iter(self.contents)
 
-    def __iter__(self) -> Iterable[LoadoutSet]:
-        return iter(self.loadout)
+class LoadoutChoice:
+    """Picks from a collection of LoadoutItems-compatible collections"""
+    def __init__(self, options: Iterable[Tuple[float, Any]]):
+        self.options: List[Tuple[float, LoadoutGroup]] = []
+        for weight, option in options:
+            if not isinstance(option, LoadoutGroup):
+                if isinstance(option, Iterable):
+                    option = LoadoutGroup(*option)
+                else:
+                    option = LoadoutGroup(option)
+            self.options.append( (weight, option) )
 
-    def apply_loadout(self, creature: Creature) -> None:
-        for loadout_set in self.loadout:
-            item = self.resolve_set(loadout_set)
-            if item is not None:
-                self.apply_item(item, creature)
-
-    @staticmethod
-    def resolve_set(loadout_set: LoadoutSet) -> Optional[LoadoutOption]:
-        if len(loadout_set) > 0:
-            items, weights = zip(*loadout_set)
+    def choose_option(self) -> Optional[LoadoutGroup]:
+        if len(self.options) > 0:
+            weights, items = zip(*self.options)
             return random.choices(items, weights)[0]
         return None
 
-    @staticmethod
-    def apply_item(option: LoadoutOption, creature: Creature) -> None:
-        for item in option:
-            creature.add_equipment(item.equipment, item.hints)
+    def __iter__(self) -> Iterator[LoadoutItem]:
+        option = self.choose_option()
+        return iter(option) or ()
+
+class Loadout:
+    def __init__(self, *groups: Iterable[LoadoutItem]):
+        self.loadout = list(groups)
+
+    def apply_loadout(self, creature: 'Creature') -> None:
+        for group in self.loadout:
+            for item in group:
+                creature.add_equipment(item.equipment, item.hints)

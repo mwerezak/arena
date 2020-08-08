@@ -17,6 +17,13 @@ class CreatureTrait:
     def key(self) -> Any:
         return type(self)
 
+    def __repr__(self) -> str:
+        ignore = ['name', 'key']
+        data = ', '.join(
+            f'{k}={v!r}' for k,v in self.__dict__.items() if k not in ignore
+        )
+        return f'{self.__class__.__name__}({data})'
+
 # supertype for traits that represent learned skills and abilities
 class FeatTrait(CreatureTrait): pass
 
@@ -31,3 +38,11 @@ class SkillTrait(FeatTrait):
     @property
     def key(self) -> Any:
         return super().key, self.skill
+
+class EvadeTrait(FeatTrait):
+    name = 'Improved Evade'
+EvadeTrait = EvadeTrait()  # no args, so just lock it down
+
+class FinesseTrait(FeatTrait):
+    name = 'Combat Finesse'
+FinesseTrait = FinesseTrait()
