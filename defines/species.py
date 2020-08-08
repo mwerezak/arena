@@ -50,7 +50,12 @@ SPECIES_HUMAN = (
 
 SPECIES_GOBLIN = (
     CreatureTemplate('Goblin', BODYPLAN_HUMANLIKE)
-    .attributes(DEX=+1, CON=+1, SIZ=-4, POW=-1, CHA=-2)
+    .set_attributes(DEX=+1, CON=+1, SIZ=-4, POW=-1, CHA=-2)
+)
+
+SPECIES_ORC = (
+    CreatureTemplate('Orc', BODYPLAN_HUMANLIKE)
+    .set_attributes(STR=+3, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
 )
 
 BODYPLAN_GNOLL = (
@@ -70,7 +75,7 @@ BODYPLAN_GNOLL = (
 )
 SPECIES_GNOLL = (
     CreatureTemplate('Gnoll', BODYPLAN_GNOLL)
-    .attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, CHA=-1)
+    .set_attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, CHA=-1)
 )
 
 BODYPLAN_SATYR = (
@@ -91,7 +96,7 @@ BODYPLAN_SATYR = (
 
 SPECIES_SATYR = (
     CreatureTemplate('Satyr', BODYPLAN_SATYR)
-    .attributes(DEX=+1, CON=+1, INT=+1, POW=+1, CHA=+1)
+    .set_attributes(DEX=+1, CON=+1, INT=+1, POW=+1, CHA=+1)
 )
 
 BODYPLAN_MINOTAUR = (
@@ -112,7 +117,7 @@ BODYPLAN_MINOTAUR = (
 
 SPECIES_MINOTAUR = (
     CreatureTemplate('Minotaur', BODYPLAN_MINOTAUR)
-    .attributes(STR=+4, CON=+3, SIZ=+6)
+    .set_attributes(STR=+4, CON=+3, SIZ=+6)
 )
 
 if __name__ == '__main__':

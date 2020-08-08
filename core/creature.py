@@ -19,12 +19,12 @@ class CreatureTemplate:
         if template is not None:
             self.name = template.name
             self.bodyplan = Morphology(template.bodyplan)
-            self._attributes = dict(template._attributes)
-            self._traits = dict(template._traits)
+            self.attributes = dict(template.attributes)
+            self.traits = dict(template.traits)
         else:
             self.bodyplan = bodyplan
-            self._attributes: MutableMapping[PrimaryAttribute, int] = {attr : 0 for attr in PrimaryAttribute}
-            self._traits: MutableMapping[Type[CreatureTrait], CreatureTrait] = {}
+            self.attributes: MutableMapping[PrimaryAttribute, int] = {attr : 0 for attr in PrimaryAttribute}
+            self.traits: MutableMapping[Type[CreatureTrait], CreatureTrait] = {}
         if name is not None:
             self.name = name
 
@@ -34,36 +34,43 @@ class CreatureTemplate:
 
     ## Creature Template Creation API
 
-    def attributes(self, **attr_values: int) -> 'CreatureTemplate':
+    def set_attributes(self, **attr_values: int) -> 'CreatureTemplate':
         for name, value in attr_values.items():
             attr = PrimaryAttribute[name]
-            self._attributes[attr] = value
-        return self
-
-    def add_trait(self, trait: CreatureTrait) -> 'CreatureTemplate':
-        self._traits[type(trait)] = trait
-        return self
-
-    def remove_trait(self, trait_type: Type[CreatureTrait]) -> 'CreatureTemplate':
-        del self._traits[trait_type]
+            self.attributes[attr] = value
         return self
 
     def set_attribute(self, attr: Union[str, PrimaryAttribute], value: int) -> 'CreatureTemplate':
         if not isinstance(attr, PrimaryAttribute):
             attr = PrimaryAttribute[attr]
-        self._attributes[attr] = value
+        self.attributes[attr] = value
+        return self
+
+    def modify_attributes(self, **attr_mods: int) -> 'CreatureTemplate':
+        for name, mod in attr_mods.items():
+            attr = PrimaryAttribute[name]
+            self.attributes[attr] += mod
+        return self
+
+    def add_trait(self, *traits: CreatureTrait) -> 'CreatureTemplate':
+        for trait in traits:
+            self.traits[type(trait)] = trait
+        return self
+
+    def remove_trait(self, trait_type: Type[CreatureTrait]) -> 'CreatureTemplate':
+        del self.traits[trait_type]
         return self
 
     def get_attribute(self, attr: Union[str, PrimaryAttribute]) -> int:
         if not isinstance(attr, PrimaryAttribute):
             attr = PrimaryAttribute[attr]
-        return self._attributes[attr]
+        return self.attributes[attr]
 
     def get_trait(self, trait_type: Type[CreatureTrait]) -> Optional[CreatureTrait]:
-        return self._traits.get(trait_type)
+        return self.traits.get(trait_type)
 
     def get_traits(self) -> Iterable[CreatureTrait]:
-        return iter(self._traits.values())
+        return iter(self.traits.values())
 
     def get_natural_armor(self) -> Iterable[Tuple[str, float]]:
         return ( (bp.id_tag, bp.armor) for bp in self.bodyplan )
