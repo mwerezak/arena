@@ -1,6 +1,4 @@
-from typing import Protocol
-
-class Equipment(Protocol):
+class Equipment:
     name: str
     cost: int
 

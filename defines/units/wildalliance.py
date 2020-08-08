@@ -24,7 +24,7 @@ UNIT_SATYR_BRAVE = (
     .set_loadout(Loadout(
         LoadoutChoice([(1, WEAPON_SPEAR), (1, WEAPON_HALFSPEAR)]),
         LoadoutChoice([(1, SHIELD_MEDIUM), (1, SHIELD_SMALL)]),
-        LoadoutChoice([(1, Armor(LINEN_CUIRASS, SPECIES_SATYR)), (1, [])])
+        LoadoutChoice([(1, Armor(LINEN_CUIRASS, SPECIES_SATYR)), (1, None)])
     ))
 )
 

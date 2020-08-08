@@ -4,7 +4,7 @@ from core.constants import PrimaryAttribute, SizeCategory
 from core.bodyplan import Morphology
 from core.combat.attack import MeleeAttack
 from core.equipment import Equipment
-from core.loadout import Loadout, LoadoutHint
+from core.loadout import Loadout
 from core.traits import CreatureTrait
 
 class CreatureTemplate:
@@ -110,7 +110,7 @@ class Creature:
     def add_trait(self, trait: CreatureTrait) -> None:
         self.traits[trait.key] = trait
 
-    def add_equipment(self, equipment: Equipment, hints: Iterable[LoadoutHint] = ()) -> None:
+    def add_equipment(self, equipment: Equipment) -> None:
         self.equipment.append(equipment)
 
     # health: float
