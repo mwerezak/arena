@@ -35,22 +35,23 @@ class BodyElement:
                  name: str = None,
                  placement: BodyElementPlacement = BodyElementPlacement.DEFAULT,
                  size: float = 1,
-                 specials: Iterable[BodyElementSpecial] = None,
-                 armor: float = 0,
-                 unarmed: Iterable[NaturalWeapon] = None):
+                 specials: Iterable[BodyElementSpecial] = (),
+                 attacks: Iterable[NaturalWeapon] = (),
+                 armor: float = 0):
+
         self.id_tag = id_tag
         self.type = elemtype
         self.name = name or id_tag
         self.placement = placement
         self.size = size
-        self.specials: Collection[BodyElementSpecial] = list(specials) if specials is not None else []
+        self.specials = list(specials)
+        self.attacks = list(attacks)
         self.armor = armor
-        self.unarmed = list(unarmed) if unarmed is not None else []
 
     def clone(self) -> 'BodyElement':
         result = shallow_copy(self)
         result.specials = list(self.specials)
-        result.unarmed = list(self.unarmed)
+        result.attacks = list(self.attacks)
         return result
 
 class Morphology:
@@ -127,7 +128,7 @@ class MorphologySelection:
 
     def add_unarmed_attack(self, attack: NaturalWeapon) -> 'MorphologySelection':
         for elem in self.selected:
-            elem.unarmed.append(attack)
+            elem.attacks.append(attack)
         return self
 
     def remove(self) -> 'MorphologySelection':

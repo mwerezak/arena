@@ -74,7 +74,7 @@ class CreatureTemplate:
 
     def get_unarmed_attacks(self) -> Iterable[Tuple[str, MeleeAttack]]:
         for bp in self.bodyplan:
-            for unarmed in bp.unarmed:
+            for unarmed in bp.attacks:
                 yield (bp.id_tag, unarmed.create_attack(self))
 
     @property

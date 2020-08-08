@@ -11,17 +11,17 @@ class Weapon(Equipment):
                  size: SizeCategory,
                  encumbrance: float,
                  cost: float,
-                 melee: Iterable[MeleeAttack] = None,
+                 melee_attacks: Iterable[MeleeAttack] = (),
                  shield: Optional['ShieldBlock'] = None):
         self.name = name
         self.size = size
         self.encumbrance = encumbrance
         self.cost = cost
-        self.melee = list(melee) if melee is not None else []
+        self.melee_attacks = list(melee_attacks)
         self.shield = shield
 
     def is_melee_weapon(self) -> bool:
-        return len(self.melee) > 0
+        return len(self.melee_attacks) > 0
 
     def is_shield(self) -> bool:
         return self.shield is not None
@@ -38,8 +38,7 @@ class ShieldBlock(NamedTuple):
     block_ranged: float
 
 
-"""
-_DICE_UPGRADE_TABLE = [
+DICE_UPGRADE_TABLE = [
     [ (1,3),  (1,4)],
     [ (1,4),  (1,6)],
     [ (1,6),  (1,8)],
@@ -47,4 +46,3 @@ _DICE_UPGRADE_TABLE = [
     [ (2,4),  (2,6)],
     [(1,10),  (2,8)],
 ]
-"""

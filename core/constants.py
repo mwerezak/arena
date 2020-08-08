@@ -91,6 +91,7 @@ FORCE_LARGE  = AttackForce(4)
 FORCE_OVERWM = AttackForce(5)
 
 __all__ = [
+    'PrimaryAttribute', 'CreatureSize', 'SizeCategory', 'MeleeRange', 'AttackForce',
     'REACH_CLOSE', 'REACH_SHORT', 'REACH_MEDIUM', 'REACH_LONG', 'REACH_VLONG', 'REACH_EXTREME',
     'FORCE_NONE', 'FORCE_TINY', 'FORCE_SMALL', 'FORCE_MEDIUM', 'FORCE_LARGE', 'FORCE_OVERWM',
 ]
