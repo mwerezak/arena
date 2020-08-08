@@ -5,7 +5,7 @@ from core.dice import dice, DicePool
 from core.combat.damage import DamageType
 from core.combat.criticals import CriticalEffect
 from core.combat.attack import MeleeAttack
-from core.constants import SizeCategory, MeleeRange
+from core.contest import SKILL_UNARMED
 from core.constants import *
 
 if TYPE_CHECKING:
@@ -72,6 +72,7 @@ class NaturalWeaponTemplate:
                  force: float = 0, reach: float = 0,
                  damage: float = 0, armpen: Optional[float] = None,
                  criticals: Iterable[Type[CriticalEffect]] = None):
+
         self.name = name
         self.damtype = damtype
         self.reach = reach
@@ -131,5 +132,6 @@ class NaturalWeapon:
             damage = damage,
             armor_pen = armor_pen,
             criticals = self.criticals,
+            skill_class = SKILL_UNARMED,
         )
 

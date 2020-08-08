@@ -4,21 +4,29 @@ from typing import Iterable, Optional, NamedTuple
 from core.equipment import Equipment
 from core.combat.attack import MeleeAttack
 from core.constants import AttackForce, SizeCategory
+from core.contest import CombatSkillClass
 
 class Weapon(Equipment):
     def __init__(self,
                  name: str,
                  size: SizeCategory,
+                 skill_class: CombatSkillClass,
                  encumbrance: float,
                  cost: float,
                  melee_attacks: Iterable[MeleeAttack] = (),
                  shield: Optional['ShieldBlock'] = None):
+
         self.name = name
         self.size = size
+        self.skill_class = skill_class
         self.encumbrance = encumbrance
         self.cost = cost
-        self.melee_attacks = list(melee_attacks)
         self.shield = shield
+
+        self.melee_attacks = list(melee_attacks)
+        for attack in melee_attacks:
+            if attack.skill_class is None:
+                attack.skill_class = self.skill_class
 
     def is_melee_weapon(self) -> bool:
         return len(self.melee_attacks) > 0

@@ -14,8 +14,8 @@ class Contest:
         self.name = name
         self.key_attr: Sequence[PrimaryAttribute] = tuple(PrimaryAttribute[s] for s in key_attr)
 
-SKILL_MELEE      = Contest('Melee',      ['STR', 'DEX'])
-SKILL_UNARMED    = Contest('Melee',      ['STR', 'DEX'])
+## Standard Contest Types
+
 SKILL_EVADE      = Contest('Evade',      ['DEX', 'DEX'])
 SKILL_ENDURANCE  = Contest('Endurance',  ['CON', 'CON'])
 SKILL_WILLPOWER  = Contest('Willpower',  ['POW', 'POW'])
@@ -23,6 +23,48 @@ SKILL_ATHLETICS  = Contest('Athletics',  ['STR', 'SIZ'])
 SKILL_BRAWN      = Contest('Brawn',      ['STR', 'SIZ'])
 SKILL_PERCEPTION = Contest('Perception', ['INT', 'POW'])
 SKILL_STEALTH    = Contest('Stealth',    ['DEX', 'INT'])
+
+## Combat Contest Types
+
+class CombatSkillClass(Enum):
+    Blade    = 'Blades'
+    Axe      = 'Axes'
+    Polearm  = 'Polearms'
+    Mace     = 'Maces'
+    Bow      = 'Bows'
+    Crossbow = 'Crossbows/Firearms'
+    Unarmed  = 'Unarmed'
+    Thrown   = 'Thrown Weapons'
+    Shield   = 'Shields'
+    Lance    = 'Lances'
+    Sling    = 'Slings'
+
+
+    @property
+    def name(self) -> str:
+        return self.value
+
+class CombatTest(Contest):
+    def __init__(self, skill_class: CombatSkillClass, key_attr: Iterable[str]):
+        super().__init__(skill_class.name, key_attr)
+
+## Melee
+SKILL_BLADE    = CombatTest(CombatSkillClass.Blade,    ['STR', 'DEX'])
+SKILL_AXE      = CombatTest(CombatSkillClass.Axe,      ['STR', 'DEX'])
+SKILL_POLEARM  = CombatTest(CombatSkillClass.Polearm,  ['STR', 'DEX'])
+SKILL_MACE     = CombatTest(CombatSkillClass.Mace,     ['STR', 'DEX'])
+SKILL_UNARMED  = CombatTest(CombatSkillClass.Unarmed,  ['STR', 'DEX'])
+SKILL_SHIELD   = CombatTest(CombatSkillClass.Shield,   ['STR', 'DEX'])
+SKILL_LANCE    = CombatTest(CombatSkillClass.Lance,    ['STR', 'DEX'])
+
+## Ranged
+SKILL_THROWN   = CombatTest(CombatSkillClass.Thrown,   ['STR', 'DEX'])
+SKILL_BOW      = CombatTest(CombatSkillClass.Bow,      ['STR', 'DEX'])
+
+SKILL_SLING    = CombatTest(CombatSkillClass.Sling,    ['DEX', 'DEX'])
+SKILL_CROSSBOW = CombatTest(CombatSkillClass.Crossbow, ['DEX', 'DEX'])
+
+## Skill Levels
 
 _LEVEL_NUMERALS = ['I', 'II', 'III', 'IV', 'V']
 

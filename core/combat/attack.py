@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
 from core.constants import MeleeRange, AttackForce
 from core.dice import DicePool
 from core.combat.criticals import CriticalEffect
+from core.contest import CombatSkillClass
 
 if TYPE_CHECKING:
     from core.combat.damage import DamageType
@@ -24,7 +25,8 @@ class MeleeAttack:
                  damtype: 'DamageType',
                  damage: DicePool,
                  armor_pen: Optional[DicePool] = None,
-                 criticals: Iterable[Type[CriticalEffect]] = None):
+                 criticals: Iterable[Type[CriticalEffect]] = (),
+                 skill_class: CombatSkillClass = None):
         self.name = name
         self.max_reach = max(reach)
         self.min_reach = min(reach)
@@ -32,7 +34,8 @@ class MeleeAttack:
         self.damtype = damtype
         self.damage = damage
         self.armor_pen = armor_pen
-        self.criticals = tuple(criticals) if criticals is not None else ()
+        self.criticals = tuple(criticals)
+        self.skill_class = skill_class
 
     def clone(self) -> 'MeleeAttack':
         return shallow_copy(self)
