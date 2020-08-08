@@ -44,7 +44,7 @@ WEAPON_SCIMITAR = Weapon(
 )
 
 WEAPON_FALCHION = Weapon(
-    name = 'Falchion', size = SizeCategory.Medium, skill_class = CombatSkillClass.Blade, encumbrance = 3, cost = 175,
+    name = 'Falchion', size = SizeCategory.Medium, skill_class = CombatSkillClass.Blade, encumbrance = 3, cost = 200,
     melee_attacks = [
         MeleeAttack('Hack',           (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8) + dice(1)),
         MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),

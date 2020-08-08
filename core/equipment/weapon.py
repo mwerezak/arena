@@ -12,7 +12,7 @@ class Weapon(Equipment):
                  size: SizeCategory,
                  skill_class: CombatSkillClass,
                  encumbrance: float,
-                 cost: float,
+                 cost: int,
                  melee_attacks: Iterable[MeleeAttack] = (),
                  shield: Optional['ShieldBlock'] = None):
 

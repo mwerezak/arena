@@ -76,9 +76,9 @@ class Armor(Equipment):
 
         # noinspection PyTypeChecker
         size_mult = float(self.creature.size)/SizeCategory.Medium.to_size()
-        self.cost = sum(
+        self.cost = round(sum(
             self.template.base_cost * size_mult * rel_sizes[id_tag] / self.BASE_AREA for id_tag in coverage
-        )
+        ))
 
         self.encumbrance = {
             id_tag : self.template.base_encumbrance * rel_sizes[id_tag] / self.BASE_AREA for id_tag in coverage
