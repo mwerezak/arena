@@ -1,17 +1,10 @@
-from typing import Union, MutableMapping, Tuple, Type, Optional, Iterable
+from typing import Union, MutableMapping, Tuple, Type, Optional, Iterable, Any
 
-from core.constants import PrimaryAttribute, CreatureSize, SizeCategory
+from core.constants import PrimaryAttribute, SizeCategory
 from core.bodyplan import Morphology
 from core.combat.attack import MeleeAttack
 from core.traits import CreatureTrait
 
-class Creature:
-    health: float
-    template: 'CreatureTemplate'
-    # melee_combat: MutableMapping['Creature', 'MeleeCombat']
-    # get_engage_range() -> MeleeRange
-
-    # equipment
 class CreatureTemplate:
     name: str
 
@@ -54,11 +47,11 @@ class CreatureTemplate:
 
     def add_trait(self, *traits: CreatureTrait) -> 'CreatureTemplate':
         for trait in traits:
-            self.traits[type(trait)] = trait
+            self.traits[trait.key] = trait
         return self
 
-    def remove_trait(self, trait_type: Type[CreatureTrait]) -> 'CreatureTemplate':
-        del self.traits[trait_type]
+    def remove_trait(self, key: Any) -> 'CreatureTemplate':
+        del self.traits[key]
         return self
 
     def get_attribute(self, attr: Union[str, PrimaryAttribute]) -> int:
@@ -66,8 +59,8 @@ class CreatureTemplate:
             attr = PrimaryAttribute[attr]
         return self.attributes[attr]
 
-    def get_trait(self, trait_type: Type[CreatureTrait]) -> Optional[CreatureTrait]:
-        return self.traits.get(trait_type)
+    def get_trait(self, key: Any) -> Optional[CreatureTrait]:
+        return self.traits.get(key)
 
     def get_traits(self) -> Iterable[CreatureTrait]:
         return iter(self.traits.values())
@@ -93,3 +86,20 @@ class CreatureTemplate:
     # priority = interrupted.windup/interrupting.windup + (math.log(1.5) * initiative)
     # interrupt_chance = 1.0/(math.exp(-priority) + 1.0)
 
+class Creature:
+    def __init__(self, template: CreatureTemplate):
+        self.template = template
+        self.name = template.name
+        self.health = template.max_health
+        self.traits = { trait.key : trait for trait in template.get_traits() }
+
+        # apply loadout
+
+    def add_trait(self, trait: CreatureTrait) -> None:
+        self.traits[trait.key] = trait
+
+    # health: float
+    # template: CreatureTemplate
+    # melee_combat: MutableMapping['Creature', 'MeleeCombat']
+    # get_engage_range() -> MeleeRange
+    # equipment
