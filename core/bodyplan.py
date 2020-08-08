@@ -56,7 +56,9 @@ class BodyElement:
 class Morphology:
     SELECT_ALL = '*' # a special id tag used to select all BodyElements
 
+    elements: Mapping[str, BodyElement]
     rel_size: Mapping[str, float]
+
     def __init__(self, elements: Iterable[BodyElement]):
         self.elements = { elem.id_tag : elem.clone() for elem in elements }
         self.update()
