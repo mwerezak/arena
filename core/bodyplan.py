@@ -2,9 +2,9 @@
 from enum import Enum, IntFlag
 from copy import copy as shallow_copy
 from numbers import Number
-from typing import Iterable, Any, Union, Collection, Tuple, Mapping
+from typing import Iterable, Any, Union, Tuple, Mapping
 
-from core.unarmed import NaturalWeapon
+from core.combat.unarmed import NaturalWeapon
 
 class BodyElementType(Enum):
     HEAD = "head"

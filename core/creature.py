@@ -2,7 +2,7 @@ from typing import Union, MutableMapping, Tuple, Type, Optional, Iterable, Any
 
 from core.constants import PrimaryAttribute, SizeCategory
 from core.bodyplan import Morphology
-from core.unarmed import NaturalWeapon
+from core.combat.unarmed import NaturalWeapon
 from core.equipment import Equipment
 from core.loadout import Loadout
 from core.traits import CreatureTrait

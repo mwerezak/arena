@@ -1,4 +1,4 @@
-from core.unarmed import NaturalWeaponTemplate, NaturalWeapon
+from core.combat.unarmed import NaturalWeaponTemplate, NaturalWeapon
 from core.combat.damage import DamageType
 from core.bodyplan import Morphology
 from core.creature import CreatureTemplate
