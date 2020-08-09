@@ -75,7 +75,7 @@ BODYPLAN_GNOLL = (
 )
 SPECIES_GNOLL = (
     CreatureTemplate('Gnoll', BODYPLAN_GNOLL)
-    .set_attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, CHA=-1)
+    .set_attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, POW=+1, CHA=-1)
     .add_trait(
         SkillTrait(SKILL_UNARMED, SkillLevel(1))
     )
@@ -99,7 +99,7 @@ BODYPLAN_SATYR = (
 
 SPECIES_SATYR = (
     CreatureTemplate('Satyr', BODYPLAN_SATYR)
-    .set_attributes(DEX=+1, CON=+1, INT=+1, POW=+1, CHA=+1)
+    .set_attributes(DEX=+1, CON=+1, INT=+1, POW=+2, CHA=+1)
     .add_trait(EvadeTrait, FinesseTrait)
 )
 
@@ -122,6 +122,7 @@ BODYPLAN_MINOTAUR = (
 SPECIES_MINOTAUR = (
     CreatureTemplate('Minotaur', BODYPLAN_MINOTAUR)
     .set_attributes(STR=+4, CON=+3, SIZ=+6)
+    .add_trait(SkillTrait(SKILL_ENDURANCE, SkillLevel(1)))
 )
 
 if __name__ == '__main__':

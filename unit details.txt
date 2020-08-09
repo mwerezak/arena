@@ -350,7 +350,7 @@ Shortsword (50%) or Dagger (50%)
 
 =Satyr Warriors
 Polearm/Sword II
-Shield II
+Shield I
 Endurance II
 Evade
 Finesse
@@ -396,22 +396,21 @@ Axe III
 Endurance III
 Unarmed II
 
-Greataxe
+Minotaur Greataxe
 Bronze Helmet (50%) or Nothing (50%)
 Linen Hauberk
 Bronze Breastplate
-Linen Tailguard (50%)
+Linen Tailguard (70%)
 
 =Minotaur Champion
 Axes V
-Polarms III
 Unarmed III
 Endurance IV
 
-Greataxe (50%) or Halberd (50%)
+Minotaur Greataxe
 Bronze Full Helmet (30%) or Bronze Helmet (70%)
 Padded Hauberk
-Bronze Plate Mail Armor (70%) or Bronze Plate Mail Cuirass (30%)
+Bronze Plate Mail Armor (50%) or Bronze Plate Mail Cuirass (50%)
 Linen Tailguard
 
 =Gnoll Hunters (Javelins)
@@ -446,7 +445,7 @@ Evade
 
 Battle Axe (70%) or Mace (30%)
 Medium Shield (70%) or Small Shield (30%)
-Leather Cuirass (50%) or Bronze Scale Cuirass (20%) or Nothing (20%)
+Leather Cuirass (50%) or Bronze Scale Cuirass (30%) or Nothing (20%)
 
 =Gnoll Chieftain's Sons
 Axe IV
