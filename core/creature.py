@@ -2,7 +2,7 @@ from typing import Union, MutableMapping, Tuple, Type, Optional, Iterable, Any
 
 from core.constants import PrimaryAttribute, SizeCategory
 from core.bodyplan import Morphology
-from core.combat.attack import MeleeAttack
+from core.unarmed import NaturalWeapon
 from core.equipment import Equipment
 from core.loadout import Loadout
 from core.traits import CreatureTrait
@@ -79,10 +79,10 @@ class CreatureTemplate:
     def get_natural_armor(self) -> Iterable[Tuple[str, float]]:
         return ( (bp.id_tag, bp.armor) for bp in self.bodyplan )
 
-    def get_unarmed_attacks(self) -> Iterable[Tuple[str, MeleeAttack]]:
+    def get_natural_weapons(self) -> Iterable[Tuple[str, NaturalWeapon]]:
         for bp in self.bodyplan:
             for unarmed in bp.attacks:
-                yield (bp.id_tag, unarmed.create_attack(self))
+                yield bp.id_tag, unarmed
 
     @property
     def max_health(self) -> int:

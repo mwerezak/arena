@@ -1,10 +1,10 @@
 from core.creature import CreatureTemplate
 from core.loadout import Loadout, LoadoutGroup, LoadoutChoice
 from core.equipment.armor import Armor, ArmorTemplate
-from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL
+from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL, SPECIES_HORSE
 from defines.traits import *
 from defines.weapons import (
-    WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
+    WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
     WEAPON_BATTLEAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE, WEAPON_GREATAXE,
 )
 from defines.shields import (
@@ -100,6 +100,31 @@ CREATURE_SATYR_WARDEN = (
     ))
 )
 
+CREATURE_SATYR_OUTRIDER = (
+    CreatureTemplate('Satyr Outrider', template = SPECIES_SATYR)
+    .add_trait(
+        SkillTrait(SKILL_POLEARM, SkillLevel(2)),
+        SkillTrait(SKILL_SHIELD, SkillLevel(2)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
+        SkillTrait(SKILL_RIDING, SkillLevel(2)),
+    )
+    .set_loadout(Loadout(
+        [WEAPON_LONGSPEAR],
+        LoadoutChoice([(3, SHIELD_MEDIUM), (1, SHIELD_SMALL)]),
+        LoadoutChoice([(1, Armor(LINEN_CUIRASS, SPECIES_SATYR)), (1, None)])
+    ))
+)
+
+# companions of the satyr outriders
+CREATURE_WILD_HORSE = (
+    CreatureTemplate('Wild Horse', template = SPECIES_HORSE)
+    .modify_attributes(SIZ=-4, POW=+1) # smaller but more personality
+    .add_trait(
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+    )
+)
+
 CREATURE_MINOTAUR_MILITIA = (
     CreatureTemplate('Minotaur Militia', template=SPECIES_MINOTAUR)
     .add_trait(
@@ -181,3 +206,19 @@ CREATURE_GNOLL_CHIEFTAINS_SON = (
         LoadoutChoice([(1, Armor(BRONZE_PLATE_CHESTPIECE, SPECIES_GNOLL)), (1, None)]),
     ))
 )
+
+if __name__ == '__main__':
+    from core.combat.attack import MeleeAttack
+    def print_attack(attack: MeleeAttack):
+        print(f'*** {attack.name} ***')
+        print(f'force: {attack.force}')
+        print(f'reach: {attack.max_reach} - {attack.min_reach}')
+        print(f'damage: {attack.damage}' + (f'/{attack.armor_pen}*' if attack.armor_pen is not None else ''))
+
+    def print_creature_attacks(creature: CreatureTemplate):
+        for bp_tag, weapon in creature.get_natural_weapons():
+            print_attack(weapon.create_attack(creature))
+            print(f'location: {bp_tag}')
+
+    from defines.species import *
+    from core.creature import Creature

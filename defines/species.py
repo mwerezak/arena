@@ -2,7 +2,7 @@ from core.unarmed import NaturalWeaponTemplate, NaturalWeapon
 from core.combat.damage import DamageType
 from core.bodyplan import Morphology
 from core.creature import CreatureTemplate
-from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL
+from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL, QUADRUPED_UNGULATE
 from defines.traits import *
 
 ## Natural Weapon Templates
@@ -16,7 +16,7 @@ UNARMED_KICK      = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, reach=+1,
 UNARMED_KICK_QUAD = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, reach=+1)  # quadripeds can kick out with more force
 
 UNARMED_HOOF_BIPED = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, reach=+1, force=-1)
-UNARMED_HOOF       = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+2, reach=+1)
+UNARMED_HOOF       = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, reach=+1)
 
 UNARMED_BITE       = NaturalWeaponTemplate('Bite', DamageType.Puncture, reach=-1, damage=+1)
 UNARMED_BITE_CRUSH = NaturalWeaponTemplate('Bite', DamageType.Bludgeon, reach=-1, damage=+1, armpen=-1)
@@ -32,7 +32,7 @@ UNARMED_TAIL = NaturalWeaponTemplate('Strike', DamageType.Bludgeon, reach=+2)
 
 ## Species
 
-# the bodyplan for hominid humanoids... humans, dwarves, elves, orcs, goblins, etc...
+# Humanlike humanoids... humans, dwarves, elves, orcs, goblins, etc...
 BODYPLAN_HUMANLIKE = (
     Morphology(HUMANOID_NOTAIL)
     .select('l_arm', 'r_arm')
@@ -58,10 +58,31 @@ SPECIES_ORC = (
     .set_attributes(STR=+3, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
 )
 
+# Horses
+BODYPLAN_HORSE = (
+    Morphology(QUADRUPED_UNGULATE)
+    .select('*')
+        .set(armor = 1)  # thick hide
+    .select('l_leg', 'r_leg')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_HOOF))
+    .select('l_arm', 'r_arm')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_HOOF, reach=-1, force=-1))  # can't kick out as far with front legs
+    .select('head')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_BITE_WEAK))
+    .finalize()
+)
+
+SPECIES_HORSE = (
+    CreatureTemplate('Horse', BODYPLAN_HORSE)
+    .set_attributes(STR=+6, CON=+2, SIZ=+12, INT=-2)
+    .add_trait(SkillTrait(SKILL_ENDURANCE, SkillLevel(1)))
+)
+
+# Gnolls
 BODYPLAN_GNOLL = (
     Morphology(HUMANOID)
     .select('*')
-        .set(armor = 1)
+        .set(armor = 1)  # thick fur
     .select('tail')
         .set(size = 1.5)
     .select('l_arm', 'r_arm')
@@ -73,6 +94,7 @@ BODYPLAN_GNOLL = (
         .add_unarmed_attack(NaturalWeapon(UNARMED_BITE))
     .finalize()
 )
+
 SPECIES_GNOLL = (
     CreatureTemplate('Gnoll', BODYPLAN_GNOLL)
     .set_attributes(STR=+2, CON=+1, SIZ=+2, INT=-1, POW=+1, CHA=-1)
@@ -81,6 +103,7 @@ SPECIES_GNOLL = (
     )
 )
 
+# Satyrs
 BODYPLAN_SATYR = (
     Morphology(HUMANOID)
     .select('lbody', 'l_leg', 'r_leg', 'tail')
@@ -103,6 +126,7 @@ SPECIES_SATYR = (
     .add_trait(EvadeTrait, FinesseTrait)
 )
 
+# Minotaur
 BODYPLAN_MINOTAUR = (
     Morphology(HUMANOID)
     .select('*')
@@ -115,7 +139,7 @@ BODYPLAN_MINOTAUR = (
         .add_unarmed_attack(NaturalWeapon(UNARMED_HOOF_BIPED))
     .select('head')
         .add_unarmed_attack(NaturalWeapon(UNARMED_HORN))
-        .add_unarmed_attack(NaturalWeapon(UNARMED_BITE_CRUSH))
+        .add_unarmed_attack(NaturalWeapon(UNARMED_BITE_WEAK))
     .finalize()
 )
 
@@ -124,16 +148,3 @@ SPECIES_MINOTAUR = (
     .set_attributes(STR=+4, CON=+3, SIZ=+6)
     .add_trait(SkillTrait(SKILL_ENDURANCE, SkillLevel(1)))
 )
-
-if __name__ == '__main__':
-    from core.combat.attack import MeleeAttack
-    def print_attack(attack: MeleeAttack):
-        print(f'*** {attack.name} ***')
-        print(f'force: {attack.force}')
-        print(f'reach: {attack.max_reach} - {attack.min_reach}')
-        print(f'damage: {attack.damage}' + (f'/{attack.armor_pen}*' if attack.armor_pen is not None else ''))
-
-    for id_tag, attack in SPECIES_MINOTAUR.get_unarmed_attacks():
-        print_attack(attack)
-        print(f'location: {id_tag}')
-        print()

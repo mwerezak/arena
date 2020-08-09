@@ -1,5 +1,5 @@
 import math
-from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
 from core.dice import dice, DicePool
 from core.combat.damage import DamageType
@@ -11,7 +11,10 @@ from core.constants import *
 if TYPE_CHECKING:
     from core.creature import CreatureTemplate
 
-_DAMAGE_TABLE = {
+def _create_table(table_data: Mapping[float, Any]) -> Sequence[Tuple[float, Any]]:
+    return [(k,v) for k,v in sorted(table_data.items())]
+
+_DAMAGE_TABLE = _create_table({
       0 : dice(0),
       1 : dice(1),
       2 : dice(1,2),
@@ -32,9 +35,9 @@ _DAMAGE_TABLE = {
     112 : dice(1,12) + dice(2,8),
     120 : dice(2,8)  + dice(3,4),
     128 : dice(5,6),
-}
+})
 
-_ARMOR_PEN_TABLE = {
+_ARMOR_PEN_TABLE = _create_table({
       0 : None,
       1 : -dice(1,8),
       2 : -dice(1,6),
@@ -55,12 +58,12 @@ _ARMOR_PEN_TABLE = {
     112 : dice(1,10) + dice(2,4),
     120 : dice(1,12) + dice(2,4),
     128 : dice(1,10) + dice(2,6),
-}
+})
 
-def _table_lookup(table: Mapping[int, DicePool], size: float) -> DicePool:
-    items = sorted((abs(size-s), s) for s,v in table.items())
-    _, k = items[0]
-    return table[k]
+def _table_lookup(table: Sequence[Tuple[float, Any]], key: float, shift: int = 0) -> Any:
+    _, idx = min( (abs(key - pair[0]), idx) for idx, pair in enumerate(table) )
+    _, result = table[ max(0, min(idx + shift, len(table) - 1)) ]
+    return result
 
 ## min,max reach at Medium size
 BASE_MAX_REACH = 1.0   # REACH_SHORT
@@ -110,24 +113,22 @@ class NaturalWeapon:
 
     def create_attack(self, creature: 'CreatureTemplate') -> MeleeAttack:
         rel_size = float(creature.size)/float(SizeCategory.Medium.to_size())
-        size_step = math.log2(rel_size)
 
-        reach_size = rel_size
-        max_reach = BASE_MAX_REACH * reach_size + self.reach
-        min_reach = BASE_MIN_REACH * reach_size + self.reach
+        max_reach = BASE_MAX_REACH * rel_size + self.reach
+        min_reach = BASE_MIN_REACH * rel_size + self.reach
 
-        damage_size = 8 * 2**(size_step + self.damage + self.force)
-        damage = _table_lookup(_DAMAGE_TABLE, damage_size)
+        force = FORCE_MEDIUM.get_step(round(math.log2(rel_size) + self.force))
+
+        damage = _table_lookup(_DAMAGE_TABLE, creature.size, self.damage + self.force)
 
         armor_pen = None
         if self.damtype == DamageType.Bludgeon or self.armpen is not None:
-            armpen_size = 8 * 2**(size_step + (self.armpen or 0) + self.force)
-            armor_pen = _table_lookup(_ARMOR_PEN_TABLE, armpen_size)
+            armor_pen = _table_lookup(_ARMOR_PEN_TABLE, creature.size, (self.armpen or 0) + self.force)
 
         return MeleeAttack(
             name = self.name,
             reach = (MeleeRange(round(max_reach)), MeleeRange(round(min_reach))),
-            force = FORCE_MEDIUM.get_step(round(size_step + self.force)),
+            force = force,
             damtype = self.damtype,
             damage = damage,
             armor_pen = armor_pen,

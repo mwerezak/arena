@@ -171,7 +171,7 @@ Longspear
 Large Shield (70%) or Medium Shield (30%)
 Short Sword (40%) or Mace (40%) or Nothing (20%)
 Steel Helmet (70%) or Leather Helmet (30%)
-Padded Gambeson
+Padded Gambeson (50%) or Doublet (50%)
 Steel Chain Hauberk (40%) or Steel Brigandine Hauberk (60%)
 
 =Outland Rangers
@@ -381,7 +381,9 @@ Shield II
 Riding II
 Endurance III
 
-Longspear, Medium Shield
+Longspear
+Medium Shield (70%) or Small Shield (30%)
+Linen Cuirass (50%) or Nothing (50%)
 Wild Horse
 
 =Minotaur Militia
