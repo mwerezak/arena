@@ -1,15 +1,11 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Tuple
-from core.constants import MeleeRange
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from core.creature import Creature
+    pass
 
 class DamageType(Enum):
     Slashing = 'slashing'
     Puncture = 'puncture'
     Bludgeon = 'bludgeon'
 
-class MeleeCombat:
-    combatants: Tuple['Creature', 'Creature']
-    separation: MeleeRange

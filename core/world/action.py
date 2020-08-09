@@ -85,10 +85,6 @@ class Entity:
         """Allows actions to be performed quicker or slower for different entities."""
         return 1.0
 
-    def idle(self) -> None:
-        """Called when an Entity is idle"""
-        return None
-
     def get_current_action(self) -> Optional[Action]:
         return self.loop.get_current_action(self)
 
@@ -122,6 +118,9 @@ class ActionLoop:
     def is_entity_idle(self, entity: Entity) -> bool:
         return self.entity_actions[entity] is None
 
+    def queued_action_count(self) -> int:
+        return len(self.action_queue)
+
     def get_current_action(self, entity: Entity) -> Optional[Action]:
         return self.entity_actions[entity]
 
@@ -152,10 +151,6 @@ class ActionLoop:
         item = self.queue_items.pop(action)
         self.action_queue.remove(item)
         heapq.heapify(self.action_queue)
-
-    def process_idle_entities(self) -> None:
-        for entity in self.get_idle_entities():
-            entity.idle()
 
     def resolve_next(self) -> None:
         if len(self.action_queue) == 0:

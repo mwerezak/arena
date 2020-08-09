@@ -1,11 +1,14 @@
 from typing import Union, MutableMapping, Tuple, Type, Optional, Iterable, Any
 
-from core.constants import PrimaryAttribute, SizeCategory
+from core.constants import PrimaryAttribute, SizeCategory, MeleeRange
 from core.bodyplan import Morphology
+from core.combat.attack import MeleeAttack
 from core.combat.unarmed import NaturalWeapon
+from core.combat.melee import MeleeCombat
 from core.equipment import Equipment
 from core.loadout import Loadout
 from core.traits import CreatureTrait
+from core.world.action import Entity, ActionLoop
 
 class CreatureTemplate:
     def __init__(self,
@@ -97,14 +100,27 @@ class CreatureTemplate:
     # priority = interrupted.windup/interrupting.windup + (math.log(1.5) * initiative)
     # interrupt_chance = 1.0/(math.exp(-priority) + 1.0)
 
-class Creature:
-    def __init__(self, template: CreatureTemplate):
+class Creature(Entity):
+    mount: Optional['Creature']  # if this creature is riding on another creature
+    melee_combat: MutableMapping['Creature', MeleeCombat]
+
+    def __init__(self, template: CreatureTemplate, loop: ActionLoop):
+        super().__init__(loop)
+
         self.template = template
         self.name = template.name
         self.health = template.max_health
         self.traits = { trait.key : trait for trait in template.get_traits() }
-        self.equipment = []
 
+        self.mount = None
+        self.melee_combat = {}
+
+        self.unarmed_attacks = {
+            (bp_tag, natural_weapon.create_attack(template))
+            for bp_tag, natural_weapon in template.get_natural_weapons()
+        }
+
+        self.equipment = []
         template.loadout.apply_loadout(self)
 
     def add_trait(self, trait: CreatureTrait) -> None:
@@ -118,3 +134,37 @@ class Creature:
     # melee_combat: MutableMapping['Creature', 'MeleeCombat']
     # get_engage_range() -> MeleeRange
     # equipment
+
+    # combat
+
+    def can_use_unarmed_attacks(self, bp_tag: str) -> bool:
+        return True
+
+    def get_melee_attacks(self) -> Iterable[MeleeAttack]:
+        for bp_tag, attack in self.unarmed_attacks:
+            if self.can_use_unarmed_attacks(bp_tag):
+                yield attack
+        for item in self.equipment:
+            if hasattr(item, 'get_melee_attacks'):
+                yield from item.get_melee_attacks()
+
+    def get_melee_engage_distance(self) -> MeleeRange:
+        attack_reach = (attack.max_reach for attack in self.get_melee_attacks())
+        return max(attack_reach, default=MeleeRange(0))
+
+    def engage_melee_combat(self, other: 'Creature') -> MeleeCombat:
+        melee = self.melee_combat.get(other, None)
+        if melee is None:
+            melee = MeleeCombat(self, other)
+            self.melee_combat[other] = melee
+            other.melee_combat[self] = melee
+        return melee
+
+
+
+
+
+
+
+
+

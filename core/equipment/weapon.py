@@ -31,6 +31,9 @@ class Weapon(Equipment):
     def is_melee_weapon(self) -> bool:
         return len(self.melee_attacks) > 0
 
+    def get_melee_attacks(self) -> Iterable[MeleeAttack]:
+        return iter(self.melee_attacks)
+
     def is_shield(self) -> bool:
         return self.shield is not None
 

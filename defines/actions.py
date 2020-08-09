@@ -1,6 +1,6 @@
 
 from typing import Optional
-from core.action import Action
+from core.world.action import Action
 
 ## DitherAction - the do nothing action
 class DitherAction(Action):
