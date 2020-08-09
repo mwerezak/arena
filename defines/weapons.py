@@ -145,8 +145,8 @@ WEAPON_HATCHET = Weapon(
 WEAPON_GREATAXE = Weapon(
     name = 'Great Axe', size = SizeCategory.Large, skill_class = CombatSkillClass.Axe, encumbrance = 2, cost = 125,
     melee_attacks = [
-        MeleeAttack('Hack',          (REACH_MEDIUM, REACH_MEDIUM), FORCE_LARGE, DamageType.Slashing, dice(1,10) + dice(1)),
-        MeleeAttack('Handle Strike', (REACH_CLOSE, REACH_CLOSE),   FORCE_SMALL, DamageType.Bludgeon, dice(1,4), dice(0)),
+        MeleeAttack('Hack',          (REACH_MEDIUM, REACH_SHORT), FORCE_LARGE, DamageType.Slashing, dice(1,10) + dice(1)),
+        MeleeAttack('Handle Strike', (REACH_CLOSE, REACH_CLOSE),  FORCE_SMALL, DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
 )
 
@@ -167,7 +167,7 @@ WEAPON_CLUB = Weapon(
     ],
 )
 
-WEAPON_GREATCLUB = Weapon(
+WEAPON_GREAT_CLUB = Weapon(
     name = 'Great Club', size = SizeCategory.Large, skill_class = CombatSkillClass.Mace, encumbrance = 3, cost = 50,
     melee_attacks = [
         MeleeAttack('Strike', (REACH_MEDIUM, REACH_SHORT), FORCE_LARGE, DamageType.Bludgeon, dice(1,10), dice(0)),
@@ -193,5 +193,15 @@ WEAPON_GREAT_HAMMER = Weapon(
     name = 'Great Hammer', size = SizeCategory.Large, skill_class = CombatSkillClass.Mace, encumbrance = 5, cost = 250,
     melee_attacks = [
         MeleeAttack('Strike', (REACH_LONG, REACH_MEDIUM), FORCE_LARGE, DamageType.Bludgeon, dice(1,10), dice(1)),
+    ],
+)
+
+## Specialized/Species Weapon
+
+WEAPON_MINOTAUR_AXE = Weapon(
+    name = 'Minotaur Great Axe', size = SizeCategory.Huge, skill_class = CombatSkillClass.Axe, encumbrance = 4, cost = 200,
+    melee_attacks = [
+        MeleeAttack('Hack',          (REACH_LONG, REACH_MEDIUM), FORCE_OVERWM, DamageType.Slashing, dice(2,8) + dice(1)),
+        MeleeAttack('Handle Strike', (REACH_SHORT, REACH_CLOSE), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,6), dice(1)),
     ],
 )
