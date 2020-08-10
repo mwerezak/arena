@@ -2,7 +2,7 @@
 from enum import Enum, IntFlag
 from copy import copy as shallow_copy
 from numbers import Number
-from typing import Iterable, Any, Union, Tuple, Mapping
+from typing import Iterable, Any, Union, Tuple, MutableMapping
 
 from core.combat.unarmed import NaturalWeapon
 
@@ -57,8 +57,8 @@ class BodyElement:
 class Morphology:
     SELECT_ALL = '*' # a special id tag used to select all BodyElements
 
-    elements: Mapping[str, BodyElement]
-    rel_size: Mapping[str, float]
+    elements: MutableMapping[str, BodyElement]
+    rel_size: MutableMapping[str, float]
 
     def __init__(self, elements: Iterable[BodyElement]):
         self.elements = { elem.id_tag : elem.clone() for elem in elements }

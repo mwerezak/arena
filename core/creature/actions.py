@@ -1,6 +1,9 @@
 
 from typing import Optional
 from core.world.action import Action
+from core.creature import Creature
+
+DEFAULT_ACTION_WINDUP = 100
 
 ## DitherAction - the do nothing action
 class DitherAction(Action):
@@ -12,6 +15,28 @@ class DitherAction(Action):
         return None  # does nothing
 
 ## DelayAction - check if a condition is met
+
+class MeleeCombatAction(Action):
+    def __init__(self, attacker: Creature, defender: Creature):
+        self.attacker = attacker
+        self.defender = defender
+
+    def get_base_windup(self) -> float:
+        return DEFAULT_ACTION_WINDUP
+
+    def can_resolve(self) -> bool:
+        # are they still engaged in melee combat?
+        return self.attacker.get_melee_combat(self.defender) is not None
+
+    def resolve(self) -> Optional['Action']:
+        # Process interruptions
+        # Choose attack ???
+        # Resolve attack and defense rolls
+        # Apply critical effects
+        # Determine hit location
+        # Apply damage
+        pass
+
 
 ## MeleeEngageAction - create a melee engagement between two creatures. Interrupts movement
 ## MeleeChargeAction - perform a melee charge, which can be done outside of engagement

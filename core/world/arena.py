@@ -4,7 +4,7 @@ Arena mode: individual creature combat
 from typing import Optional
 
 from core.creature import Creature
-from core.combat.melee import MeleeCombat
+from core.creature.combat import MeleeCombat
 from core.world.action import ActionLoop, Action, Entity
 
 class Arena:
@@ -23,3 +23,14 @@ class Arena:
 
     def get_next_action(self, entity: Entity) -> Optional[Action]:
         pass
+
+if __name__ == '__main__':
+    from defines.species import SPECIES_HUMAN
+    from core.creature.combat import create_melee_combat
+
+    loop = ActionLoop()
+    a = Creature(SPECIES_HUMAN, loop)
+    b = Creature(SPECIES_HUMAN, loop)
+    melee = create_melee_combat(a, b)
+
+    arena = Arena(loop, melee)

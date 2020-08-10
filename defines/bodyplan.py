@@ -1,5 +1,5 @@
 
-from core.bodyplan import (
+from core.creature.bodyplan import (
     Morphology, BodyElement, BodyElementType,
     BodyElementPlacement as Placement,
     BodyElementSpecial as Special,

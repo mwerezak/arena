@@ -1,7 +1,7 @@
 from core.combat.unarmed import NaturalWeaponTemplate, NaturalWeapon
 from core.combat.damage import DamageType
-from core.bodyplan import Morphology
-from core.creature import CreatureTemplate
+from core.creature.bodyplan import Morphology
+from core.creature.template import CreatureTemplate
 from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL, QUADRUPED_UNGULATE
 from defines.traits import *
 

@@ -1,7 +1,7 @@
 import math
 from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
-from core.dice import dice, DicePool
+from core.dice import dice
 from core.combat.damage import DamageType
 from core.combat.criticals import CriticalEffect
 from core.combat.attack import MeleeAttack
@@ -9,7 +9,7 @@ from core.contest import SKILL_UNARMED
 from core.constants import *
 
 if TYPE_CHECKING:
-    from core.creature import CreatureTemplate
+    from core.creature.template import CreatureTemplate
 
 def _create_table(table_data: Mapping[float, Any]) -> Sequence[Tuple[float, Any]]:
     return [(k,v) for k,v in sorted(table_data.items())]

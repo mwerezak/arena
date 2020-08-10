@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import NamedTuple, Collection, Iterable
 
-from core.creature import CreatureTemplate
+from core.creature.template import CreatureTemplate
 from core.constants import SizeCategory
 from core.equipment import Equipment
 

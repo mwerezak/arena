@@ -1,5 +1,5 @@
-from core.creature import CreatureTemplate
-from core.loadout import Loadout, LoadoutGroup, LoadoutChoice
+from core.creature.template import CreatureTemplate
+from core.creature.loadout import Loadout, LoadoutChoice
 from core.equipment.armor import Armor, ArmorTemplate
 from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL, SPECIES_HORSE
 from defines.traits import *
@@ -221,4 +221,3 @@ if __name__ == '__main__':
             print(f'location: {bp_tag}')
 
     from defines.species import *
-    from core.creature import Creature

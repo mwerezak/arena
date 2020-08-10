@@ -1,4 +1,4 @@
-from core.traits import *
+from core.creature.traits import *
 from core.contest import *
 
 __all__ = [

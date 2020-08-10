@@ -1,4 +1,4 @@
-from core.creature import CreatureTemplate
+from core.creature.template import CreatureTemplate
 
 class FormationTemplate:
     def __init__(self, name: str, creature: CreatureTemplate, mount: CreatureTemplate = None):

@@ -1,4 +1,4 @@
-from core.creature import CreatureTemplate
+from core.creature.template import CreatureTemplate
 from defines.species import SPECIES_HORSE
 from defines.traits import *
 

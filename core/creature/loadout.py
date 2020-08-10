@@ -9,10 +9,9 @@ Loadouts currently apply equipment and traits to a creature.
 """
 
 import random
-from enum import Enum
-from typing import TYPE_CHECKING, Iterable, Iterator, NamedTuple, Tuple, Optional, Collection, List, Union, Any
+from typing import TYPE_CHECKING, Iterable, Iterator, Tuple, Optional, List, Union, Any
 from core.equipment import Equipment
-from core.traits import CreatureTrait
+from core.creature.traits import CreatureTrait
 
 if TYPE_CHECKING:
     from core.creature import Creature
