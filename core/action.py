@@ -94,8 +94,11 @@ class Entity:
     def get_current_action(self) -> Optional[Action]:
         return self.loop.get_current_action(self)
 
-    def set_current_action(self, action: Action) -> None:
-        self.loop.schedule_action(self, action)
+    def set_current_action(self, action: Optional[Action]) -> None:
+        if action is not None:
+            self.loop.schedule_action(self, action)
+        elif (current := self.get_current_action()) is not None:
+            self.loop.cancel_action(current)
 
 # ActionLoop
 class ActionQueueItem(NamedTuple):

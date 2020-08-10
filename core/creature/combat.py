@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Tuple, Optional
 from core.constants import MeleeRange
+from core.creature.actions import Action, CreatureAction, DEFAULT_ACTION_WINDUP
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -26,6 +27,57 @@ class MeleeCombat:
         return None
 
     def break_engagement(self) -> None:
-        self.combatants[0].remove_melee_combat(self.combatants[1])
-        self.combatants[1].remove_melee_combat(self.combatants[0])
+        for i, j in [(0,1), (1,0)]:
+            creature, opponent = self.combatants[i], self.combatants[j]
+            creature.remove_melee_combat(opponent)
+
+            action = creature.get_current_action()
+            if getattr(action, 'attacker', None) is creature and getattr(action, 'defender', None) is opponent:
+                creature.set_current_action(None)
         del self.combatants
+
+class MeleeCombatAction(CreatureAction):
+    def __init__(self, attacker: Creature, defender: Creature):
+        self.attacker = attacker
+        self.defender = defender
+
+    def get_base_windup(self) -> float:
+        return DEFAULT_ACTION_WINDUP
+
+    def can_resolve(self) -> bool:
+        # are they still engaged in melee combat?
+        return self.attacker.get_melee_combat(self.defender) is not None
+
+    def resolve(self) -> Optional[Action]:
+        # Process interruptions
+        # Choose attack ???
+        # Resolve attack and defense rolls
+        # Apply critical effects
+        # Determine hit location
+        # Apply damage
+        pass
+
+class AttackInterruptedAction(CreatureAction):
+    """Used to take up the remaining time when a MeleeAttackActon is interrupted or resolved early
+    due to a failed interruption attempt."""
+    can_defend = False  # already attacked or defended
+
+    def __init__(self, duration: float):
+        self.duration = duration
+
+    def get_base_windup(self) -> float:
+        return self.duration
+
+    def resolve(self) -> Optional[Action]:
+        return None
+
+## MeleeEngageAction - create a melee engagement between two creatures. Interrupts movement
+## MeleeChargeAction - perform a melee charge, which can be done outside of engagement
+## MeleeAttackAction - melee attack
+## MeleeChangeRangeAction - change melee range (max 4)
+## MeleeDisengageAction
+
+
+## Passive actions... cannot normally be taken, but can be forced by other actions
+## MeleeDefendAction - when interrupted by an attack
+## OpportunityAttackAction - when opponent tries to change range ???

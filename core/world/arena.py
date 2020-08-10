@@ -5,7 +5,7 @@ from typing import Optional
 
 from core.creature import Creature
 from core.creature.combat import MeleeCombat
-from core.world.action import ActionLoop, Action, Entity
+from core.action import ActionLoop, Action, Entity
 
 class Arena:
     def __init__(self, loop: ActionLoop, melee: MeleeCombat):

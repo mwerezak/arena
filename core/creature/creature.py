@@ -6,7 +6,7 @@ from core.creature.combat import MeleeCombat
 from core.creature.template import CreatureTemplate
 from core.equipment import Equipment
 from core.creature.traits import CreatureTrait
-from core.world.action import Entity
+from core.action import Entity
 
 class Creature(Entity):
     mount: Optional['Creature']  # if this creature is riding on another creature
