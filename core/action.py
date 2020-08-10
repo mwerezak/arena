@@ -78,8 +78,14 @@ class Action(ABC):
 #     def setup_action(self, owner: 'Entity', loop: 'ActionLoop') -> None:
 
 class Entity:
-    def __init__(self, loop: 'ActionLoop'):
-        self.loop = loop
+    loop: 'ActionLoop' = None
+
+    def set_action_loop(self, loop: 'ActionLoop'):
+        if self.loop != loop:
+            if self.loop is not None:
+                self.loop.remove_entity(self)
+            self.loop = loop
+            self.loop.add_entity(self)
 
     def get_action_rate(self) -> float:
         """Allows actions to be performed quicker or slower for different entities."""
@@ -109,6 +115,16 @@ class ActionLoop:
         self.action_queue = []
         self.queue_items = {}
 
+    def add_entity(self, entity: Entity) -> None:
+        self.entity_actions.setdefault(entity)
+
+    def remove_entity(self, entity: Entity) -> None:
+        if entity in self.entity_actions:
+            action = self.entity_actions[entity]
+            if action is not None:
+                self.cancel_action(action)
+            del self.entity_actions[entity]
+
     def get_entities(self) -> Iterable[Entity]:
         return iter(self.entity_actions.keys())
 
@@ -131,7 +147,7 @@ class ActionLoop:
         return None
 
     def schedule_action(self, entity: Entity, action: Action) -> None:
-        prev_action = self.entity_actions.get(entity, None)
+        prev_action = self.entity_actions.get(entity)
         if prev_action is not None:
             self.cancel_action(prev_action)
 

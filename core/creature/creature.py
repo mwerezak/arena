@@ -6,15 +6,13 @@ from core.creature.combat import MeleeCombat
 from core.creature.template import CreatureTemplate
 from core.equipment import Equipment
 from core.creature.traits import CreatureTrait
-from core.world.action import Entity, ActionLoop
+from core.world.action import Entity
 
 class Creature(Entity):
     mount: Optional['Creature']  # if this creature is riding on another creature
     melee_combat: MutableMapping['Creature', MeleeCombat]
 
-    def __init__(self, template: CreatureTemplate, loop: ActionLoop):
-        super().__init__(loop)
-
+    def __init__(self, template: CreatureTemplate):
         self.template = template
         self.name = template.name
         self.health = template.max_health
