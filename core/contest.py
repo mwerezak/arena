@@ -31,42 +31,45 @@ SKILL_BRAWN      = Contest('Brawn',      ['STR', 'SIZ'])
 
 ## Combat Contest Types
 
-class CombatSkillClass(Enum):
-    Blade    = 'Blades'
-    Axe      = 'Axes'
-    Polearm  = 'Polearms'
-    Mace     = 'Maces'
-    Bow      = 'Bows'
-    Crossbow = 'Crossbows/Firearms'
-    Unarmed  = 'Unarmed'
-    Thrown   = 'Thrown Weapons'
-    Shield   = 'Shields'
-    Lance    = 'Lances'
-    Sling    = 'Slings'
-
-    @property
-    def name(self) -> str:
-        return self.value
-
 class CombatTest(Contest):
-    def __init__(self, skill_class: CombatSkillClass, key_attr: Iterable[str]):
-        super().__init__(skill_class.name, key_attr)
+    pass
 
 ## Melee
-SKILL_BLADE    = CombatTest(CombatSkillClass.Blade,    ['STR', 'DEX'])
-SKILL_AXE      = CombatTest(CombatSkillClass.Axe,      ['STR', 'DEX'])
-SKILL_POLEARM  = CombatTest(CombatSkillClass.Polearm,  ['STR', 'DEX'])
-SKILL_MACE     = CombatTest(CombatSkillClass.Mace,     ['STR', 'DEX'])
-SKILL_UNARMED  = CombatTest(CombatSkillClass.Unarmed,  ['STR', 'DEX'])
-SKILL_SHIELD   = CombatTest(CombatSkillClass.Shield,   ['STR', 'DEX'])
-SKILL_LANCE    = CombatTest(CombatSkillClass.Lance,    ['STR', 'DEX'])
+SKILL_BLADE    = CombatTest('Blades',   ['STR', 'DEX'])
+SKILL_AXE      = CombatTest('Axes',     ['STR', 'DEX'])
+SKILL_POLEARM  = CombatTest('Polearms', ['STR', 'DEX'])
+SKILL_MACE     = CombatTest('Maces',    ['STR', 'DEX'])
+SKILL_UNARMED  = CombatTest('Unarmed',  ['STR', 'DEX'])
+SKILL_SHIELD   = CombatTest('Shields',  ['STR', 'DEX'])
+SKILL_LANCE    = CombatTest('Lances',   ['STR', 'DEX'])
 
 ## Ranged
-SKILL_THROWN   = CombatTest(CombatSkillClass.Thrown,   ['STR', 'DEX'])
-SKILL_BOW      = CombatTest(CombatSkillClass.Bow,      ['STR', 'DEX'])
+SKILL_THROWN   = CombatTest('Thrown Weapons', ['STR', 'DEX'])
+SKILL_BOW      = CombatTest('Bows',           ['STR', 'DEX'])
 
-SKILL_SLING    = CombatTest(CombatSkillClass.Sling,    ['DEX', 'DEX'])
-SKILL_CROSSBOW = CombatTest(CombatSkillClass.Crossbow, ['DEX', 'DEX'])
+SKILL_SLING    = CombatTest('Slings',             ['DEX', 'DEX'])
+SKILL_CROSSBOW = CombatTest('Crossbows/Firearms', ['DEX', 'DEX'])
+
+class CombatSkillClass(Enum):
+    Blade    = SKILL_BLADE
+    Axe      = SKILL_AXE
+    Polearm  = SKILL_POLEARM
+    Mace     = SKILL_MACE
+    Bow      = SKILL_BOW
+    Crossbow = SKILL_CROSSBOW
+    Unarmed  = SKILL_UNARMED
+    Thrown   = SKILL_THROWN
+    Shield   = SKILL_SHIELD
+    Lance    = SKILL_LANCE
+    Sling    = SKILL_SLING
+
+    @property
+    def contest(self) -> CombatTest:
+        return self.value
+
+    @property
+    def contest_name(self) -> str:
+        return self.contest.name
 
 ## Skill Levels
 
@@ -74,6 +77,7 @@ _LEVEL_NUMERALS = ['I', 'II', 'III', 'IV', 'V']
 
 # by default skill level is 0, which grants no bonuses
 class SkillLevel(Enum):
+    none       = 0  # because None is a reserved word
     Competent  = 1
     Proficient = 2
     Talented   = 3

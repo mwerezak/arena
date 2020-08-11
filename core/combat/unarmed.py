@@ -5,7 +5,7 @@ from core.dice import dice
 from core.combat.damage import DamageType
 from core.combat.criticals import CriticalEffect
 from core.combat.attack import MeleeAttack
-from core.contest import SKILL_UNARMED
+from core.contest import CombatSkillClass
 from core.constants import *
 
 if TYPE_CHECKING:
@@ -131,8 +131,8 @@ class NaturalWeapon:
             force = force,
             damtype = self.damtype,
             damage = damage,
-            armor_pen = armor_pen,
+            armpen= armor_pen,
             criticals = self.criticals,
-            skill_class = SKILL_UNARMED,
+            skill_class = CombatSkillClass.Unarmed,
         )
 

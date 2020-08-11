@@ -2,7 +2,7 @@ from typing import MutableMapping, Type, Union, Any, Optional, Iterable, Tuple
 
 from core.creature.bodyplan import Morphology
 from core.combat.unarmed import NaturalWeapon
-from core.constants import PrimaryAttribute, SizeCategory
+from core.constants import PrimaryAttribute, CreatureSize, SizeCategory
 from core.creature.loadout import Loadout
 from core.creature.traits import CreatureTrait
 
@@ -28,8 +28,8 @@ class CreatureTemplate:
             self.name = name
 
     @property
-    def size(self) -> int:
-        return self.get_attribute(PrimaryAttribute.SIZ) + SizeCategory.Medium.to_size()
+    def size(self) -> CreatureSize:
+        return SizeCategory.Medium.to_size().get_step(self.get_attribute(PrimaryAttribute.SIZ))
 
     ## Creature Template Creation API
 

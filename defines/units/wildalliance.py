@@ -68,7 +68,7 @@ CREATURE_SATYR_ARCHER = (
 )
 
 CREATURE_SATYR_WARRIOR = (
-    CreatureTemplate('Satyr Warrior', template = SPECIES_SATYR)
+    CreatureTemplate('Satyr Hoplite', template = SPECIES_SATYR)
     .add_trait(
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
@@ -213,7 +213,7 @@ if __name__ == '__main__':
         print(f'*** {attack.name} ***')
         print(f'force: {attack.force}')
         print(f'reach: {attack.max_reach} - {attack.min_reach}')
-        print(f'damage: {attack.damage}' + (f'/{attack.armor_pen}*' if attack.armor_pen is not None else ''))
+        print(f'damage: {attack.damage}' + (f'/{attack.armpen}*' if attack.armpen is not None else ''))
 
     def print_creature_attacks(creature: CreatureTemplate):
         for bp_tag, weapon in creature.get_natural_weapons():

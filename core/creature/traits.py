@@ -25,7 +25,8 @@ class CreatureTrait:
         return f'{self.__class__.__name__}({data})'
 
 # supertype for traits that represent learned skills and abilities
-class FeatTrait(CreatureTrait): pass
+class FeatTrait(CreatureTrait):
+    pass
 
 class SkillTrait(FeatTrait):
     skill: Contest
@@ -37,7 +38,7 @@ class SkillTrait(FeatTrait):
 
     @property
     def key(self) -> Any:
-        return super().key, self.skill
+        return SkillTrait, self.skill
 
 class EvadeTrait(FeatTrait):
     name = 'Improved Evade'

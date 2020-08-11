@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import NamedTuple, Collection, Iterable
+from typing import NamedTuple, Collection, Iterable, Mapping
 
 from core.creature.template import CreatureTemplate
 from core.constants import SizeCategory
@@ -80,10 +80,10 @@ class Armor(Equipment):
             self.template.base_cost * size_mult * rel_sizes[id_tag] / self.BASE_AREA for id_tag in coverage
         ))
 
-        self.encumbrance = {
+        self.encumbrance: Mapping[str, float] = {
             id_tag : self.template.base_encumbrance * rel_sizes[id_tag] / self.BASE_AREA for id_tag in coverage
         }
 
-        self.armor_value = {
+        self.armor_value: Mapping[str, float]  = {
             id_tag : self.template.armor_value for id_tag in coverage
         }

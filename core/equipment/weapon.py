@@ -1,10 +1,12 @@
 from copy import copy as shallow_copy
-from typing import Iterable, Optional, NamedTuple
+from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple
 
 from core.equipment import Equipment
 from core.combat.attack import MeleeAttack
 from core.constants import AttackForce, SizeCategory
 from core.contest import CombatSkillClass
+if TYPE_CHECKING:
+    from core.creature import Creature
 
 class Weapon(Equipment):
     def __init__(self,
@@ -31,11 +33,22 @@ class Weapon(Equipment):
     def is_melee_weapon(self) -> bool:
         return len(self.melee_attacks) > 0
 
+    def is_shield(self) -> bool:
+        return self.shield is not None
+
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:
         return iter(self.melee_attacks)
 
-    def is_shield(self) -> bool:
-        return self.shield is not None
+    def get_required_grip(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
+        creature_size = creature.size.get_category()
+        if self.size > creature_size.get_step(1):
+            return None
+        if self.size > creature_size:
+            return 2,2
+        return 1,2
+
+    def is_light_weapon(self, creature: 'Creature') -> bool:
+        return self.size < creature.size.get_category()
 
     def clone(self, name: str = None) -> 'Weapon':
         result = shallow_copy(self)

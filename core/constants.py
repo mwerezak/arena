@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import total_ordering
 
 class PrimaryAttribute(Enum):
     STR = 'Strength'
@@ -27,18 +28,25 @@ class CreatureSize(IntClass):
     def __str__(self) -> str:
         return f'{self.get_category().name.lower()} ({self:d})'
 
+@total_ordering
 class SizeCategory(Enum):
-    Fine     = CreatureSize(1)
-    Tiny     = CreatureSize(2)
-    Small    = CreatureSize(4)
-    Medium   = CreatureSize(8)
-    Large    = CreatureSize(16)
-    Huge     = CreatureSize(32)
-    Enormous = CreatureSize(64)
-    Colossal = CreatureSize(128)
+    Fine     = 0
+    Tiny     = 1
+    Small    = 2
+    Medium   = 3
+    Large    = 4
+    Huge     = 5
+    Enormous = 6
+    Colossal = 7
 
     def to_size(self) -> CreatureSize:
-        return self.value
+        return CreatureSize(2**self.value)
+
+    def __lt__(self, other: 'SizeCategory') -> bool:
+        return self.value < other.value
+
+    def get_step(self, step: int) -> 'SizeCategory':
+        return SizeCategory(min(max(self.Fine.value, self.value + step), self.Colossal.value))
 
 class MeleeRange(IntClass):
     __NAMES = [

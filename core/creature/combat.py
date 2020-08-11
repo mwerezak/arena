@@ -37,7 +37,7 @@ class MeleeCombat:
         del self.combatants
 
 class MeleeCombatAction(CreatureAction):
-    def __init__(self, attacker: Creature, defender: Creature):
+    def __init__(self, attacker: 'Creature', defender: 'Creature'):
         self.attacker = attacker
         self.defender = defender
 
@@ -45,12 +45,16 @@ class MeleeCombatAction(CreatureAction):
         return DEFAULT_ACTION_WINDUP
 
     def can_resolve(self) -> bool:
-        # are they still engaged in melee combat?
-        return self.attacker.get_melee_combat(self.defender) is not None
+        melee = self.attacker.get_melee_combat(self.defender)
+        if melee is None:
+            return False  # no longer engaged in melee combat
+        if not any(attack.can_reach(melee.separation) for attack in self.attacker.get_melee_attacks()):
+            return False  # attacker does not have any attacks that can reach
+        return True
 
     def resolve(self) -> Optional[Action]:
         # Process interruptions
-        # Choose attack ???
+        # Choose attack
         # Resolve attack and defense rolls
         # Apply critical effects
         # Determine hit location

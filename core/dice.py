@@ -83,10 +83,16 @@ class DicePool:
     ## Stats
 
     def min(self) -> int:
-        return sum(numdice for numdice in self.__dicepool__.values()) + self.get_modifier()
+        return sum(
+            numdice if numdice > 0 else numdice*sides
+            for sides, numdice in self.__dicepool__.items()
+        )
 
     def max(self) -> int:
-        return sum(numdice*sides for sides, numdice in self.__dicepool__.items()) + self.get_modifier()
+        return sum(
+            numdice*sides if numdice > 0 else numdice
+            for sides, numdice in self.__dicepool__.items()
+        )
 
     def mean(self) -> float:
         return sum(

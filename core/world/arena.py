@@ -25,12 +25,15 @@ class Arena:
         pass
 
 if __name__ == '__main__':
-    from defines.species import SPECIES_HUMAN
+    from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
     from core.creature.combat import create_melee_combat
+    from core.combat.tactics import *
 
     loop = ActionLoop()
-    a = Creature(SPECIES_HUMAN, loop)
-    b = Creature(SPECIES_HUMAN, loop)
-    melee = create_melee_combat(a, b)
+    gnoll = Creature(SPECIES_GNOLL)
+    goblin = Creature(SPECIES_GOBLIN)
+    melee = create_melee_combat(gnoll, goblin)
 
     arena = Arena(loop, melee)
+
+    for a in gnoll.get_melee_attacks(): print(a)
