@@ -27,6 +27,7 @@ class Weapon(Equipment):
 
         self.melee_attacks = list(melee_attacks)
         for attack in melee_attacks:
+            attack.name = f'{self.name} ({attack.name})'
             if attack.skill_class is None:
                 attack.skill_class = self.skill_class
 
@@ -39,13 +40,18 @@ class Weapon(Equipment):
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:
         return iter(self.melee_attacks)
 
-    def get_required_grip(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
+    def get_required_hands(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
+        """Return None if the equipment cannot be held, otherwise return the (minimum, maximum) number of hands needed to equip."""
         creature_size = creature.size.get_category()
         if self.size > creature_size.get_step(1):
             return None
-        if self.size > creature_size:
-            return 2,2
-        return 1,2
+
+        min_hands = 2 if self.is_large_weapon(creature) else 1
+        max_hands = 1 if self.is_light_weapon(creature) else 2
+        return min_hands, max_hands
+
+    def is_large_weapon(self, creature: 'Creature') -> bool:
+        return self.size > creature.size.get_category()
 
     def is_light_weapon(self, creature: 'Creature') -> bool:
         return self.size < creature.size.get_category()

@@ -53,8 +53,10 @@ def get_melee_range_priority(creature: 'Creature', opponent: 'Creature') -> Mapp
         power = max(attack_priority.values(), default=0.0)
 
         threat_priority = get_attack_priority_at_range(opponent, creature, reach)
-        danger = max(threat_priority.values(), default=0.0)
-        range_priority[reach] = power/max(danger, 0.1)
+        threat = max(threat_priority.values(), default=0.0)
+        danger = (threat + creature.health)/creature.health
+
+        range_priority[reach] = power/danger
     return range_priority
 
 

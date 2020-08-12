@@ -5,7 +5,38 @@ from typing import Optional
 
 from core.creature import Creature
 from core.creature.combat import MeleeCombat
+from core.combat.attack import MeleeAttack
 from core.action import ActionLoop, Action, Entity
+from core.equipment.weapon import Weapon
+from core.combat.tactics import SKILL_FACTOR
+
+def get_attack_value(creature: Creature, attack: MeleeAttack) -> float:
+    return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.skill_class.contest)]
+
+def try_equip_best_weapons(creature: Creature) -> None:
+    creature.unequip_all()
+
+    weapon_value = {}
+    for item in creature.get_equipment():
+        if not isinstance(item, Weapon):
+            continue
+
+        best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks()), default=None)
+        if best_value is not None:
+            weapon_value[item] = best_value
+
+    for item in sorted(weapon_value.keys(), key=lambda k: weapon_value[k], reverse=True):
+        if len(list(creature.get_empty_hands())) == 0:
+            break
+        creature.try_equip_item(item)
+
+    ## if there are any left over hands, increase hand count of existing weapons
+    for item in sorted(creature.get_held_items(), key=lambda k: weapon_value[k], reverse=True):
+        if len(list(creature.get_empty_hands())) == 0:
+            break
+        _, max_hands = item.get_required_hands(creature)
+        creature.try_equip_item(item, use_hands=max_hands)
+
 
 class Arena:
     def __init__(self, loop: ActionLoop, melee: MeleeCombat):
@@ -24,6 +55,9 @@ class Arena:
     def get_next_action(self, entity: Entity) -> Optional[Action]:
         pass
 
+
+
+
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
     from core.creature.combat import create_melee_combat
@@ -36,4 +70,8 @@ if __name__ == '__main__':
 
     arena = Arena(loop, melee)
 
-    for a in gnoll.get_melee_attacks(): print(a)
+    from defines.weapons import WEAPON_BROADSWORD
+    gnoll.add_equipment(WEAPON_BROADSWORD)
+    try_equip_best_weapons(gnoll)
+
+    from defines.units.wildalliance import CREATURE_SATYR_WARRIOR

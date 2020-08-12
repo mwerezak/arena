@@ -22,7 +22,7 @@ class CreatureSize(IntClass):
         return super().__new__(cls, max(value, 1))
 
     def get_category(self) -> 'SizeCategory':
-        _, closest = min((abs(cat.size - self), cat) for cat in SizeCategory)
+        _, closest = min((abs(cat.to_size() - self), cat) for cat in SizeCategory)
         return closest
 
     def __str__(self) -> str:

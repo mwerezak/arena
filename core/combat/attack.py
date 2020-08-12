@@ -63,10 +63,10 @@ class MeleeAttack:
         return f'[{self.damage}]{self.damtype.format_type_code()}'
 
 class MeleeAttackInstance:
-    def __init__(self, template: MeleeAttack, attacker: 'Creature', use_grip: int = 1):
+    def __init__(self, template: MeleeAttack, attacker: 'Creature', use_hands: int = 1):
         self.template = template
         self.attacker = attacker
-        self.use_grip = use_grip
+        self.use_hands = use_hands
 
     def can_reach(self, range: MeleeRange) -> bool:
         return self.template.can_reach(range)
@@ -89,10 +89,10 @@ class MeleeAttackInstance:
 
     @property
     def str_modifier(self) -> int:
-        if self.use_grip < 1:
+        if self.use_hands < 1:
             return 0
         str_mod = self.attacker.get_attribute(PrimaryAttribute.STR)
-        if self.use_grip == 1:
+        if self.use_hands == 1:
             return str_mod
         return int(str_mod * 1.5)
 

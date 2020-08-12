@@ -13,31 +13,33 @@ from core.creature.traits import CreatureTrait, SkillTrait
 from core.action import Entity
 
 class Creature(Entity):
-    mount: Optional['Creature']  # if this creature is riding on another creature
-    melee_combat: MutableMapping['Creature', MeleeCombat]
+    health: float
 
     def __init__(self, template: CreatureTemplate):
         self.template = template
         self.name = template.name
         self.health = template.max_health
-        self.traits = { trait.key : trait for trait in template.get_traits() }
 
-        self.mount = None
-        self.melee_combat = {}
+        self._traits: MutableMapping[Any, CreatureTrait] = {
+            trait.key : trait for trait in template.get_traits()
+        }
 
-        self.unarmed_attacks: Collection[Tuple[str, MeleeAttack]] = [
+        self._mount: Optional['Creature'] = None
+        self._melee_combat: MutableMapping['Creature', MeleeCombat] = {}
+
+        self._unarmed_attacks: Collection[Tuple[str, MeleeAttack]] = [
             (bp_tag, natural_weapon.create_attack(template))
             for bp_tag, natural_weapon in template.get_natural_weapons()
         ]
 
-        self.natural_armor: Mapping[str, float] = {
+        self._natural_armor: Mapping[str, float] = {
             bp_tag : armor for bp_tag, armor in template.get_natural_armor()
         }
 
-        self.equipment = []
+        self._equipment = []
         template.loadout.apply_loadout(self)
 
-        self.held_items: MutableMapping[str, Equipment] = {
+        self._held_items: MutableMapping[str, Equipment] = {
             bp.id_tag : None for bp in template.bodyplan if BodyElementSpecial.GRASP in bp.specials
         }
 
@@ -56,9 +58,9 @@ class Creature(Entity):
         return self.template.get_attribute(attr)
 
     def get_armor(self, bp_id: str) -> float:
-        natural_armor = self.natural_armor.get(bp_id, 0)
+        natural_armor = self._natural_armor.get(bp_id, 0)
         equipped_armor = max(
-            ( armor.armor_value.get(bp_id) for armor in self.equipment if isinstance(armor, Armor) ),
+            (armor.armor_value.get(bp_id, 0) for armor in self._equipment if isinstance(armor, Armor)),
             default = 0
         )
         return natural_armor + equipped_armor
@@ -67,7 +69,7 @@ class Creature(Entity):
         result = 0.0
 
         armor_items = []
-        for equipment in self.equipment:
+        for equipment in self._equipment:
             if isinstance(equipment, Armor):
                 armor_items.append(equipment)
             else:
@@ -82,10 +84,10 @@ class Creature(Entity):
     ## Traits
 
     def add_trait(self, trait: CreatureTrait) -> None:
-        self.traits[trait.key] = trait
+        self._traits[trait.key] = trait
 
     def get_trait(self, key: Any) -> Optional[CreatureTrait]:
-        return self.traits.get(key)
+        return self._traits.get(key)
 
     def get_skill_level(self, contest: Contest) -> SkillLevel:
         trait: Optional[SkillTrait] = self.get_trait((SkillTrait, contest))
@@ -96,51 +98,60 @@ class Creature(Entity):
     ## Equipment
 
     def add_equipment(self, equipment: Equipment) -> None:
-        if equipment not in self.equipment:
-            self.equipment.append(equipment)
+        if equipment not in self._equipment:
+            self._equipment.append(equipment)
 
     def remove_equipment(self, equipment: Equipment) -> None:
-        if equipment in self.equipment:
-            self.equipment.remove(equipment)
+        if equipment in self._equipment:
+            self._equipment.remove(equipment)
         self.unequip_item(equipment)
 
-    def try_equip_item(self, equipment: Equipment, use_grip: int = None) -> bool:
+    def get_equipment(self) -> Iterable[Equipment]:
+        return iter(self._equipment)
+
+    def try_equip_item(self, equipment: Equipment, *, use_hands: int = None) -> bool:
         self.unequip_item(equipment)
 
-        req_grip = equipment.get_required_grip(self)
-        if req_grip is None:
+        req_hands = equipment.get_required_hands(self)
+        if req_hands is None:
             return False
 
-        empty_hands = [
-            bp_tag for bp_tag, item in self.held_items.items()
-            if item is None and self.can_use_bodypart(bp_tag)
-        ]
+        empty_hands = list(self.get_empty_hands())
 
-        min_grip, max_grip = req_grip
-        if len(empty_hands) < min_grip:
+        min_hands, max_hands = req_hands
+        if len(empty_hands) < min_hands:
             return False
 
-        use_grip = min(max(min_grip, use_grip), max_grip)
+        use_hands = (
+            min(max(min_hands, use_hands), max_hands)
+            if use_hands is not None else min_hands
+        )
+
         self.add_equipment(equipment)
-        for i in range(use_grip):
-            self.held_items[empty_hands.pop()] = equipment
+        for i in range(use_hands):
+            self._held_items[empty_hands.pop()] = equipment
         return True
 
     def unequip_item(self, equipment: Equipment) -> None:
-        for bp_tag, item in self.held_items.items():
+        for bp_tag, item in self._held_items.items():
             if item == equipment:
-                self.held_items[bp_tag] = None
+                self._held_items[bp_tag] = None
 
     def unequip_all(self) -> None:
-        for bp_tag in self.held_items.keys():
-            self.held_items[bp_tag] = None
+        for bp_tag in self._held_items.keys():
+            self._held_items[bp_tag] = None
 
     def get_held_items(self) -> Iterable[Equipment]:
-        return iter(set(self.held_items.values()))
+        return iter(set(item for item in self._held_items.values() if item is not None))
 
     def get_item_held_by(self, equipment: Equipment) -> Iterable[str]:
-        for bp_tag, item in self.held_items.items():
+        for bp_tag, item in self._held_items.items():
             if item == equipment:
+                yield bp_tag
+
+    def get_empty_hands(self) -> Iterable[str]:
+        for bp_tag, item in self._held_items.items():
+            if item is None and self.can_use_bodypart(bp_tag):
                 yield bp_tag
 
     ## Melee Combat
@@ -149,7 +160,7 @@ class Creature(Entity):
         return True  # stub
 
     def get_melee_attacks(self) -> Iterable[MeleeAttackInstance]:
-        for bp_tag, attack in self.unarmed_attacks:
+        for bp_tag, attack in self._unarmed_attacks:
             if self.can_use_bodypart(bp_tag):
                 yield attack.create_instance(self)
         for item in self.get_held_items():
@@ -163,11 +174,11 @@ class Creature(Entity):
         return max(attack_reach, default=MeleeRange(0))
 
     def get_melee_combat(self, other: 'Creature') -> Optional[MeleeCombat]:
-        return self.melee_combat.get(other, None)
+        return self._melee_combat.get(other, None)
 
     def add_melee_combat(self, other: 'Creature', melee: MeleeCombat) -> None:
-        self.melee_combat[other] = melee
+        self._melee_combat[other] = melee
 
     def remove_melee_combat(self, other: 'Creature') -> None:
-        if other in self.melee_combat:
-            del self.melee_combat[other]
+        if other in self._melee_combat:
+            del self._melee_combat[other]

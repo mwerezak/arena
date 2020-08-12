@@ -9,6 +9,6 @@ class Equipment:
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
 
-    def get_required_grip(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
+    def get_required_hands(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
         """Return None if the equipment cannot be held, otherwise return the (minimum, maximum) number of hands needed to equip."""
         return None
