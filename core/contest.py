@@ -9,19 +9,20 @@ from typing import Iterable, Sequence
 from core.constants import PrimaryAttribute
 
 class Contest:
-    def __init__(self, name: str, key_attr: Iterable[str]):
+    def __init__(self, name: str, key_attr: Iterable[str], innate: bool = False):
         self.name = name
         self.key_attr: Sequence[PrimaryAttribute] = tuple(PrimaryAttribute[s] for s in key_attr)
+        self.innate = innate  # innate skills cannot recieve a negative modifier for low skill level
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name}>'
 
 ## Standard Contest Types
 
+SKILL_ENDURANCE  = Contest('Endurance',  ['CON', 'CON'], innate=True)
+SKILL_WILLPOWER  = Contest('Willpower',  ['POW', 'POW'], innate=True)
+SKILL_PERCEPTION = Contest('Perception', ['INT', 'POW'], innate=True)
 SKILL_EVADE      = Contest('Evade',      ['DEX', 'DEX'])
-SKILL_ENDURANCE  = Contest('Endurance',  ['CON', 'CON'])
-SKILL_WILLPOWER  = Contest('Willpower',  ['POW', 'POW'])
-SKILL_PERCEPTION = Contest('Perception', ['INT', 'POW'])
 SKILL_STEALTH    = Contest('Stealth',    ['DEX', 'INT'])
 SKILL_RIDING     = Contest('Riding',     ['DEX', 'POW'])
 
