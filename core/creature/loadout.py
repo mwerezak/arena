@@ -11,12 +11,13 @@ Loadouts currently apply equipment and traits to a creature.
 import random
 from typing import TYPE_CHECKING, Iterable, Iterator, Tuple, Optional, List, Union, Any
 from core.equipment import Equipment
+from core.equipment.template import EquipmentTemplate
 from core.creature.traits import CreatureTrait
 
 if TYPE_CHECKING:
     from core.creature import Creature
 
-LoadoutItem = Union[Equipment, CreatureTrait]
+LoadoutItem = Union[EquipmentTemplate, CreatureTrait]
 LoadoutGroup = Iterable[LoadoutItem]
 
 class LoadoutChoice:
@@ -47,7 +48,7 @@ class Loadout:
     def apply_loadout(self, creature: 'Creature') -> None:
         for group in self.loadout:
             for item in group:
-                if isinstance(item, Equipment):
-                    creature.add_equipment(item)
+                if isinstance(item, EquipmentTemplate):
+                    creature.add_equipment(Equipment(item))
                 if isinstance(item, CreatureTrait):
                     creature.add_trait(item)

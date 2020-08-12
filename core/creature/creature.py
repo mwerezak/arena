@@ -164,10 +164,9 @@ class Creature(Entity):
 
     def get_held_item_attacks(self) -> Iterable[MeleeAttackInstance]:
         for item in self.get_held_items():
-            if not isinstance(item, Weapon):
-                continue
-            using_hands = sum(1 for bp_tag in self.get_item_held_by(item) if self.can_use_bodypart(bp_tag))
-            yield from item.get_melee_attacks(self, using_hands)
+            if item.is_weapon():
+                using_hands = sum(1 for bp_tag in self.get_item_held_by(item) if self.can_use_bodypart(bp_tag))
+                yield from item.get_melee_attacks(self, using_hands)
 
     def get_melee_attacks(self) -> Iterable[MeleeAttackInstance]:
         yield from self.get_unarmed_attacks()

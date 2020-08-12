@@ -1,14 +1,25 @@
-from typing import TYPE_CHECKING, Optional, Tuple
-if TYPE_CHECKING:
-    from core.creature import Creature
+from typing import Any
+
+from core.equipment.template import EquipmentTemplate
+from core.equipment.weapon import Weapon
+from core.equipment.armor import Armor
 
 class Equipment:
-    name: str
-    cost: int
+    def __init__(self, template: EquipmentTemplate, name: str = None):
+        self.template = template
+        self.name = name or template.name
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.template, name)
+
+    def is_weapon(self) -> bool:
+        return isinstance(self.template, Weapon)
+
+    def is_armor(self) -> bool:
+        return isinstance(self.template, Armor)
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__}: {self.name!r}>'
+        return f'{self.__class__.__name__}({self.template!r})'
 
-    def get_required_hands(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
-        """Return None if the equipment cannot be held, otherwise return the (minimum, maximum) number of hands needed to equip."""
-        return None
+    def __str__(self) -> str:
+        return f'Item: {self.template}'

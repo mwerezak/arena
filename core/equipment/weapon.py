@@ -1,14 +1,14 @@
 from copy import copy as shallow_copy
 from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple
 
-from core.equipment import Equipment
+from core.equipment.template import EquipmentTemplate
 from core.combat.attack import MeleeAttack, MeleeAttackInstance
 from core.constants import AttackForce, SizeCategory
 from core.contest import CombatSkillClass
 if TYPE_CHECKING:
     from core.creature import Creature
 
-class Weapon(Equipment):
+class Weapon(EquipmentTemplate):
     def __init__(self,
                  name: str,
                  size: SizeCategory,
@@ -65,6 +65,9 @@ class Weapon(Equipment):
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
+
+    def __str__(self) -> str:
+        return self.name
 
 class ShieldBlock(NamedTuple):
     block_force: AttackForce

@@ -1,9 +1,10 @@
 from enum import Enum
-from typing import NamedTuple, Collection, Iterable, Mapping
+from typing import TYPE_CHECKING, NamedTuple, Collection, Iterable, Mapping
 
-from core.creature.template import CreatureTemplate
 from core.constants import SizeCategory
-from core.equipment import Equipment
+from core.equipment.template import EquipmentTemplate
+if TYPE_CHECKING:
+    from core.creature.template import CreatureTemplate
 
 ## Armor
 
@@ -63,10 +64,10 @@ class ArmorTemplate:
     def get_name(self) -> str:
         return self.material.name + ' ' + self.name
 
-class Armor(Equipment):
+class Armor(EquipmentTemplate):
     BASE_AREA = 0.15
 
-    def __init__(self, template: ArmorTemplate, fitted_for: CreatureTemplate, name: str = None):
+    def __init__(self, template: ArmorTemplate, fitted_for: 'CreatureTemplate', name: str = None):
         self.name = name or template.get_name()
         self.template = template
         self.creature = fitted_for

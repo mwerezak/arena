@@ -18,12 +18,10 @@ def try_equip_best_weapons(creature: Creature) -> None:
 
     weapon_value = {}
     for item in creature.get_equipment():
-        if not isinstance(item, Weapon):
-            continue
-
-        best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks()), default=None)
-        if best_value is not None:
-            weapon_value[item] = best_value
+        if item.is_weapon():
+            best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=None)
+            if best_value is not None:
+                weapon_value[item] = best_value
 
     for item in sorted(weapon_value.keys(), key=lambda k: weapon_value[k], reverse=True):
         if len(list(creature.get_empty_hands())) == 0:
@@ -70,8 +68,6 @@ if __name__ == '__main__':
 
     arena = Arena(loop, melee)
 
-    from defines.weapons import WEAPON_BROADSWORD
-    gnoll.add_equipment(WEAPON_BROADSWORD)
-    try_equip_best_weapons(gnoll)
-
+    from defines.units.wildalliance import *
+    from defines.units.barbarians import *
     from defines.units.wildalliance import CREATURE_SATYR_WARRIOR
