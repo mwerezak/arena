@@ -249,7 +249,7 @@ Steel Plate Mail Barding (20%) or Steel Chain Barding (30%) or Steel Brigandine 
 =Goblin Slave Spears
 No Skills
 
-Spear (60%) or Longspear (20%) or Club (20%)
+Spear (60%) or Halfspear (20%) or Club (20%)
 Small Shield (50%) or Nothing (50%)
 
 =Goblin Slave Slingers
@@ -288,7 +288,7 @@ Hide Armor (50%) or Nothing (50%)
 Iron Helmet (50%) or Leather Helmet (50%)
 Leather Cuirass (50%) or Iron Brigandine Cuirass (30%) or Nothing (20%)
 
-=Goblin Warg Rider
+=Goblin Boar Rider
 Polearm II
 Sword I
 Riding II

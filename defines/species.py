@@ -58,6 +58,11 @@ SPECIES_ORC = (
     .set_attributes(STR=+3, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
 )
 
+SPECIES_OGRE = (
+    CreatureTemplate('Ogre', BODYPLAN_HUMANLIKE)
+    .set_attributes(STR=+4, DEX=-1, CON=+3, SIZ=+10, INT=-2, CHA=-2)
+)
+
 # Horses
 BODYPLAN_HORSE = (
     Morphology(QUADRUPED_UNGULATE)
