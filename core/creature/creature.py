@@ -59,10 +59,8 @@ class Creature(Entity):
 
     def get_armor(self, bp_id: str) -> float:
         natural_armor = self._natural_armor.get(bp_id, 0)
-        equipped_armor = max(
-            (armor.armor_value.get(bp_id, 0) for armor in self._equipment if isinstance(armor, Armor)),
-            default = 0
-        )
+        armor_values = (armor.armor_value.get(bp_id, 0) for armor in self._equipment if isinstance(armor, Armor))
+        equipped_armor = max(armor_values, default = 0)
         return natural_armor + equipped_armor
 
     def get_encumbrance(self) -> float:
@@ -159,15 +157,21 @@ class Creature(Entity):
     def can_use_bodypart(self, bp_tag: str) -> bool:
         return True  # stub
 
-    def get_melee_attacks(self) -> Iterable[MeleeAttackInstance]:
+    def get_unarmed_attacks(self) -> Iterable[MeleeAttackInstance]:
         for bp_tag, attack in self._unarmed_attacks:
             if self.can_use_bodypart(bp_tag):
-                yield attack.create_instance(self)
+                yield attack.create_instance(self, 1)
+
+    def get_held_item_attacks(self) -> Iterable[MeleeAttackInstance]:
         for item in self.get_held_items():
-            if isinstance(item, Weapon):
-                using_grip = sum(1 for bp_tag in self.get_item_held_by(item) if self.can_use_bodypart(bp_tag))
-                for attack in item.get_melee_attacks():
-                    yield attack.create_instance(self, using_grip)
+            if not isinstance(item, Weapon):
+                continue
+            using_hands = sum(1 for bp_tag in self.get_item_held_by(item) if self.can_use_bodypart(bp_tag))
+            yield from item.get_melee_attacks(self, using_hands)
+
+    def get_melee_attacks(self) -> Iterable[MeleeAttackInstance]:
+        yield from self.get_unarmed_attacks()
+        yield from self.get_held_item_attacks()
 
     def get_melee_engage_distance(self) -> MeleeRange:
         attack_reach = (attack.max_reach for attack in self.get_melee_attacks())

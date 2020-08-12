@@ -45,7 +45,7 @@ def get_expected_damage_part(attack: MeleeAttackInstance, target: 'Creature', bp
     armor = target.get_armor(bp_id)
     return max(0.0, damage - armor, min(armpen, damage))
 
-def get_melee_range_priority(creature: 'Creature', opponent: 'Creature') -> Mapping[MeleeRange, float]:
+def get_melee_range_priority(creature: 'Creature', opponent: 'Creature', *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
     range_priority = {}
     for i in range(creature.get_melee_engage_distance() + 1):
         reach = MeleeRange(i)
@@ -54,9 +54,8 @@ def get_melee_range_priority(creature: 'Creature', opponent: 'Creature') -> Mapp
 
         threat_priority = get_attack_priority_at_range(opponent, creature, reach)
         threat = max(threat_priority.values(), default=0.0)
-        danger = (threat + creature.health)/creature.health
+        danger = (2*caution*threat + creature.health)/creature.health
 
         range_priority[reach] = power/danger
     return range_priority
-
 

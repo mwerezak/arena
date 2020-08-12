@@ -2,7 +2,7 @@ from copy import copy as shallow_copy
 from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple
 
 from core.equipment import Equipment
-from core.combat.attack import MeleeAttack
+from core.combat.attack import MeleeAttack, MeleeAttackInstance
 from core.constants import AttackForce, SizeCategory
 from core.contest import CombatSkillClass
 if TYPE_CHECKING:
@@ -37,8 +37,9 @@ class Weapon(Equipment):
     def is_shield(self) -> bool:
         return self.shield is not None
 
-    def get_melee_attacks(self) -> Iterable[MeleeAttack]:
-        return iter(self.melee_attacks)
+    def get_melee_attacks(self, attacker: 'Creature', use_hands: int = 0) -> Iterable[MeleeAttackInstance]:
+        for attack in self.melee_attacks:
+            yield attack.create_instance(attacker, use_hands)
 
     def get_required_hands(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
         """Return None if the equipment cannot be held, otherwise return the (minimum, maximum) number of hands needed to equip."""

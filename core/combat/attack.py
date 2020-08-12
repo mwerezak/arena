@@ -42,9 +42,9 @@ class MeleeAttack:
     def can_reach(self, range: MeleeRange) -> bool:
         return self.min_reach <= range <= self.max_reach
 
-    def create_instance(self, attacker: 'Creature', use_grip: int = 1) -> 'MeleeAttackInstance':
+    def create_instance(self, attacker: 'Creature', use_hands: int) -> 'MeleeAttackInstance':
         """Use this MeleeAttack as a template to create a new attack adjusted for the given attacker"""
-        return MeleeAttackInstance(self, attacker, use_grip)
+        return MeleeAttackInstance(self, attacker, use_hands)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
@@ -63,7 +63,7 @@ class MeleeAttack:
         return f'[{self.damage}]{self.damtype.format_type_code()}'
 
 class MeleeAttackInstance:
-    def __init__(self, template: MeleeAttack, attacker: 'Creature', use_hands: int = 1):
+    def __init__(self, template: MeleeAttack, attacker: 'Creature', use_hands: int):
         self.template = template
         self.attacker = attacker
         self.use_hands = use_hands
