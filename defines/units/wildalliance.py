@@ -72,6 +72,7 @@ CREATURE_SATYR_WARRIOR = (
     .add_trait(
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(1)),
     )
     .set_loadout(Loadout(
         LoadoutChoice([
@@ -92,6 +93,7 @@ CREATURE_SATYR_WARDEN = (
         SkillTrait(SKILL_BLADE, SkillLevel(3)),
         SkillTrait(SKILL_SHIELD, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
     )
     .set_loadout(Loadout(
         [ WEAPON_SCIMITAR, SHIELD_MEDIUM, Armor(LINEN_ARMOR, SPECIES_SATYR) ],
@@ -107,6 +109,7 @@ CREATURE_SATYR_OUTRIDER = (
         SkillTrait(SKILL_SHIELD, SkillLevel(2)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_RIDING, SkillLevel(2)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(1)),
     )
     .set_loadout(Loadout(
         [WEAPON_LONGSPEAR],

@@ -63,19 +63,21 @@ High-tier heavy infantry.
 Axes III
 Polearms IV
 Endurance III
+Unarmed II
 
 Halberd
 Padded Gambeson
 Steel Full Plate Armor, Steel Armet (50%) or Steel Plate Mail Armor, Steel Close Helmet (50%)
 
 =Corsairs
+Mercenary marine light infantry. Lightly armored but skilled and motivated.
 
 Swords II
 Shield II
 Endurance I
+Unarmed I
 Evade
 
-Sabre-and-buckler equipped light infantry. Highly skilled and motivated.
 Sabre
 Small Shield (70%) or Buckler (30%)
 Steel Helmet (70%) or Leather Helmet (30%)
@@ -88,8 +90,8 @@ Light cavalry. Decent training though not as experienced as professional cavalry
 Polarms I
 Riding I
 
-Lance (70%) or Long Spear (30%)
-Long Sword
+Lance
+Long Sword (30%) or Sabre (70%)
 Medium Shield (50%) or Small Shield (50%)
 Steel Helmet (70%) or Leather Helmet (30%)
 Padded Gambeson
@@ -105,7 +107,7 @@ Swords I
 Shields I
 Riding I
 
-Long Sword (70%) or Sabre (30%)
+Long Sword (30%) or Sabre (70%)
 Medium Shield
 Steel Helmet
 Padded Gambeson
@@ -121,8 +123,11 @@ Swords I
 Shields I
 Riding II
 Endurance I
+Unarmed I
 
-Lance, Long Sword, Medium Shield
+Lance
+Long Sword (50%) or Sabre (50%)
+Medium Shield
 Padded Gambeson
 Steel Helmet, Steel Breastplate (30%)
     or Steel Helmet, Banded Mail Armor (40%)
@@ -181,6 +186,7 @@ Archery II
 Swords II
 Shields I
 Endurance II
+Unarmed I
 Evade
 
 Longbow, 30 Arrows
@@ -212,6 +218,7 @@ Swords II
 Shields I
 Riding II
 Endurance I
+Unarmed I
 
 Lance,
 Longsword (40%) or Broadsword (30%) or Warhammer (30%)
@@ -228,6 +235,7 @@ Swords III
 Shields II
 Riding III
 Endurance II
+Unarmed I
 
 Lance, Medium Shield
 Longsword (50%), Warhammer (50%)
@@ -272,6 +280,7 @@ Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
 Sword III
 Evade
 Endurance I
+Unarmed II
 Finesse
 
 Short Sword, Short Sword (50%) or Dagger, Dagger (50%)
@@ -283,6 +292,7 @@ Leather Cuirass (50%) or Iron Brigandine Cuirass (30%) or Nothing (20%)
 Polearm II
 Sword I
 Riding II
+Unarmed I
 Endurance I
 
 Longspear
@@ -295,6 +305,7 @@ Warg
 =Ogre Brute
 Mace III
 Endurance III
+Unarmed III
 
 Greatclub
 Hide Armor (30%) or Hide Cuirass (30%) or Nothing (40%)
@@ -303,6 +314,7 @@ Hide Armor (30%) or Hide Cuirass (30%) or Nothing (40%)
 Axe/Sword/Mace II
 Shield II
 Endurance II
+Unarmed II
 
 Battle Axe (40%) or Falchion (30%) or Mace (30%)
 Small Shield (50%) or Medium Shield (50%)
@@ -315,6 +327,7 @@ Axe/Sword/Mace II
 Shield I
 Archery I
 Endurance II
+Unarmed I
 
 Short Bow, 30 Arrows
 Battle Axe (40%) or Falchion (30%) or Mace (30%)
@@ -352,6 +365,7 @@ Shortsword (50%) or Dagger (50%)
 Polearm/Sword II
 Shield I
 Endurance II
+Unarmed I
 Evade
 Finesse
 
@@ -364,6 +378,7 @@ Bronze Scale Cuirass (70%) or Nothing (30%)
 Sword III
 Shield III
 Endurance III
+Unarmed II
 Evade
 Finesse
 
@@ -380,6 +395,7 @@ Polearm II
 Shield II
 Riding II
 Endurance III
+Unarmed I
 
 Longspear
 Medium Shield (70%) or Small Shield (30%)
