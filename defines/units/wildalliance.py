@@ -68,7 +68,7 @@ CREATURE_SATYR_ARCHER = (
 )
 
 CREATURE_SATYR_WARRIOR = (
-    CreatureTemplate('Satyr Hoplite', template = SPECIES_SATYR)
+    CreatureTemplate('Satyr Warrior', template = SPECIES_SATYR)
     .add_trait(
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),

@@ -109,7 +109,9 @@ SPECIES_GNOLL = (
 )
 
 # Satyrs
-BODYPLAN_SATYR = (
+
+# goatlike lower body, humanlike upper body
+BODYPLAN_SATYR_HALF = (
     Morphology(HUMANOID)
     .select('lbody', 'l_leg', 'r_leg', 'tail')
         .set(armor = 1) #thick fur on the lower body, thin at the top
@@ -125,11 +127,36 @@ BODYPLAN_SATYR = (
     .finalize()
 )
 
-SPECIES_SATYR = (
-    CreatureTemplate('Satyr', BODYPLAN_SATYR)
+SPECIES_SATYR_HALF = (
+    CreatureTemplate('Satyr', BODYPLAN_SATYR_HALF)
     .set_attributes(DEX=+1, CON=+1, INT=+1, POW=+2, CHA=+1)
     .add_trait(EvadeTrait, FinesseTrait)
 )
+
+
+# goat from head to toe
+BODYPLAN_SATYR_FULL = (
+    Morphology(HUMANOID)
+    .select('*')
+        .set(armor = 1) #thick fur on the lower body, thin at the top
+    .select('tail')
+        .set(size = 0.5) # goat tail is fairly small
+    .select('l_arm', 'r_arm')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_PUNCH, force=-1))
+    .select('l_leg', 'r_leg')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_HOOF_BIPED))
+    .select('head')
+        .add_unarmed_attack(NaturalWeapon(UNARMED_HORN)) #full size goat horns
+        .add_unarmed_attack(NaturalWeapon(UNARMED_BITE_WEAK))
+    .finalize()
+)
+
+SPECIES_SATYR = (
+    CreatureTemplate('Satyr', BODYPLAN_SATYR_FULL)
+    .set_attributes(DEX=+1, CON=+1, SIZ=+1, INT=+1, POW=+2)
+    .add_trait(EvadeTrait, FinesseTrait)
+)
+
 
 # Minotaur
 BODYPLAN_MINOTAUR = (
