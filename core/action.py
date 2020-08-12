@@ -100,6 +100,7 @@ class Entity:
         elif (current := self.get_current_action()) is not None:
             self.loop.cancel_action(current)
 
+
 # ActionLoop
 class ActionQueueItem(NamedTuple):
     windup: float
@@ -194,5 +195,10 @@ class ActionLoop:
 
         if next_action is not None:
             self.schedule_action(entity, next_action)
+
+        # recheck can_resolve() on all other actions?
+        # for action in list(self.queue_items.keys()):
+        #     if not action.can_resolve():
+        #         self.cancel_action(action)
 
 # MeleeEngagement

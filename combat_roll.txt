@@ -1,13 +1,13 @@
-CRIT_THRESH: 5
+CRIT_THRESH: 4
 
 function: combat helper AROLL:s vs DROLL:s CRIT:n MOD:n {
   ROLL: AROLL - DROLL
   if ROLL + MOD > 0 {
     RESULT: 1 + (ROLL + CRIT)/CRIT_THRESH
-    if RESULT > 3 { RESULT: 3 }
+    if RESULT > 4 { RESULT: 4 }
   } else {
     RESULT: (ROLL + CRIT)/CRIT_THRESH
-    if RESULT < -2 { RESULT: -2 }
+    if RESULT < -3 { RESULT: -3 }
   }
   result: RESULT
 }

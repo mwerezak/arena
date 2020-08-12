@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterable, Mapping
+from typing import TYPE_CHECKING, Iterable, Mapping, Tuple
 
 from core.constants import MeleeRange
 from core.contest import SkillLevel
@@ -24,6 +24,7 @@ def get_attack_priority(attacker: 'Creature',
         for attack in attacks or attacker.get_melee_attacks()
     }
 
+# include only weapons that can attack at the given range
 def get_attack_priority_at_range(attacker: 'Creature',
                                  target: 'Creature',
                                  reach: MeleeRange,
@@ -33,6 +34,21 @@ def get_attack_priority_at_range(attacker: 'Creature',
         for attack in attacks or attacker.get_melee_attacks()
         if attack.can_reach(reach)
     }
+
+# include only weapons that can attack at or within the given ranges
+def get_attack_priority_at_ranges(attacker: 'Creature',
+                                 target: 'Creature',
+                                 reach: Tuple[MeleeRange, MeleeRange],
+                                 attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
+
+    min_range, max_range = min(reach), max(reach)
+    ranges = list(MeleeRange.range(min_range, max_range+1))
+    return {
+        attack : get_expected_damage(attack, target) * SKILL_FACTOR[attacker.get_skill_level(attack.skill_class.contest)]
+        for attack in attacks or attacker.get_melee_attacks()
+        if any(attack.can_reach(r) for r in ranges)
+    }
+
 
 def get_expected_damage(attack: MeleeAttackInstance, target: 'Creature') -> float:
     result = 0
@@ -47,8 +63,7 @@ def get_expected_damage_part(attack: MeleeAttackInstance, target: 'Creature', bp
 
 def get_melee_range_priority(creature: 'Creature', opponent: 'Creature', *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
     range_priority = {}
-    for i in range(creature.get_melee_engage_distance() + 1):
-        reach = MeleeRange(i)
+    for reach in MeleeRange.range(creature.get_melee_engage_distance() + 1):
         attack_priority = get_attack_priority_at_range(creature, opponent, reach)
         power = max(attack_priority.values(), default=0.0)
 
@@ -58,4 +73,5 @@ def get_melee_range_priority(creature: 'Creature', opponent: 'Creature', *, caut
 
         range_priority[reach] = power/danger
     return range_priority
+
 

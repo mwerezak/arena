@@ -12,7 +12,7 @@ WEAPON_BROADSWORD = Weapon(
     melee_attacks = [
         MeleeAttack('Slash',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8)),
         MeleeAttack('Thrust',         (REACH_LONG, REACH_MEDIUM),  FORCE_SMALL,  DamageType.Puncture, dice(1,6)),
-        MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),
+        MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,3), dice(0)),
     ],
 )
 
@@ -46,7 +46,7 @@ WEAPON_SCIMITAR = Weapon(
 WEAPON_FALCHION = Weapon(
     name = 'Falchion', size = SizeCategory.Medium, skill_class = CombatSkillClass.Blade, encumbrance = 3, cost = 200,
     melee_attacks = [
-        MeleeAttack('Hack',           (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8) + dice(1)),
+        MeleeAttack('Hack',           (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,8)+1),
         MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
 )
@@ -54,7 +54,7 @@ WEAPON_FALCHION = Weapon(
 WEAPON_SABRE = Weapon(
     name = 'Sabre', size = SizeCategory.Medium, skill_class = CombatSkillClass.Blade, encumbrance = 1, cost = 225,
     melee_attacks = [
-        MeleeAttack('Slash',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,6) + dice(1)),
+        MeleeAttack('Slash',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,6)+1),
         MeleeAttack('Thrust',         (REACH_MEDIUM, REACH_SHORT), FORCE_SMALL,  DamageType.Puncture, dice(1,6)),
         MeleeAttack('Pommel Strike',  (REACH_SHORT, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
@@ -104,7 +104,7 @@ WEAPON_SPEAR = Weapon(
 WEAPON_LONGSPEAR = Weapon(
     name = 'Longspear', size = SizeCategory.Medium, skill_class = CombatSkillClass.Polearm, encumbrance = 2, cost = 30,
     melee_attacks = [
-        MeleeAttack('Stab',  (REACH_VLONG, REACH_LONG), FORCE_MEDIUM, DamageType.Puncture, dice(1,6) + dice(1)),
+        MeleeAttack('Stab',  (REACH_VLONG, REACH_LONG), FORCE_MEDIUM, DamageType.Puncture, dice(1,6)+1),
     ],
 )
 
@@ -119,7 +119,7 @@ WEAPON_HALFSPEAR = Weapon(
 WEAPON_PIKE = Weapon(
     name = 'Pike', size = SizeCategory.Large, skill_class = CombatSkillClass.Polearm, encumbrance = 3, cost = 90,
     melee_attacks = [
-        MeleeAttack('Stab',  (REACH_EXTREME, REACH_VLONG), FORCE_LARGE, DamageType.Puncture, dice(1,8) + dice(1)),
+        MeleeAttack('Stab',  (REACH_EXTREME, REACH_VLONG), FORCE_LARGE, DamageType.Puncture, dice(1,8)+1),
     ],
 )
 
@@ -128,7 +128,7 @@ WEAPON_PIKE = Weapon(
 WEAPON_BATTLEAXE = Weapon(
     name = 'Battleaxe', size = SizeCategory.Medium, skill_class = CombatSkillClass.Axe, encumbrance = 1, cost = 100,
     melee_attacks = [
-        MeleeAttack('Hack',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,6) + dice(1)),
+        MeleeAttack('Hack',          (REACH_MEDIUM, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,6)+1),
         MeleeAttack('Handle Strike', (REACH_CLOSE, REACH_CLOSE),  FORCE_SMALL,  DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
 )
@@ -136,7 +136,7 @@ WEAPON_BATTLEAXE = Weapon(
 WEAPON_HATCHET = Weapon(
     name = 'Hatchet', size = SizeCategory.Small, skill_class = CombatSkillClass.Axe, encumbrance = 1, cost = 25,
     melee_attacks = [
-        MeleeAttack('Hack',          (REACH_SHORT, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,4) + dice(1)),
+        MeleeAttack('Hack',          (REACH_SHORT, REACH_SHORT), FORCE_MEDIUM, DamageType.Slashing, dice(1,4)+1),
         MeleeAttack('Handle Strike', (REACH_SHORT, REACH_CLOSE), FORCE_SMALL,  DamageType.Bludgeon, dice(1,3), dice(0)),
     ],
     # Thrown Attack
@@ -145,7 +145,7 @@ WEAPON_HATCHET = Weapon(
 WEAPON_GREATAXE = Weapon(
     name = 'Great Axe', size = SizeCategory.Large, skill_class = CombatSkillClass.Axe, encumbrance = 2, cost = 125,
     melee_attacks = [
-        MeleeAttack('Hack',          (REACH_MEDIUM, REACH_SHORT), FORCE_LARGE, DamageType.Slashing, dice(1,10) + dice(1)),
+        MeleeAttack('Hack',          (REACH_MEDIUM, REACH_SHORT), FORCE_LARGE, DamageType.Slashing, dice(1,10)+1),
         MeleeAttack('Handle Strike', (REACH_CLOSE, REACH_CLOSE),  FORCE_SMALL, DamageType.Bludgeon, dice(1,4), dice(0)),
     ],
 )
@@ -153,8 +153,8 @@ WEAPON_GREATAXE = Weapon(
 WEAPON_HALBERD = Weapon(
     name = 'Halberd', size = SizeCategory.Large, skill_class = CombatSkillClass.Axe, encumbrance = 4, cost = 200,
     melee_attacks = [
-        MeleeAttack('Stab',  (REACH_VLONG, REACH_LONG),  FORCE_MEDIUM, DamageType.Puncture, dice(1,6) + dice(1), skill_class = CombatSkillClass.Polearm),
-        MeleeAttack('Hack',  (REACH_LONG, REACH_MEDIUM), FORCE_LARGE,  DamageType.Slashing, dice(1,10) + dice(1)),
+        MeleeAttack('Stab',  (REACH_VLONG, REACH_LONG),  FORCE_MEDIUM, DamageType.Puncture, dice(1,6)+1, skill_class = CombatSkillClass.Polearm),
+        MeleeAttack('Hack',  (REACH_LONG, REACH_MEDIUM), FORCE_LARGE,  DamageType.Slashing, dice(1,10)+1),
     ],
 )
 
@@ -201,7 +201,7 @@ WEAPON_GREAT_HAMMER = Weapon(
 WEAPON_MINOTAUR_AXE = Weapon(
     name = 'Minotaur Great Axe', size = SizeCategory.Huge, skill_class = CombatSkillClass.Axe, encumbrance = 4, cost = 200,
     melee_attacks = [
-        MeleeAttack('Hack',          (REACH_LONG, REACH_MEDIUM), FORCE_OVERWM, DamageType.Slashing, dice(2,8) + dice(1)),
+        MeleeAttack('Hack',          (REACH_LONG, REACH_MEDIUM), FORCE_OVERWM, DamageType.Slashing, dice(2,8)+1),
         MeleeAttack('Handle Strike', (REACH_SHORT, REACH_CLOSE), FORCE_MEDIUM, DamageType.Bludgeon, dice(1,6), dice(1)),
     ],
 )

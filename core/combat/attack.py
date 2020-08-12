@@ -92,9 +92,10 @@ class MeleeAttackInstance:
         if self.use_hands < 1:
             return 0
         str_mod = self.attacker.get_attribute(PrimaryAttribute.STR)
-        if self.use_hands == 1:
-            return str_mod
-        return int(str_mod * 1.5)
+        # not sure if this makes two-handed weapons too strong - maybe make it just excesss hands?
+        if self.use_hands > 1:
+            return int(str_mod * 1.5)
+        return str_mod
 
     @property
     def force(self) -> AttackForce:

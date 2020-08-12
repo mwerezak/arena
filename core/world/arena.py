@@ -35,6 +35,13 @@ def try_equip_best_weapons(creature: Creature) -> None:
         _, max_hands = item.get_required_hands(creature)
         creature.try_equip_item(item, use_hands=max_hands)
 
+def print_held_items(creature: Creature) -> None:
+    for item in creature.get_held_items():
+        print(item, ':', *creature.get_item_held_by(item))
+
+def print_melee_attacks(creature: Creature) -> None:
+    for attack in creature.get_melee_attacks():
+        print(attack)
 
 class Arena:
     def __init__(self, loop: ActionLoop, melee: MeleeCombat):
@@ -58,13 +65,13 @@ class Arena:
 
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
-    from core.creature.combat import create_melee_combat
+    from core.creature.combat import join_melee_combat
     from core.combat.tactics import *
 
     loop = ActionLoop()
     gnoll = Creature(SPECIES_GNOLL)
     goblin = Creature(SPECIES_GOBLIN)
-    melee = create_melee_combat(gnoll, goblin)
+    melee = join_melee_combat(gnoll, goblin)
 
     arena = Arena(loop, melee)
 

@@ -1,5 +1,6 @@
 from enum import Enum
 from functools import total_ordering
+from typing import Iterable, TypeVar, Type
 
 class PrimaryAttribute(Enum):
     STR = 'Strength'
@@ -16,6 +17,12 @@ class IntClass(int):
 
     def get_step(self, step: int) -> 'IntClass':
         return self.__class__(self + step)
+
+    _TSelf = TypeVar('_TSelf')
+    @classmethod
+    def range(cls: Type[_TSelf], *args, **kwargs) -> Iterable[_TSelf]:
+        for i in range(*args, **kwargs):
+            yield cls(i)
 
 class CreatureSize(IntClass):
     def __new__(cls, value: int):

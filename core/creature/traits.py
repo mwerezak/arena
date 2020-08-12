@@ -1,5 +1,6 @@
-from typing import Any
-from core.contest import Contest, SkillLevel
+from typing import TYPE_CHECKING, Any
+if TYPE_CHECKING:
+    from core.contest import Contest, SkillLevel
 
 # traits are just simple data containers that can be attached to Creatures and queried
 class CreatureTrait:
@@ -29,10 +30,10 @@ class FeatTrait(CreatureTrait):
     pass
 
 class SkillTrait(FeatTrait):
-    skill: Contest
-    level: SkillLevel
+    skill: 'Contest'
+    level: 'SkillLevel'
 
-    def __init__(self, skill: Contest, level: SkillLevel):
+    def __init__(self, skill: 'Contest', level: 'SkillLevel'):
         name = f'{skill.name} {level}'
         super().__init__(name = name, skill = skill, level = level)
 
