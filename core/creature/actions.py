@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 from core.action import Action
@@ -8,7 +9,7 @@ DEFAULT_ACTION_WINDUP = 100  # corresponds to 1 'action point' worth of time
 
 class CreatureAction(Action):
     """Base class for all Actions performed by Creatures"""
-    owner: 'Creature'
+    owner: Creature
 
     base_windup = DEFAULT_ACTION_WINDUP  # the base windup duration, adjusted by the creature's action rate
 

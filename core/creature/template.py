@@ -1,17 +1,21 @@
-from typing import MutableMapping, Type, Union, Any, Optional, Iterable, Tuple
+from __future__ import annotations
+from typing import TYPE_CHECKING, MutableMapping, Type, Union, Any, Optional, Iterable, Tuple
 
-from core.creature.bodyplan import Morphology
-from core.combat.unarmed import NaturalWeapon
-from core.constants import PrimaryAttribute, CreatureSize, SizeCategory
+from core.constants import PrimaryAttribute, SizeCategory
 from core.creature.loadout import Loadout
-from core.creature.traits import CreatureTrait
+from core.creature.bodyplan import Morphology
+
+if TYPE_CHECKING:
+    from core.combat.unarmed import NaturalWeapon
+    from core.constants import CreatureSize
+    from core.creature.traits import CreatureTrait
 
 class CreatureTemplate:
     def __init__(self,
                  name: str = None,
                  bodyplan: Morphology = None,
                  loadout: Loadout = None,
-                 *, template: 'CreatureTemplate' = None):
+                 *, template: CreatureTemplate = None):
 
         if template is not None:
             self.name = template.name
@@ -33,34 +37,34 @@ class CreatureTemplate:
 
     ## Creature Template Creation API
 
-    def set_attributes(self, **attr_values: int) -> 'CreatureTemplate':
+    def set_attributes(self, **attr_values: int) -> CreatureTemplate:
         for name, value in attr_values.items():
             attr = PrimaryAttribute[name]
             self.attributes[attr] = value
         return self
 
-    def set_attribute(self, attr: Union[str, PrimaryAttribute], value: int) -> 'CreatureTemplate':
+    def set_attribute(self, attr: Union[str, PrimaryAttribute], value: int) -> CreatureTemplate:
         if not isinstance(attr, PrimaryAttribute):
             attr = PrimaryAttribute[attr]
         self.attributes[attr] = value
         return self
 
-    def modify_attributes(self, **attr_mods: int) -> 'CreatureTemplate':
+    def modify_attributes(self, **attr_mods: int) -> CreatureTemplate:
         for name, mod in attr_mods.items():
             attr = PrimaryAttribute[name]
             self.attributes[attr] += mod
         return self
 
-    def add_trait(self, *traits: CreatureTrait) -> 'CreatureTemplate':
+    def add_trait(self, *traits: CreatureTrait) -> CreatureTemplate:
         for trait in traits:
             self.traits[trait.key] = trait
         return self
 
-    def remove_trait(self, key: Any) -> 'CreatureTemplate':
+    def remove_trait(self, key: Any) -> CreatureTemplate:
         del self.traits[key]
         return self
 
-    def set_loadout(self, loadout: Loadout) -> 'CreatureTemplate':
+    def set_loadout(self, loadout: Loadout) -> CreatureTemplate:
         self.loadout = loadout
         return self
 

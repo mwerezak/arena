@@ -3,6 +3,7 @@ Contests are various distinct categories under which creatures may be required t
 their ability. Each contest has two (not necessarily distinct) key PrimaryAttributes that contribute to the contest.
 Creatures may also have traits that grant a certain level of expertise (valid levels 1-5) in a certain contest types.
 """
+from __future__ import annotations
 
 import itertools
 from enum import Enum
@@ -15,6 +16,7 @@ from core.dice import dice
 if TYPE_CHECKING:
     from core.creature import Creature
 
+_PRECALC_TABLES = True
 _LEVEL_NUMERALS = ['I', 'II', 'III', 'IV', 'V']
 
 # by default skill level is 0, which grants no bonuses
@@ -62,7 +64,7 @@ class Contest:
     def __str__(self) -> str:
         return self.name
 
-    def get_attribute_modifier(self, protagonist: 'Creature') -> int:
+    def get_attribute_modifier(self, protagonist: Creature) -> int:
         return sum(protagonist.get_attribute(attr) for attr in self.key_attr)
 
     def get_skill_modifier(self, skill_level: SkillLevel) -> int:
@@ -77,7 +79,7 @@ class Contest:
             return 0
         return modifier
 
-    def get_success_chance(self, protagonist: 'Creature', target: int) -> float:
+    def get_success_chance(self, protagonist: Creature, target: int) -> float:
         skill_level = protagonist.get_skill_level(self)
         target -= self.get_attribute_modifier(protagonist) + self.get_skill_modifier(skill_level)
 
@@ -85,23 +87,25 @@ class Contest:
         return sum(p for roll, p in roll_table.items() if roll > target)
 
     @staticmethod
-    def get_opposed_chance(protagonist: 'Creature', contest: 'Contest', antagonist: 'Creature', opponent_contest: 'Contest' = None, modifier: int = 0):
-        opponent_contest = opponent_contest or contest
-        skill_level = protagonist.get_skill_level(contest)
-        skill_mod = contest.get_attribute_modifier(protagonist) + contest.get_skill_modifier(skill_level)
+    def get_opposed_chance(protagonist: Creature, pro_contest: Contest,
+                           antagonist: Creature, ant_contest: Contest = None,
+                           modifier: int = 0):
+        ant_contest = ant_contest or pro_contest
+        pro_level = protagonist.get_skill_level(pro_contest)
+        pro_mod = pro_contest.get_attribute_modifier(protagonist) + pro_contest.get_skill_modifier(pro_level)
 
-        oppo_level = antagonist.get_skill_level(opponent_contest)
-        oppo_mod = opponent_contest.get_attribute_modifier(antagonist) + opponent_contest.get_skill_modifier(oppo_level)
+        ant_level = antagonist.get_skill_level(ant_contest)
+        ant_mod = ant_contest.get_attribute_modifier(antagonist) + ant_contest.get_skill_modifier(ant_level)
 
-        target = oppo_mod - skill_mod - modifier
-        roll_table = get_opposed_roll_table(skill_level.bonus_dice, oppo_level.bonus_dice)
+        target = ant_mod - pro_mod - modifier
+        roll_table = get_opposed_roll_table(pro_level.bonus_dice, ant_level.bonus_dice)
         return sum(p for result, p in roll_table.items() if result > target)
 
 class ContestResult:
     base_result: Sequence[int]
     base_total: int
 
-    def __init__(self, protagonist: 'Creature', contest: Contest):
+    def __init__(self, protagonist: Creature, contest: Contest):
         self.contest = contest
         self.protagonist = protagonist
         self.skill_level = protagonist.get_skill_level(contest)
@@ -140,11 +144,11 @@ class OpposedResult:
         self.crit_mod = crit_mod
 
     @property
-    def protagonist(self) -> 'Creature':
+    def protagonist(self) -> Creature:
         return self.pro_result.protagonist
 
     @property
-    def antagonist(self) -> 'Creature':
+    def antagonist(self) -> Creature:
         return self.ant_result.protagonist
 
     @property
@@ -185,8 +189,9 @@ def get_roll_table(bonus_dice: int) -> Mapping[int, float]:
     }
 
 # precalculate for all normal skill levels
-for level in SkillLevel:
-    get_roll_table(level.bonus_dice)
+if _PRECALC_TABLES:
+    for level in SkillLevel:
+        get_roll_table(level.bonus_dice)
 
 @lru_cache
 def get_opposed_roll_table(bonus_dice: int, opponent_dice: int) -> Mapping[int, float]:

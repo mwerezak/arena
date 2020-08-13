@@ -1,14 +1,13 @@
-from copy import copy as shallow_copy
+from __future__ import annotations
 from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
-
-from core.constants import MeleeRange, AttackForce, PrimaryAttribute
-from core.dice import DicePool, dice
-from core.combat.damage import DamageType
-from core.combat.criticals import CriticalEffect
-from core.contest import CombatSkillClass
 
 if TYPE_CHECKING:
     from core.creature import Creature
+    from core.constants import MeleeRange, AttackForce, PrimaryAttribute
+    from core.dice import DicePool, dice
+    from core.combat.damage import DamageType
+    from core.combat.criticals import CriticalEffect
+    from core.contest import CombatSkillClass
 
 ## MeleeAttacks
 
@@ -42,7 +41,7 @@ class MeleeAttack:
     def can_reach(self, range: MeleeRange) -> bool:
         return self.min_reach <= range <= self.max_reach
 
-    def create_instance(self, attacker: 'Creature', use_hands: int) -> 'MeleeAttackInstance':
+    def create_instance(self, attacker: Creature, use_hands: int) -> MeleeAttackInstance:
         """Use this MeleeAttack as a template to create a new attack adjusted for the given attacker"""
         return MeleeAttackInstance(self, attacker, use_hands)
 
@@ -63,7 +62,7 @@ class MeleeAttack:
         return f'[{self.damage}]{self.damtype.format_type_code()}'
 
 class MeleeAttackInstance:
-    def __init__(self, template: MeleeAttack, attacker: 'Creature', use_hands: int):
+    def __init__(self, template: MeleeAttack, attacker: Creature, use_hands: int):
         self.template = template
         self.attacker = attacker
         self.use_hands = use_hands

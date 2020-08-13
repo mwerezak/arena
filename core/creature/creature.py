@@ -1,16 +1,20 @@
-from typing import Mapping, MutableMapping, Collection, Tuple, Optional, Iterable, Any, Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Mapping, MutableMapping, Collection, Tuple, Optional, Iterable, Any, Union, List
 
-from core.constants import MeleeRange, CreatureSize, PrimaryAttribute
-from core.combat.attack import MeleeAttack, MeleeAttackInstance
-from core.creature.combat import MeleeCombat
-from core.creature.template import CreatureTemplate
-from core.creature.bodyplan import Morphology, BodyElementSpecial
-from core.equipment import Equipment
-from core.equipment.weapon import Weapon
-from core.equipment.armor import Armor
-from core.contest import Contest, SkillLevel
-from core.creature.traits import CreatureTrait, SkillTrait
 from core.action import Entity
+from core.creature.traits import SkillTrait
+from core.creature.bodyplan import BodyElementSpecial
+from core.constants import MeleeRange, PrimaryAttribute
+
+if TYPE_CHECKING:
+    from core.constants import CreatureSize
+    from core.combat.attack import MeleeAttack, MeleeAttackInstance
+    from core.creature.combat import MeleeCombat
+    from core.creature.template import CreatureTemplate
+    from core.creature.bodyplan import Morphology
+    from core.equipment import Equipment
+    from core.contest import Contest, SkillLevel
+    from core.creature.traits import CreatureTrait
 
 class Creature(Entity):
     health: float
@@ -24,8 +28,8 @@ class Creature(Entity):
             trait.key : trait for trait in template.get_traits()
         }
 
-        self._mount: Optional['Creature'] = None
-        self._melee_combat: MutableMapping['Creature', MeleeCombat] = {}
+        self._mount: Optional[Creature] = None
+        self._melee_combat: MutableMapping[Creature, MeleeCombat] = {}
 
         self._unarmed_attacks: Collection[Tuple[str, MeleeAttack]] = [
             (bp_tag, natural_weapon.create_attack(template))
@@ -36,7 +40,7 @@ class Creature(Entity):
             bp_tag : armor for bp_tag, armor in template.get_natural_armor()
         }
 
-        self._equipment = []
+        self._equipment: List[Equipment] = []
         template.loadout.apply_loadout(self)
 
         self._held_items: MutableMapping[str, Equipment] = {
@@ -65,7 +69,7 @@ class Creature(Entity):
 
     def get_armor(self, bp_id: str) -> float:
         natural_armor = self._natural_armor.get(bp_id, 0)
-        armor_values = (armor.armor_value.get(bp_id, 0) for armor in self._equipment if isinstance(armor, Armor))
+        armor_values = (item.armor_value.get(bp_id, 0) for item in self._equipment if item.is_armor())
         equipped_armor = max(armor_values, default = 0)
         return natural_armor + equipped_armor
 
@@ -74,10 +78,10 @@ class Creature(Entity):
 
         armor_items = []
         for equipment in self._equipment:
-            if isinstance(equipment, Armor):
+            if equipment.is_armor():
                 armor_items.append(equipment)
             else:
-                result += getattr(equipment, 'encumbrance', 0.0)
+                result += equipment.encumbrance
 
         from_armor = { bp_tag : 0.0 for bp_tag in self.bodyplan.get_bodypart_ids() }
         for armor in armor_items:
@@ -182,15 +186,15 @@ class Creature(Entity):
         attack_reach = (attack.max_reach for attack in self.get_melee_attacks())
         return max(attack_reach, default=MeleeRange(0))
 
-    def get_melee_opponents(self) -> Iterable['Creature']:
+    def get_melee_opponents(self) -> Iterable[Creature]:
         return iter(self._melee_combat.keys())
 
-    def get_melee_combat(self, other: 'Creature') -> Optional[MeleeCombat]:
+    def get_melee_combat(self, other: Creature) -> Optional[MeleeCombat]:
         return self._melee_combat.get(other, None)
 
-    def add_melee_combat(self, other: 'Creature', melee: MeleeCombat) -> None:
+    def add_melee_combat(self, other: Creature, melee: MeleeCombat) -> None:
         self._melee_combat[other] = melee
 
-    def remove_melee_combat(self, other: 'Creature') -> None:
+    def remove_melee_combat(self, other: Creature) -> None:
         if other in self._melee_combat:
             del self._melee_combat[other]

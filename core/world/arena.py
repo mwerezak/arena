@@ -7,7 +7,7 @@ from core.creature import Creature
 from core.creature.combat import MeleeCombat, ChangeMeleeRangeAction
 from core.combat.attack import MeleeAttack
 from core.action import ActionLoop, Action, Entity
-from core.combat.tactics import SKILL_FACTOR, get_melee_range_priority, get_melee_threat_value
+from core.creature.tactics import SKILL_FACTOR, get_melee_range_priority, get_melee_threat_value
 
 def get_attack_value(creature: Creature, attack: MeleeAttack) -> float:
     return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.skill_class.contest)]

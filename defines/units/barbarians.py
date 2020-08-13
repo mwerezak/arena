@@ -1,4 +1,3 @@
-
 from core.creature.template import CreatureTemplate
 from core.creature.loadout import Loadout, LoadoutChoice
 from core.equipment.armor import ArmorTemplate, Armor

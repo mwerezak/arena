@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import math
 from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
 from core.dice import dice
-from core.combat.damage import DamageType
-from core.combat.criticals import CriticalEffect
 from core.combat.attack import MeleeAttack
+from core.constants import MeleeRange, SizeCategory, FORCE_MEDIUM
+from core.combat.damage import DamageType
 from core.contest import CombatSkillClass
-from core.constants import *
 
 if TYPE_CHECKING:
     from core.creature.template import CreatureTemplate
+    from core.combat.criticals import CriticalEffect
 
 def _create_table(table_data: Mapping[float, Any]) -> Sequence[Tuple[float, Any]]:
     return [(k,v) for k,v in sorted(table_data.items())]
@@ -86,7 +88,7 @@ class NaturalWeaponTemplate:
 
 class NaturalWeapon:
     def __init__(self,
-                 template: Union['NaturalWeapon', NaturalWeaponTemplate],
+                 template: Union[NaturalWeapon, NaturalWeaponTemplate],
                  name: str = None,
                  force: float = 0, reach: float = 0,
                  damage: float = 0, armpen: Optional[float] = None):
@@ -111,7 +113,7 @@ class NaturalWeapon:
             self.name, self.damtype, self.force, self.reach, self.damage, self.armpen, self.criticals
         )
 
-    def create_attack(self, creature: 'CreatureTemplate') -> MeleeAttack:
+    def create_attack(self, creature: CreatureTemplate) -> MeleeAttack:
         rel_size = float(creature.size)/float(SizeCategory.Medium.to_size())
 
         max_reach = BASE_MAX_REACH * rel_size + self.reach
@@ -119,11 +121,11 @@ class NaturalWeapon:
 
         force = FORCE_MEDIUM.get_step(round(math.log2(rel_size) + self.force))
 
-        damage = _table_lookup(_DAMAGE_TABLE, creature.size, self.damage + self.force)
+        damage = _table_lookup(_DAMAGE_TABLE, float(creature.size), self.damage + self.force)
 
         armor_pen = None
         if self.damtype == DamageType.Bludgeon or self.armpen is not None:
-            armor_pen = _table_lookup(_ARMOR_PEN_TABLE, creature.size, (self.armpen or 0) + self.force)
+            armor_pen = _table_lookup(_ARMOR_PEN_TABLE, float(creature.size), (self.armpen or 0) + self.force)
 
         return MeleeAttack(
             name = self.name,

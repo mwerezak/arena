@@ -7,6 +7,7 @@ applying it to the Creature.
 
 Loadouts currently apply equipment and traits to a creature.
 """
+from __future__ import annotations
 
 import random
 from typing import TYPE_CHECKING, Iterable, Iterator, Tuple, Optional, List, Union, Any
@@ -45,7 +46,7 @@ class Loadout:
     def __init__(self, *groups: LoadoutGroup):
         self.loadout = list(groups)
 
-    def apply_loadout(self, creature: 'Creature') -> None:
+    def apply_loadout(self, creature: Creature) -> None:
         for group in self.loadout:
             for item in group:
                 if isinstance(item, EquipmentTemplate):

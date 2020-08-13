@@ -1,10 +1,12 @@
+from __future__ import annotations
 
 from enum import Enum, IntFlag
 from copy import copy as shallow_copy
 from numbers import Number
-from typing import Iterable, Any, Union, Tuple, MutableMapping
+from typing import TYPE_CHECKING, Iterable, Any, Union, Tuple, MutableMapping
 
-from core.combat.unarmed import NaturalWeapon
+if TYPE_CHECKING:
+    from core.combat.unarmed import NaturalWeapon
 
 class BodyElementType(Enum):
     HEAD = "head"
@@ -48,7 +50,7 @@ class BodyElement:
         self.attacks = list(attacks)
         self.armor = armor
 
-    def clone(self) -> 'BodyElement':
+    def clone(self) -> BodyElement:
         result = shallow_copy(self)
         result.specials = list(self.specials)
         result.attacks = list(self.attacks)
@@ -88,22 +90,22 @@ class Morphology:
     def get_proportions(self) -> Iterable[Tuple[str, float]]:
         return iter(self.rel_size.items())
 
-    def clone(self) -> 'Morphology':
+    def clone(self) -> Morphology:
         return Morphology(self)
 
-    def select(self, *id_tags: str) -> 'MorphologySelection':
+    def select(self, *id_tags: str) -> MorphologySelection:
         if self.SELECT_ALL in id_tags:
             selected = self.elements.values()
         else:
             selected = (self.elements[id_tag] for id_tag in id_tags)
         return MorphologySelection(self, selected)
 
-    def add(self, elem: BodyElement) -> 'Morphology':
+    def add(self, elem: BodyElement) -> Morphology:
         self.elements[elem.id_tag] = elem
         self.update()
         return self
 
-    def remove(self, id_tag: str) -> 'Morphology':
+    def remove(self, id_tag: str) -> Morphology:
         del self.elements[id_tag]
         self.update()
         return self
@@ -113,30 +115,30 @@ class MorphologySelection:
         self.source = source  # a Morphology instance
         self.selected = list(selected)
 
-    def set(self, **assignments: Any) -> 'MorphologySelection':
+    def set(self, **assignments: Any) -> MorphologySelection:
         for name, value in assignments.items():
             for elem in self.selected:
                 setattr(elem, name, value)
         return self
 
-    def adjust(self, **adjustments: Number) -> 'MorphologySelection':
+    def adjust(self, **adjustments: Number) -> MorphologySelection:
         for name, adjust in adjustments.items():
             for elem in self.selected:
                 value = getattr(elem, name) + adjust
                 setattr(elem, name, value)
         return self
 
-    def add_unarmed_attack(self, attack: NaturalWeapon) -> 'MorphologySelection':
+    def add_unarmed_attack(self, attack: NaturalWeapon) -> MorphologySelection:
         for elem in self.selected:
             elem.attacks.append(attack)
         return self
 
-    def remove(self) -> 'MorphologySelection':
+    def remove(self) -> MorphologySelection:
         for elem in self.selected:
             self.source.remove(elem.id_tag)
         return self
 
-    def select(self, *args: Any) -> 'MorphologySelection':
+    def select(self, *args: Any) -> MorphologySelection:
         return self.source.select(*args)
 
     def finalize(self) -> Morphology:

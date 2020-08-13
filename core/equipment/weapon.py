@@ -1,12 +1,20 @@
+from __future__ import annotations
+
 from copy import copy as shallow_copy
 from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple
 
 from core.equipment.template import EquipmentTemplate
-from core.combat.attack import MeleeAttack, MeleeAttackInstance
-from core.constants import AttackForce, SizeCategory
-from core.contest import CombatSkillClass
+
 if TYPE_CHECKING:
     from core.creature import Creature
+    from core.combat.attack import MeleeAttack, MeleeAttackInstance
+    from core.constants import AttackForce, SizeCategory
+    from core.contest import CombatSkillClass
+
+class ShieldData(NamedTuple):
+    block_force: AttackForce
+    block_bonus: int
+    block_ranged: float
 
 class Weapon(EquipmentTemplate):
     def __init__(self,
@@ -16,7 +24,7 @@ class Weapon(EquipmentTemplate):
                  encumbrance: float,
                  cost: int,
                  melee_attacks: Iterable[MeleeAttack] = (),
-                 shield: Optional['ShieldBlock'] = None):
+                 shield: Optional[ShieldData] = None):
 
         self.name = name
         self.size = size
@@ -37,11 +45,11 @@ class Weapon(EquipmentTemplate):
     def is_shield(self) -> bool:
         return self.shield is not None
 
-    def get_melee_attacks(self, attacker: 'Creature', use_hands: int = 0) -> Iterable[MeleeAttackInstance]:
+    def get_melee_attacks(self, attacker: Creature, use_hands: int = 0) -> Iterable[MeleeAttackInstance]:
         for attack in self.melee_attacks:
             yield attack.create_instance(attacker, use_hands)
 
-    def get_required_hands(self, creature: 'Creature') -> Optional[Tuple[int, int]]:
+    def get_required_hands(self, creature: Creature) -> Optional[Tuple[int, int]]:
         """Return None if the equipment cannot be held, otherwise return the (minimum, maximum) number of hands needed to equip."""
         creature_size = creature.size.get_category()
         if self.size > creature_size.get_step(1):
@@ -51,13 +59,13 @@ class Weapon(EquipmentTemplate):
         max_hands = 1 if self.is_light_weapon(creature) else 2
         return min_hands, max_hands
 
-    def is_large_weapon(self, creature: 'Creature') -> bool:
+    def is_large_weapon(self, creature: Creature) -> bool:
         return self.size > creature.size.get_category()
 
-    def is_light_weapon(self, creature: 'Creature') -> bool:
+    def is_light_weapon(self, creature: Creature) -> bool:
         return self.size < creature.size.get_category()
 
-    def clone(self, name: str = None) -> 'Weapon':
+    def clone(self, name: str = None) -> Weapon:
         result = shallow_copy(self)
         if name is not None:
             result.name = name
@@ -69,17 +77,11 @@ class Weapon(EquipmentTemplate):
     def __str__(self) -> str:
         return self.name
 
-class ShieldBlock(NamedTuple):
-    block_force: AttackForce
-    block_bonus: int
-    block_ranged: float
-
-
-DICE_UPGRADE_TABLE = [
-    [ (1,3),  (1,4)],
-    [ (1,4),  (1,6)],
-    [ (1,6),  (1,8)],
-    [ (1,8), (1,12)],
-    [ (2,4),  (2,6)],
-    [(1,10),  (2,8)],
-]
+# DICE_UPGRADE_TABLE = [
+#     [ (1,3),  (1,4)],
+#     [ (1,4),  (1,6)],
+#     [ (1,6),  (1,8)],
+#     [ (1,8), (1,12)],
+#     [ (2,4),  (2,6)],
+#     [(1,10),  (2,8)],
+# ]

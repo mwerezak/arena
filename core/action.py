@@ -9,26 +9,29 @@ with a new one that must be taken.
 Certain actions may actually be a sequence of actions that must be done in order. The sequence of actions
 may be modified as the sequence resolves, for example, to append new actions to the end.
 """
+from __future__ import annotations
 
 import heapq
 from functools import total_ordering
 from abc import ABC, abstractmethod
-from typing import Optional, Iterable, NamedTuple, MutableMapping, List
+from typing import TYPE_CHECKING, Optional, Iterable, MutableMapping, List
+if TYPE_CHECKING:
+    pass
 
 
 # noinspection PyMethodMayBeStatic
 class Action(ABC):
     name = 'Action'
 
-    owner: 'Entity' = None
-    loop: 'ActionLoop' = None
+    owner: Entity = None
+    loop: ActionLoop = None
 
     @abstractmethod
     def get_windup_duration(self) -> float:
         """Return the windup duration, in TU"""
         ...
 
-    def setup(self, owner: 'Entity', loop: 'ActionLoop') -> None:
+    def setup(self, owner: Entity, loop: ActionLoop) -> None:
         """Called by the action loop to prepare the Action to be scheduled."""
         self.owner = owner
         self.loop = loop
@@ -46,12 +49,12 @@ class Action(ABC):
         return self.loop.get_remaining_windup(self)
 
     @abstractmethod
-    def resolve(self) -> Optional['Action']:
+    def resolve(self) -> Optional[Action]:
         """Called to resolve the action.
         Optionally returns an Action that must be performed next."""
         ...
 
-    def resolve_failed(self) -> Optional['Action']:
+    def resolve_failed(self) -> Optional[Action]:
         """Called when an action could not be resolved.
         Optionally returns an Action that must be performed next."""
         return None
@@ -79,9 +82,9 @@ class Action(ABC):
 #     def setup_action(self, owner: 'Entity', loop: 'ActionLoop') -> None:
 
 class Entity:
-    loop: 'ActionLoop' = None
+    loop: ActionLoop = None
 
-    def set_action_loop(self, loop: 'ActionLoop'):
+    def set_action_loop(self, loop: ActionLoop):
         if self.loop != loop:
             if self.loop is not None:
                 self.loop.remove_entity(self)
@@ -111,9 +114,9 @@ class ActionQueueItem:
     def elapse(self, amount: float) -> None:
         self.windup -= amount
 
-    def __eq__(self, other: 'ActionQueueItem') -> bool:
+    def __eq__(self, other: ActionQueueItem) -> bool:
         return self.windup == other.windup
-    def __lt__(self, other: 'ActionQueueItem') -> bool:
+    def __lt__(self, other: ActionQueueItem) -> bool:
         return self.windup < other.windup
 
 class ActionLoop:

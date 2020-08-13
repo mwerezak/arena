@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from enum import Enum
 from functools import total_ordering
-from typing import Iterable, TypeVar, Type
+from typing import TYPE_CHECKING, Iterable, TypeVar, Type
+if TYPE_CHECKING:
+    pass
 
 class PrimaryAttribute(Enum):
     STR = 'Strength'
@@ -15,7 +19,7 @@ class IntClass(int):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self:d})'
 
-    def get_step(self, step: int) -> 'IntClass':
+    def get_step(self, step: int) -> IntClass:
         return self.__class__(self + step)
 
     _TSelf = TypeVar('_TSelf')
@@ -28,7 +32,7 @@ class CreatureSize(IntClass):
     def __new__(cls, value: int):
         return super().__new__(cls, max(value, 1))
 
-    def get_category(self) -> 'SizeCategory':
+    def get_category(self) -> SizeCategory:
         _, closest = min((abs(cat.to_size() - self), cat) for cat in SizeCategory)
         return closest
 
@@ -49,10 +53,10 @@ class SizeCategory(Enum):
     def to_size(self) -> CreatureSize:
         return CreatureSize(2**self.value)
 
-    def __lt__(self, other: 'SizeCategory') -> bool:
+    def __lt__(self, other: SizeCategory) -> bool:
         return self.value < other.value
 
-    def get_step(self, step: int) -> 'SizeCategory':
+    def get_step(self, step: int) -> SizeCategory:
         return SizeCategory(min(max(self.Fine.value, self.value + step), self.Colossal.value))
 
 class MeleeRange(IntClass):

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from core.contest import Contest, SkillLevel
@@ -30,10 +31,10 @@ class FeatTrait(CreatureTrait):
     pass
 
 class SkillTrait(FeatTrait):
-    skill: 'Contest'
-    level: 'SkillLevel'
+    skill: Contest
+    level: SkillLevel
 
-    def __init__(self, skill: 'Contest', level: 'SkillLevel'):
+    def __init__(self, skill: Contest, level: SkillLevel):
         name = f'{skill.name} {level}'
         super().__init__(name = name, skill = skill, level = level)
 
