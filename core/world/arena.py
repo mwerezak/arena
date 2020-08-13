@@ -4,11 +4,10 @@ Arena mode: individual creature combat
 from typing import Optional
 
 from core.creature import Creature
-from core.creature.combat import MeleeCombat
+from core.creature.combat import MeleeCombat, ChangeMeleeRangeAction
 from core.combat.attack import MeleeAttack
 from core.action import ActionLoop, Action, Entity
-from core.equipment.weapon import Weapon
-from core.combat.tactics import SKILL_FACTOR
+from core.combat.tactics import SKILL_FACTOR, get_melee_range_priority, get_melee_threat_value
 
 def get_attack_value(creature: Creature, attack: MeleeAttack) -> float:
     return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.skill_class.contest)]
@@ -58,23 +57,46 @@ class Arena:
         self.action_loop.resolve_next()
 
     def get_next_action(self, entity: Entity) -> Optional[Action]:
-        pass
+        if isinstance(entity, Creature):
+            opponents = {
+                o : get_melee_threat_value(entity, o) for o in entity.get_melee_opponents()
+            }
 
+            opponent = max(opponents, key=lambda k: opponents[k], default=None)
+            if opponent is not None:
+                desired_ranges = get_melee_range_priority(entity, opponent)
+                best_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
+                if best_range is not None:
+                    return ChangeMeleeRangeAction(entity, opponent, best_range)
+        return None
 
 
 
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
     from core.creature.combat import join_melee_combat
-    from core.combat.tactics import *
-
-    loop = ActionLoop()
-    gnoll = Creature(SPECIES_GNOLL)
-    goblin = Creature(SPECIES_GOBLIN)
-    melee = join_melee_combat(gnoll, goblin)
-
-    arena = Arena(loop, melee)
+    #from core.combat.tactics import *
 
     from defines.units.wildalliance import *
     from defines.units.barbarians import *
     from defines.units.wildalliance import CREATURE_SATYR_WARRIOR
+
+    loop = ActionLoop()
+
+    def add_creature(template):
+        c = Creature(template)
+        try_equip_best_weapons(c)
+        c.set_action_loop(loop)
+        return c
+
+    gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
+    goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
+    satyr = add_creature(CREATURE_SATYR_WARRIOR)
+
+    melee = join_melee_combat(satyr, goblin)
+
+    arena = Arena(loop, melee)
+    # arena.next_turn()
+    # arena.next_turn()
+    # arena.next_turn()
+

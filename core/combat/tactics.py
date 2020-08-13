@@ -16,19 +16,19 @@ SKILL_FACTOR = {
     SkillLevel(5) : 1.58, # master
 }
 
-def get_attack_priority(attacker: 'Creature',
-                        target: 'Creature',
-                        attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
+def get_melee_attack_priority(attacker: 'Creature',
+                              target: 'Creature',
+                              attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
     return {
         attack : get_expected_damage(attack, target) * SKILL_FACTOR[attacker.get_skill_level(attack.skill_class.contest)]
         for attack in attacks or attacker.get_melee_attacks()
     }
 
 # include only weapons that can attack at the given range
-def get_attack_priority_at_range(attacker: 'Creature',
-                                 target: 'Creature',
-                                 reach: MeleeRange,
-                                 attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
+def get_melee_attack_priority_at_range(attacker: 'Creature',
+                                       target: 'Creature',
+                                       reach: MeleeRange,
+                                       attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
     return {
         attack : get_expected_damage(attack, target) * SKILL_FACTOR[attacker.get_skill_level(attack.skill_class.contest)]
         for attack in attacks or attacker.get_melee_attacks()
@@ -36,10 +36,10 @@ def get_attack_priority_at_range(attacker: 'Creature',
     }
 
 # include only weapons that can attack at or within the given ranges
-def get_attack_priority_at_ranges(attacker: 'Creature',
-                                 target: 'Creature',
-                                 reach: Tuple[MeleeRange, MeleeRange],
-                                 attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
+def get_melee_attack_priority_at_ranges(attacker: 'Creature',
+                                        target: 'Creature',
+                                        reach: Tuple[MeleeRange, MeleeRange],
+                                        attacks: Iterable[MeleeAttackInstance] = None) -> Mapping[MeleeAttackInstance, float]:
 
     min_range, max_range = min(reach), max(reach)
     ranges = list(MeleeRange.range(min_range, max_range+1))
@@ -61,17 +61,23 @@ def get_expected_damage_part(attack: MeleeAttackInstance, target: 'Creature', bp
     armor = target.get_armor(bp_id)
     return max(0.0, damage - armor, min(armpen, damage))
 
-def get_melee_range_priority(creature: 'Creature', opponent: 'Creature', *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
+def get_melee_range_priority(protagonist: 'Creature', opponent: 'Creature', *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
     range_priority = {}
-    for reach in MeleeRange.range(creature.get_melee_engage_distance() + 1):
-        attack_priority = get_attack_priority_at_range(creature, opponent, reach)
+    for reach in MeleeRange.range(protagonist.get_melee_engage_distance() + 1):
+        attack_priority = get_melee_attack_priority_at_range(protagonist, opponent, reach)
         power = max(attack_priority.values(), default=0.0)
 
-        threat_priority = get_attack_priority_at_range(opponent, creature, reach)
+        threat_priority = get_melee_attack_priority_at_range(opponent, protagonist, reach)
         threat = max(threat_priority.values(), default=0.0)
-        danger = (2*caution*threat + creature.health)/creature.health
+        danger = (2 * caution * threat + protagonist.health) / protagonist.health
 
         range_priority[reach] = power/danger
     return range_priority
 
+def get_melee_threat_value(protagonist: 'Creature', opponent: 'Creature') -> float:
+    threat_priority = get_melee_attack_priority(opponent, protagonist)
+    threat_value = max(threat_priority.values(), default=0.0)
 
+    attack_priority = get_melee_attack_priority(protagonist, opponent)
+    attack_value = max(attack_priority.values(), default=0.0)
+    return threat_value * attack_value / opponent.health

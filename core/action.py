@@ -11,6 +11,7 @@ may be modified as the sequence resolves, for example, to append new actions to 
 """
 
 import heapq
+from functools import total_ordering
 from abc import ABC, abstractmethod
 from typing import Optional, Iterable, NamedTuple, MutableMapping, List
 
@@ -98,12 +99,22 @@ class Entity:
 
 
 # ActionLoop
-class ActionQueueItem(NamedTuple):
+@total_ordering
+class ActionQueueItem:
     windup: float
     action: Action
 
-    def elapse(self, amount: float) -> 'ActionQueueItem':
-        return ActionQueueItem(self.windup - amount, self.action)
+    def __init__(self, windup: float, action: Action):
+        self.windup = windup
+        self.action = action
+
+    def elapse(self, amount: float) -> None:
+        self.windup -= amount
+
+    def __eq__(self, other: 'ActionQueueItem') -> bool:
+        return self.windup == other.windup
+    def __lt__(self, other: 'ActionQueueItem') -> bool:
+        return self.windup < other.windup
 
 class ActionLoop:
     entity_actions: MutableMapping[Entity, Optional[Action]]
@@ -179,7 +190,8 @@ class ActionLoop:
 
         # first, update the windup counters of all other actions
         # since this does not change the ordering, this can be done by efficiently rebuilding the queue
-        self.action_queue = [ item.elapse(elapsed) for item in self.action_queue ]
+        for item in self.action_queue:
+            item.elapse(elapsed)
 
         # next, resolve the current action
         entity = current_action.owner

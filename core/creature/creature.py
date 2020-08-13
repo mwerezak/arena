@@ -46,6 +46,9 @@ class Creature(Entity):
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
 
+    def __str__(self) -> str:
+        return self.name
+
     @property
     def size(self) -> CreatureSize:
         return self.template.size
@@ -178,6 +181,9 @@ class Creature(Entity):
     def get_melee_engage_distance(self) -> MeleeRange:
         attack_reach = (attack.max_reach for attack in self.get_melee_attacks())
         return max(attack_reach, default=MeleeRange(0))
+
+    def get_melee_opponents(self) -> Iterable['Creature']:
+        return iter(self._melee_combat.keys())
 
     def get_melee_combat(self, other: 'Creature') -> Optional[MeleeCombat]:
         return self._melee_combat.get(other, None)

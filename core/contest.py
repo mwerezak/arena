@@ -11,8 +11,9 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Iterable, Sequence, Mapping
 
 from core.constants import PrimaryAttribute
-from core.creature import Creature
 from core.dice import dice
+if TYPE_CHECKING:
+    from core.creature import Creature
 
 _LEVEL_NUMERALS = ['I', 'II', 'III', 'IV', 'V']
 
@@ -161,9 +162,9 @@ class OpposedResult:
         mod_text = f'({self.contest_mod:+d})' if self.contest_mod != 0 else ''
         success_text = 'SUCCESS' if self.success else 'FAIL'
         return (
-            f'[Opposed Contest] {self.antagonist}:{p.contest} vs {self.antagonist}:{a.contest} '
-            f'RESULT: [{p.base_result}]{p.contest_modifier:+d}{mod_text}={p.contest_total+self.contest_mod} vs '
-            f'[{a.base_result}]{a.contest_modifier:+d}={a.contest_total}'
+            f'[Opposed Contest] {p.contest} vs {a.contest} '
+            f'RESULT: {p.base_total}{p.contest_modifier:+d}{mod_text}={p.contest_total+self.contest_mod} vs '
+            f'{a.base_total}{a.contest_modifier:+d}={a.contest_total} '
             f'{success_text} (crit level: {self.crit_level})'
         )
 
@@ -196,7 +197,7 @@ def get_opposed_roll_table(bonus_dice: int, opponent_dice: int) -> Mapping[int, 
     for roll_value, roll_prob in roll_table.items():
         for oppo_value, oppo_prob in oppo_table.items():
             result[roll_value - oppo_value] += roll_prob * oppo_prob
-    print(sum(result.values()))
+    #print(sum(result.values()))
     return dict(result)
 
 ## Standard Contest Types
@@ -204,7 +205,7 @@ def get_opposed_roll_table(bonus_dice: int, opponent_dice: int) -> Mapping[int, 
 SKILL_ENDURANCE  = Contest('Endurance',  ['CON', 'CON'], innate=True)
 SKILL_WILLPOWER  = Contest('Willpower',  ['POW', 'POW'], innate=True)
 SKILL_PERCEPTION = Contest('Perception', ['INT', 'POW'], innate=True)
-SKILL_EVADE      = Contest('Evade',      ['DEX', 'DEX'])
+SKILL_EVADE      = Contest('Evade',      ['DEX', 'DEX'], innate=True)
 SKILL_STEALTH    = Contest('Stealth',    ['DEX', 'INT'])
 SKILL_RIDING     = Contest('Riding',     ['DEX', 'POW'])
 
