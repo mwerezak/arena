@@ -1,18 +1,13 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Tuple, Optional, Mapping
+from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 from core.creature.actions import CreatureAction
-from core.creature.tactics import get_melee_attack_priority_at_ranges
-from core.contest import Contest, ContestResult, OpposedResult, SKILL_EVADE
+from core.contest import ContestResult, OpposedResult, SKILL_EVADE
 if TYPE_CHECKING:
     from core.constants import MeleeRange
     from core.creature import Creature
     from core.combat.attack import MeleeAttackInstance
     from core.creature.actions import Action
-
-# TODO customizable variability
-def choose_attack(attack_priority: Mapping[MeleeAttackInstance, float]) -> MeleeAttackInstance:
-    return max(attack_priority.keys(), key=lambda k: attack_priority[k], default=None)
 
 def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
     melee = MeleeCombat(a, b)
@@ -45,6 +40,11 @@ class MeleeCombat:
                 creature.set_current_action(None)
         del self.combatants
 
+    def can_opportunity_attack(self, combatant: Creature):
+        cur_action = combatant.get_current_action()
+        if cur_action is None:
+            return True  # idle
+        return getattr(cur_action, 'can_attack', True)
 
 class ChangeMeleeRangeAction(CreatureAction):
     MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
@@ -53,6 +53,32 @@ class ChangeMeleeRangeAction(CreatureAction):
         self.protagonist = protagonist
         self.opponent = opponent
         self.desired_range = desired_range
+
+    def get_final_separation(self) -> MeleeRange:
+        """Gets the final melee range if the action succeeds"""
+        melee = self.protagonist.get_melee_combat(self.opponent)
+        if melee is None: raise ValueError
+
+        shift = min(abs(self.desired_range - melee.separation), self.MAX_RANGE_SHIFT)
+        if self.desired_range < melee.separation:
+            shift *= -1
+        return melee.separation.get_step(shift)
+
+    def get_opportunity_attack_ranges(self) -> Iterable[MeleeRange]:
+        """Gets the ranges through which the target will pass"""
+        melee = self.protagonist.get_melee_combat(self.opponent)
+        if melee is None: raise ValueError
+
+        final_separation = self.get_final_separation()
+        min_range = min(melee.separation, final_separation)
+        max_range = max(melee.separation, final_separation)
+        return MeleeRange.range(min_range, max_range+1)
+
+    def allow_opportunity_attack(self) -> bool:
+        melee = self.opponent.get_melee_combat(self.protagonist)
+        if self.desired_range >= melee.separation:
+            return False  # can only opportunity attack when moving closer
+        return melee.can_opportunity_attack(self.opponent)
 
     def can_resolve(self) -> bool:
         melee = self.protagonist.get_melee_combat(self.opponent)
@@ -68,37 +94,15 @@ class ChangeMeleeRangeAction(CreatureAction):
         verb = 'close' if self.desired_range <= melee.separation else 'open'
         print(f'{self.protagonist} attempts to {verb} distance with {self.opponent} ({melee.separation} -> {self.desired_range}).')
 
-        ## determine opponent's reaction
-        contested_change = True
+        # determine opponent's reaction
+        contested_change = self.opponent.tactics.choose_contest_change_range(self)
 
-        # if the opponent is also changing range and this change takes us closer to their desired range
-        # they will not contest the range change. They may still get an attack of opportunity, however
-        oppo_action = self.opponent.get_current_action()
-        if isinstance(oppo_action, ChangeMeleeRangeAction):
-            new_distance = abs(self.desired_range - oppo_action.desired_range)
-            cur_distance = abs(melee.separation - oppo_action.desired_range)
-            if new_distance < cur_distance:
-                contested_change = False
+        # an attack of opportunity is allowed only if the change is not contested
+        if not contested_change and self.allow_opportunity_attack():
+            use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
+            if use_attack is not None:
+                print(f'Opportunity attack: {use_attack}')
 
-        # can the opponent interrupt their current action to perform an opportunity attack?
-        opportunity_attack = None
-        if oppo_action is None or oppo_action.can_attack:
-            opportunity_attack = self.get_opportunity_attack(melee)
-
-        # if the defender can attack and the success chance to contest is too small then use opportunity attack
-        contest_success_chance = Contest.get_opposed_chance(self.protagonist, SKILL_EVADE, self.opponent)
-        if opportunity_attack is not None and contest_success_chance > 0.667:
-            contested_change = False
-
-        # an attack of opportunity is only allowed if the change is not contested
-        if not contested_change and opportunity_attack is not None:
-            if oppo_action is None or oppo_action.can_attack:
-                print(f'Opportunity attack: {opportunity_attack}')
-
-        self.resolve_range_change(melee, contested_change)
-        return None
-
-    def resolve_range_change(self, melee: MeleeCombat, contested_change: bool) -> bool:
         success = True
         if contested_change:
             contest = OpposedResult(ContestResult(self.protagonist, SKILL_EVADE), ContestResult(self.opponent, SKILL_EVADE))
@@ -107,24 +111,10 @@ class ChangeMeleeRangeAction(CreatureAction):
 
         if success:
             prev_range = melee.separation
-            shift = min(abs(self.desired_range - melee.separation), self.MAX_RANGE_SHIFT)
-            if self.desired_range < melee.separation:
-                shift *= -1
-            melee.separation = melee.separation.get_step(shift)
-            verb = 'closes' if self.desired_range <= melee.separation else 'opens'
-            print(f'{self.protagonist} {verb} distance with {self.opponent} ({prev_range} -> {melee.separation}).')
-            return True
-        return False
+            melee.separation = self.get_final_separation()
+            print(f'{self.protagonist} {verb}s distance with {self.opponent} ({prev_range} -> {melee.separation}).')
 
-    def get_opportunity_attack(self, melee: MeleeCombat) -> Optional[MeleeAttackInstance]:
-        if self.desired_range >= melee.separation:
-            return None  # can only opportunity attack when moving closer
-
-        # check if there is any attack at any of the ranges that can reach
-        attack_priority = get_melee_attack_priority_at_ranges(
-            self.opponent, self.protagonist, (self.desired_range, melee.separation), self.opponent.get_melee_attacks(),
-        )
-        return choose_attack(attack_priority)
+        return None
 
 class MeleeCombatAction(CreatureAction):
     def __init__(self, attacker: Creature, defender: Creature):

@@ -61,6 +61,7 @@ class MeleeAttack:
             return f'[{self.damage}/{self.armpen}*]{self.damtype.format_type_code()}'
         return f'[{self.damage}]{self.damtype.format_type_code()}'
 
+## TODO rename
 class MeleeAttackInstance:
     def __init__(self, template: MeleeAttack, attacker: Creature, use_hands: int):
         self.template = template

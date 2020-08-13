@@ -5,6 +5,7 @@ from core.action import Entity
 from core.creature.traits import SkillTrait
 from core.creature.bodyplan import BodyElementSpecial
 from core.constants import MeleeRange, PrimaryAttribute
+from core.creature.tactics import CombatTactics
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
@@ -19,10 +20,11 @@ if TYPE_CHECKING:
 class Creature(Entity):
     health: float
 
-    def __init__(self, template: CreatureTemplate):
+    def __init__(self, template: CreatureTemplate, tactics: CombatTactics = None):
         self.template = template
         self.name = template.name
         self.health = template.max_health
+        self.tactics = tactics or CombatTactics(self)
 
         self._traits: MutableMapping[Any, CreatureTrait] = {
             trait.key : trait for trait in template.get_traits()
