@@ -57,6 +57,9 @@ class Creature(Entity):
     def get_attribute(self, attr: Union[str, PrimaryAttribute]) -> int:
         return self.template.get_attribute(attr)
 
+    def get_action_rate(self) -> float:
+        return 1.0  # TODO
+
     def get_armor(self, bp_id: str) -> float:
         natural_armor = self._natural_armor.get(bp_id, 0)
         armor_values = (armor.armor_value.get(bp_id, 0) for armor in self._equipment if isinstance(armor, Armor))

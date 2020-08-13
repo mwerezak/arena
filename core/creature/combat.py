@@ -53,9 +53,6 @@ class ChangeMeleeRangeAction(CreatureAction):
         self.opponent = opponent
         self.desired_range = desired_range
 
-    def get_base_windup(self) -> float:
-        return DEFAULT_ACTION_WINDUP
-
     def can_resolve(self) -> bool:
         melee = self.protagonist.get_melee_combat(self.opponent)
         if melee is None:
@@ -90,7 +87,7 @@ class ChangeMeleeRangeAction(CreatureAction):
             opportunity_attack = attack
 
         if opportunity_attack is not None:
-            pass  # resolve attack
+            pass  # TODO resolve attack
 
         self.resolve_range_change(melee, contested_change)
         return None
@@ -130,9 +127,6 @@ class MeleeCombatAction(CreatureAction):
         self.attacker = attacker
         self.defender = defender
 
-    def get_base_windup(self) -> float:
-        return DEFAULT_ACTION_WINDUP
-
     def can_resolve(self) -> bool:
         melee = self.attacker.get_melee_combat(self.defender)
         if melee is None:
@@ -150,19 +144,22 @@ class MeleeCombatAction(CreatureAction):
         # Apply damage
         pass
 
-class AttackInterruptedAction(CreatureAction):
-    """Used to take up the remaining time when a MeleeAttackActon is interrupted or resolved early
-    due to a failed interruption attempt."""
-    can_defend = False  # already attacked or defended
-
+class InterruptedAction(CreatureAction):
     def __init__(self, duration: float):
         self.duration = duration
 
-    def get_base_windup(self) -> float:
+    def get_windup_duration(self) -> float:
         return self.duration
 
     def resolve(self) -> Optional[Action]:
         return None
+
+class AttackInterruptedAction(InterruptedAction):
+    """Used to take up the remaining time when a MeleeAttackActon is interrupted or resolved early
+    due to a failed interruption attempt."""
+    can_defend = False  # already attacked or defended
+    can_attack = False
+
 
 ## MeleeEngageAction - create a melee engagement between two creatures. Interrupts movement
 ## MeleeChargeAction - perform a melee charge, which can be done outside of engagement

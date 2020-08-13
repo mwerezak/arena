@@ -23,7 +23,7 @@ class Action(ABC):
     loop: 'ActionLoop' = None
 
     @abstractmethod
-    def get_base_windup(self) -> float:
+    def get_windup_duration(self) -> float:
         """Return the windup duration, in TU"""
         ...
 
@@ -86,10 +86,6 @@ class Entity:
                 self.loop.remove_entity(self)
             self.loop = loop
             self.loop.add_entity(self)
-
-    def get_action_rate(self) -> float:
-        """Allows actions to be performed quicker or slower for different entities."""
-        return 1.0
 
     def get_current_action(self) -> Optional[Action]:
         return self.loop.get_current_action(self)
@@ -156,7 +152,7 @@ class ActionLoop:
             self.cancel_action(prev_action)
 
         action.setup(entity, self)
-        windup = action.get_base_windup() / entity.get_action_rate()
+        windup = action.get_windup_duration()
 
         self.entity_actions[entity] = action
         item = ActionQueueItem(windup, action)
