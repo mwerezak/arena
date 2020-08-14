@@ -66,7 +66,8 @@ class MeleeCombatResolver:
         secondary = MeleeCombatResolver(attacker, defender, use_attack, is_secondary=True)
         self.seconary_attacks.append(secondary)
 
-    def resolve_melee_attack(self, force_no_defence: bool = False) -> None:
+    # TODO collect log output to be accessed later instead of printing immediately
+    def generate_attack_results(self, force_defenceless: bool = False) -> bool:
         self.melee = self.attacker.get_melee_combat(self.defender)
         separation = self.melee.separation
 
@@ -74,20 +75,21 @@ class MeleeCombatResolver:
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             self.use_attack = self.attacker.tactics.get_normal_attack(self.defender, separation)
         if self.use_attack is None or not self.use_attack.can_attack(separation):
-            return  # no attack happens
+            return False # no attack happens
 
-        if force_no_defence:
+        if force_defenceless:
             self._resolve_defender_helpless()
-            return
+            return True
 
         # Choose Defence
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self._resolve_defender_helpless()
-            return
+            return True
 
         self._resolve_melee_defence()
+        return True
 
     def _resolve_melee_defence(self) -> None:
         separation = self.melee.separation
@@ -216,6 +218,6 @@ class MeleeCombatResolver:
     def resolve_seconary_attacks(self) -> None:
         # secondary attacks are similar to primary attacks but do not get to resolve secondary attacks of their own
         for secondary in self.seconary_attacks:
-            secondary.resolve_melee_attack()
+            secondary.generate_attack_results()
             secondary.resolve_critical_effects()
             secondary.resolve_damage()

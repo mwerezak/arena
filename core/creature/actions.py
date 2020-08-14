@@ -10,14 +10,26 @@ if TYPE_CHECKING:
 
 DEFAULT_ACTION_WINDUP = 100  # corresponds to 1 'action point' worth of time
 
+def can_interrupt_action(combatant: Creature) -> bool:
+    action = combatant.get_current_action()
+    if action is None:
+        return True  # idle
+    if isinstance(action, CreatureAction):
+        return action.can_interrupt
+    return False
+
 class CreatureAction(Action):
     """Base class for all Actions performed by Creatures"""
     owner: Creature
 
     base_windup = DEFAULT_ACTION_WINDUP  # the base windup duration, adjusted by the creature's action rate
 
-    can_defend = True  # True if this Action can be interrupted to defend, otherwise being attacked leaves the Creature defenceless
-    can_attack = False  # True if this Action can be interrupted to perform attacks of opportunity
+    # True if this Action can be interrupted to defend, otherwise being attacked leaves
+    # the action's protagonist defenceless - generally True for anything that isn't a cooldown
+    can_defend = True
+
+    # True if this Action can be interrupted to perform attacks of opportunity or other actions
+    can_interrupt = False
 
     def get_windup_duration(self) -> float:
         return self.base_windup / self.owner.get_action_rate()

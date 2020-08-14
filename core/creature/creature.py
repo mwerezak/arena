@@ -66,11 +66,23 @@ class Creature(Entity):
     def get_attribute(self, attr: Union[str, PrimaryAttribute]) -> int:
         return self.template.get_attribute(attr)
 
-    def get_action_rate(self) -> float:
-        return 1.0  # TODO
-
     def get_encumbrance(self) -> float:
         return self.inventory.get_encumbrance_total()
+
+    def _base_initiative(self) -> float:
+        attr_modifer = self.get_attribute(PrimaryAttribute.INT) + self.get_attribute(PrimaryAttribute.DEX)
+        return 20.0 + 2.0*attr_modifer
+
+    def get_action_rate(self) -> float:
+        action_points = self._base_initiative()/12.0
+        return 1.0/action_points
+
+    def get_initiative_modifier(self) -> float:
+        return self._base_initiative()/2.0 - (self.get_encumbrance())/5.0
+
+    @property
+    def tiebreaker_priority(self) -> float:
+        return self.get_initiative_modifier()
 
     ## Traits
 

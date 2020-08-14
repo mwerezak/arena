@@ -82,7 +82,7 @@ class Inventory:
         for equipment in self._contents:
             if equipment.is_armor():
                 for bp_tag, enc in equipment.encumbrance.items():
-                    from_armor[bp_tag] = max(from_armor[bp_tag], enc)
+                    from_armor[bp_tag] = max(enc, from_armor.setdefault(bp_tag, 0))
             else:
                 result += equipment.encumbrance
 

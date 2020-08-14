@@ -82,12 +82,6 @@ class Weapon(EquipmentTemplate):
             result.name = name
         return result
 
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__}: {self.name!r}>'
-
-    def __str__(self) -> str:
-        return self.name
-
 # DICE_UPGRADE_TABLE = [
 #     [ (1,3),  (1,4)],
 #     [ (1,4),  (1,6)],

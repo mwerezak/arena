@@ -14,7 +14,7 @@ from __future__ import annotations
 import heapq
 from functools import total_ordering
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Optional, Iterable, MutableMapping, List
+from typing import TYPE_CHECKING, Optional, Iterable, MutableMapping, List, Any
 if TYPE_CHECKING:
     pass
 
@@ -25,6 +25,7 @@ class Action(ABC):
 
     owner: Entity = None
     loop: ActionLoop = None
+    start_tick: float = None
 
     @abstractmethod
     def get_windup_duration(self) -> float:
@@ -35,6 +36,7 @@ class Action(ABC):
         """Called by the action loop to prepare the Action to be scheduled."""
         self.owner = owner
         self.loop = loop
+        self.start_tick = loop.get_tick()
 
     def can_resolve(self) -> bool:
         """Return True if the action can be resolved.
@@ -47,6 +49,9 @@ class Action(ABC):
 
     def get_remaining_windup(self) -> float:
         return self.loop.get_remaining_windup(self)
+
+    def get_elapsed_windup(self) -> float:
+        return self.loop.get_tick() - self.start_tick
 
     @abstractmethod
     def resolve(self) -> Optional[Action]:
@@ -84,7 +89,9 @@ class Action(ABC):
 class Entity:
     loop: ActionLoop = None
 
-    # TODO tiebreaker priority
+    @property
+    def tiebreaker_priority(self) -> float:
+        return 0
 
     def set_action_loop(self, loop: Optional[ActionLoop]):
         if self.loop != loop:
@@ -117,10 +124,14 @@ class ActionQueueItem:
     def elapse(self, amount: float) -> None:
         self.windup -= amount
 
+    @property
+    def _sort_key(self) -> Any:
+        return self.windup, -self.action.owner.tiebreaker_priority
+
     def __eq__(self, other: ActionQueueItem) -> bool:
-        return self.windup == other.windup
+        return self._sort_key == other._sort_key
     def __lt__(self, other: ActionQueueItem) -> bool:
-        return self.windup < other.windup
+        return self._sort_key < other._sort_key
 
 class ActionLoop:
     entity_actions: MutableMapping[Entity, Optional[Action]]
@@ -131,6 +142,9 @@ class ActionLoop:
         self.entity_actions = {}
         self.action_queue = []
         self.queue_items = {}
+
+    def get_tick(self) -> float:
+        return self.elapsed
 
     def add_entity(self, entity: Entity) -> None:
         self.entity_actions.setdefault(entity)
