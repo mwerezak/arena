@@ -33,21 +33,24 @@ def dicepool(*elems: Union[Number, Tuple[int, int]]) -> DicePool:
     return DicePool(dice_counter)
 
 class DicePool:
-    __dicepool__: CounterType[int, Number]  # TODO rename to _dicepool
+    _dicepool: CounterType[int, Number]
 
     def __init__(self, pool = None):
         ## check for the presence of a __dicepool__ magic attribute to
         ## determine if the dicepool argument is a dicepool compatible object.
         if not pool:
-            self.__dicepool__ = Counter()
-        elif hasattr(pool, "__dicepool__"):
-            self.__dicepool__ = Counter(pool.__dicepool__)
+            self._dicepool = Counter()
+        elif hasattr(pool, "_dicepool"):
+            self._dicepool = Counter(pool._dicepool)
         else:
-            self.__dicepool__ = Counter(pool)
-        self.__remove_zeros()
+            self._dicepool = Counter(pool)
+
+        for sides, numdice in list(self._dicepool.items()):
+            if numdice == 0:
+                del self._dicepool[sides]
 
     def __iter__(self) -> Iterable[Tuple[int, Number]]:
-        for dicetype, numdice in sorted(self.__dicepool__.items(), reverse=True):
+        for dicetype, numdice in sorted(self._dicepool.items(), reverse=True):
             yield dicetype, numdice
 
     def __repr__(self) -> str:
@@ -66,13 +69,13 @@ class DicePool:
 
     def get_modifier(self) -> Any:
         """ The constant part """
-        return self.__dicepool__[1]
+        return self._dicepool[1]
 
     def get_roll(self) -> Iterable[int]:
         """ The variable part """
         return (
             int(math.copysign(random.randint(1, sides), numdice))
-            for sides, numdice in self.__dicepool__.items() if sides != 1
+            for sides, numdice in self._dicepool.items() if sides != 1
             for _ in range(abs(numdice))
         )
 
@@ -80,7 +83,7 @@ class DicePool:
         """ Returns roll results organized into a dictionary """
         return {
             sides : [ int(math.copysign(random.randint(1, sides), numdice)) for _ in range(abs(numdice)) ]
-            for sides, numdice in self.__dicepool__.items() if sides != 1
+            for sides, numdice in self._dicepool.items() if sides != 1
         }
 
     def get_roll_result(self) -> Any:
@@ -92,19 +95,19 @@ class DicePool:
     def min(self) -> Any:
         return sum(
             numdice if numdice > 0 else numdice*sides
-            for sides, numdice in self.__dicepool__.items()
+            for sides, numdice in self._dicepool.items()
         )
 
     def max(self) -> Any:
         return sum(
             numdice*sides if numdice > 0 else numdice
-            for sides, numdice in self.__dicepool__.items()
+            for sides, numdice in self._dicepool.items()
         )
 
     def mean(self) -> Any:
         return sum(
                 numdice*(1+sides)/2
-                for sides, numdice in self.__dicepool__.items()
+                for sides, numdice in self._dicepool.items()
             )
 
     def std_dev(self) -> Any:
@@ -114,7 +117,7 @@ class DicePool:
     def variance(self) -> Any:
         return sum(
                 self.__element_variance(sides, numdice)
-                for sides, numdice in self.__dicepool__.items()
+                for sides, numdice in self._dicepool.items()
             )
 
     ## Calculates the variance of rolling a number of identical dice
@@ -129,11 +132,6 @@ class DicePool:
     ## *** Dice Arithmetic Methods ***
     ## For addition and subtraction other must have a __dicepool__ attribute.
     ## e.g. dicepool((3,6), 5) + dicepool((1,6), (2,8), 2) --> dicepool((4,6), (2,8), 7)
-
-    def __remove_zeros(self) -> None:
-        for sides, numdice in list(self.__dicepool__.items()):
-            if numdice == 0:
-                del self.__dicepool__[sides]
 
     ## these are used as the built in counter math operators strip negative counts
     @staticmethod
@@ -156,9 +154,9 @@ class DicePool:
 
     def __add__(self, other) -> DicePool:
         if isinstance(other, Number):
-            return DicePool(self.__add_counter(self.__dicepool__, {1: other}))
+            return DicePool(self.__add_counter(self._dicepool, {1: other}))
         if hasattr(other, "__dicepool__"):
-            return DicePool(self.__add_counter(self.__dicepool__, other.__dicepool__))
+            return DicePool(self.__add_counter(self._dicepool, other._dicepool))
         return NotImplemented
 
     def __radd__(self, other) -> DicePool:
@@ -166,16 +164,16 @@ class DicePool:
 
     def __sub__(self, other) -> DicePool:
         if isinstance(other, Number):
-            return DicePool(self.__sub_counter(self.__dicepool__, {1: other}))
+            return DicePool(self.__sub_counter(self._dicepool, {1: other}))
         if hasattr(other, "__dicepool__"):
-            return DicePool(self.__sub_counter(self.__dicepool__, other.__dicepool__))
+            return DicePool(self.__sub_counter(self._dicepool, other._dicepool))
         return NotImplemented
 
     def __rsub__(self, other) -> DicePool:
         if isinstance(other, Number):
-            return DicePool(self.__sub_counter({1: other}, self.__dicepool__))
+            return DicePool(self.__sub_counter({1: other}, self._dicepool))
         if hasattr(other, "__dicepool__"):
-            return DicePool(self.__sub_counter(other.__dicepool__, self.__dicepool__))
+            return DicePool(self.__sub_counter(other._dicepool, self._dicepool))
         return NotImplemented
 
     ## multiplication and floordiv operate on ints instead of other dicepools
@@ -186,7 +184,7 @@ class DicePool:
 
     def __mul__(self, other) -> DicePool:
         if isinstance(other, Number):
-            new_pool = Counter(self.__dicepool__)
+            new_pool = Counter(self._dicepool)
             for sides, numdice in new_pool.items():
                 new_pool[sides] = round(numdice * other) if sides != 1 else numdice * other
             return DicePool(new_pool)
@@ -197,7 +195,7 @@ class DicePool:
 
     def __truediv__(self, other) -> DicePool:
         if isinstance(other, Number):
-            new_pool = Counter(self.__dicepool__)
+            new_pool = Counter(self._dicepool)
             for sides, numdice in new_pool.items():
                 new_pool[sides] = round(numdice / other) if sides != 1 else numdice / other
             return DicePool(new_pool)
@@ -205,19 +203,19 @@ class DicePool:
 
     def __floordiv__(self, other) -> DicePool:
         if isinstance(other, Number):
-            new_pool = Counter(self.__dicepool__)
+            new_pool = Counter(self._dicepool)
             for sides, numdice in new_pool.items():
                 new_pool[sides] = int(numdice // other)
             return DicePool(new_pool)
         return NotImplemented
 
     def __neg__(self) -> DicePool:
-        new_pool = Counter(self.__dicepool__)
+        new_pool = Counter(self._dicepool)
         for dicetype in new_pool:
             new_pool[dicetype] *= -1
         return DicePool(new_pool)
 
     ## Removes all negative or zero dice counts
     def __abs__(self) -> DicePool:
-        new_pool = +Counter(self.__dicepool__)
+        new_pool = +Counter(self._dicepool)
         return DicePool(new_pool)
