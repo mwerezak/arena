@@ -6,7 +6,6 @@ from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL, QUADRUPED_UNGULATE
 from defines.traits import *
 from core.creature.traits import FinesseTrait, EvadeTrait
 from core.combat.attack import CannotDefendTrait
-from core.combat.unarmed import HardenedNaturalTrait
 
 ## Natural Weapon Templates
 

@@ -3,6 +3,7 @@ from core.creature.loadout import Loadout, LoadoutChoice
 from core.equipment.armor import Armor, ArmorTemplate
 from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL, SPECIES_HORSE
 from defines.traits import *
+from core.creature.traits import FinesseTrait
 from defines.weapons import (
     WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
     WEAPON_BATTLEAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE, WEAPON_GREATAXE,
@@ -94,6 +95,7 @@ CREATURE_SATYR_WARDEN = (
         SkillTrait(SKILL_SHIELD, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+        FinesseTrait,
     )
     .set_loadout(Loadout(
         [ WEAPON_SCIMITAR, SHIELD_MEDIUM, Armor(LINEN_ARMOR, SPECIES_SATYR) ],
@@ -179,7 +181,6 @@ CREATURE_GNOLL_WARRIOR = (
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
-        EvadeTrait,
     )
     .set_loadout(Loadout(
         LoadoutChoice([
@@ -197,7 +198,6 @@ CREATURE_GNOLL_CHIEFTAINS_SON = (
     .add_trait(
         SkillTrait(SKILL_UNARMED, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
-        EvadeTrait,
     )
     .set_loadout(Loadout(
         LoadoutChoice([

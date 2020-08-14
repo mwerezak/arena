@@ -155,7 +155,7 @@ class DicePool:
     def __add__(self, other) -> DicePool:
         if isinstance(other, Number):
             return DicePool(self.__add_counter(self._dicepool, {1: other}))
-        if hasattr(other, "__dicepool__"):
+        if hasattr(other, "_dicepool"):
             return DicePool(self.__add_counter(self._dicepool, other._dicepool))
         return NotImplemented
 
@@ -165,14 +165,14 @@ class DicePool:
     def __sub__(self, other) -> DicePool:
         if isinstance(other, Number):
             return DicePool(self.__sub_counter(self._dicepool, {1: other}))
-        if hasattr(other, "__dicepool__"):
+        if hasattr(other, "_dicepool"):
             return DicePool(self.__sub_counter(self._dicepool, other._dicepool))
         return NotImplemented
 
     def __rsub__(self, other) -> DicePool:
         if isinstance(other, Number):
             return DicePool(self.__sub_counter({1: other}, self._dicepool))
-        if hasattr(other, "__dicepool__"):
+        if hasattr(other, "_dicepool"):
             return DicePool(self.__sub_counter(other._dicepool, self._dicepool))
         return NotImplemented
 

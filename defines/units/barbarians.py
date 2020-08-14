@@ -1,5 +1,6 @@
 from core.creature.template import CreatureTemplate
 from core.creature.loadout import Loadout, LoadoutChoice
+from core.creature.traits import EvadeTrait, FinesseTrait
 from core.equipment.armor import ArmorTemplate, Armor
 from defines.species import SPECIES_GOBLIN, SPECIES_OGRE, SPECIES_ORC
 from defines.armor import (

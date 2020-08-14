@@ -1,42 +1,48 @@
 """
 Arena mode: individual creature combat
 """
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
 
+from core.action import ActionLoop
 from core.creature import Creature
-from core.creature.combat import MeleeCombat, ChangeMeleeRangeAction
-from core.combat.attack import MeleeAttack
-from core.action import ActionLoop, Action, Entity
 from core.creature.tactics import SKILL_FACTOR, get_melee_range_priority, get_melee_threat_value
+
+if TYPE_CHECKING:
+    from core.creature.inventory import Inventory
+    from core.creature.combat import MeleeCombat, ChangeMeleeRangeAction
+    from core.combat.attack import MeleeAttack
+    from core.action import Action, Entity
 
 def get_attack_value(creature: Creature, attack: MeleeAttack) -> float:
     return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.combat_test)]
 
 def try_equip_best_weapons(creature: Creature) -> None:
-    creature.unequip_all()
+    inventory = creature.inventory
+    inventory.unequip_all()
 
     weapon_value = {}
-    for item in creature.get_equipment():
+    for item in inventory:
         if item.is_weapon():
-            best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=None)
+            best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(inventory)), default=None)
             if best_value is not None:
                 weapon_value[item] = best_value
 
     for item in sorted(weapon_value.keys(), key=lambda k: weapon_value[k], reverse=True):
-        if len(list(creature.get_empty_hands())) == 0:
+        if len(list(inventory.get_empty_slots())) == 0:
             break
-        creature.try_equip_item(item)
+        inventory.try_equip_item(item)
 
     ## if there are any left over hands, increase hand count of existing weapons
-    for item in sorted(creature.get_held_items(), key=lambda k: weapon_value[k], reverse=True):
-        if len(list(creature.get_empty_hands())) == 0:
+    for item in sorted(inventory.get_held_items(), key=lambda k: weapon_value[k], reverse=True):
+        if len(list(inventory.get_empty_slots())) == 0:
             break
-        _, max_hands = item.get_required_hands(creature)
-        creature.try_equip_item(item, use_hands=max_hands)
+        _, max_hands = item.get_required_hands(inventory)
+        inventory.try_equip_item(item, use_hands=max_hands)
 
-def print_held_items(creature: Creature) -> None:
-    for item in creature.get_held_items():
-        print(item, ':', *creature.get_item_held_by(item))
+def print_held_items(inventory: Inventory) -> None:
+    for item in inventory.get_held_items():
+        print(item, ':', *inventory.get_item_held_by(item))
 
 def print_melee_attacks(creature: Creature) -> None:
     for attack in creature.get_melee_attacks():

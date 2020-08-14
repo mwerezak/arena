@@ -50,6 +50,6 @@ class Loadout:
         for group in self.loadout:
             for item in group:
                 if isinstance(item, EquipmentTemplate):
-                    creature.add_equipment(Equipment(item))
+                    creature.inventory.add(Equipment(item))
                 if isinstance(item, CreatureTrait):
                     creature.add_trait(item)

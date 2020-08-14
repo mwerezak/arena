@@ -79,14 +79,6 @@ class CreatureTemplate:
     def get_traits(self) -> Iterable[CreatureTrait]:
         return iter(self.traits.values())
 
-    def get_natural_armor(self) -> Iterable[Tuple[str, float]]:
-        return ( (bp.id_tag, bp.armor) for bp in self.bodyplan )
-
-    def get_natural_weapons(self) -> Iterable[Tuple[str, NaturalWeapon]]:
-        for bp in self.bodyplan:
-            for unarmed in bp.attacks:
-                yield bp.id_tag, unarmed
-
     @property
     def max_health(self) -> int:
         return self.size + self.get_attribute(PrimaryAttribute.CON)

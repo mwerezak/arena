@@ -2,7 +2,7 @@
 from core.creature.bodyplan import (
     Morphology, BodyElement, BodyElementType,
     BodyElementPlacement as Placement,
-    BodyElementSpecial as Special,
+    BodyPartFlag,
 )
 
 ## "generic" Morphologies that can be used by different species
@@ -25,7 +25,7 @@ QUADRUPED_UNGULATE = (
         name      = "Head and Neck",
         size      = 2,
         placement = Placement.MEDIAL | Placement.FORE,
-        specials  = [Special.VITAL],
+        flags     = BodyPartFlag.VITAL,
     )
     .select("ubody")
     .set(
@@ -33,42 +33,42 @@ QUADRUPED_UNGULATE = (
         base_hp   = 3,
         size      = 3,
         placement = Placement.MEDIAL | Placement.FORE,
-        specials  = [Special.VITAL],
+        flags     = BodyPartFlag.VITAL,
     )
     .select("l_arm")
     .set(
         name      = "Left Front Leg",
         size      = 2,
         placement = Placement.FORE | Placement.LEFT,
-        specials  = [Special.STANCE],
+        flags     = BodyPartFlag.STANCE,
     )
     .select("r_arm")
     .set(
         name      = "Right Front Leg",
         size      = 2,
         placement = Placement.FORE | Placement.RIGHT,
-        specials  = [Special.STANCE],
+        flags     = BodyPartFlag.STANCE,
     )
     .select("lbody")
     .set(
         name      = "Hindquarters",
         size      = 3,
         placement = Placement.MEDIAL | Placement.REAR,
-        specials  = [Special.VITAL],
+        flags     = BodyPartFlag.VITAL,
     )
     .select("l_leg")
     .set(
         name      = "Left Rear Leg",
         size      = 3,
         placement = Placement.REAR | Placement.LEFT,
-        specials  = [Special.STANCE],
+        flags     = BodyPartFlag.STANCE,
     )
     .select("r_leg")
     .set(
         name      = "Right Rear Leg",
         size      = 3,
         placement = Placement.REAR | Placement.RIGHT,
-        specials  = [Special.STANCE],
+        flags     = BodyPartFlag.STANCE,
     )
     .select("tail")
     .set(
@@ -86,49 +86,49 @@ HUMANOID = (
     .set(
         name     = 'Head and Neck',
         size     = 2,
-        specials = [Special.VITAL],
+        flags    = BodyPartFlag.VITAL,
     )
     .select('ubody')
     .set(
         name      = 'Chest',
         size      = 3,
         placement = Placement.CENTRAL,
-        specials  = [Special.VITAL],
+        flags     = BodyPartFlag.VITAL,
     )
     .select('l_arm')
     .set(
         name      = 'Left Arm',
         size      = 3,
         placement = Placement.CENTRAL | Placement.LEFT,
-        specials  = [Special.GRASP],
+        flags     = BodyPartFlag.GRASP,
     )
     .select('r_arm')
     .set(
         name      = 'Right Arm',
         size      = 3,
         placement = Placement.CENTRAL | Placement.RIGHT,
-        specials  = [Special.GRASP],
+        flags     = BodyPartFlag.GRASP,
     )
     .select("lbody")
     .set(
         name      = "Lower Body",
         size      = 3,
         placement = Placement.CENTRAL,
-        specials  = [Special.VITAL],
+        flags     = BodyPartFlag.VITAL,
     )
     .select('l_leg')
     .set(
         name      = 'Left Leg',
         size      = 3,
         placement = Placement.CENTRAL | Placement.LEFT,
-        specials  = [Special.STANCE],
+        flags     = BodyPartFlag.STANCE,
     )
     .select('r_leg')
     .set(
         name = 'Right Leg',
         size      = 3,
         placement = Placement.CENTRAL | Placement.RIGHT,
-        specials  = [Special.STANCE],
+        flags     = BodyPartFlag.STANCE,
     )
     .select('tail')
     .set(

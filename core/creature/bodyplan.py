@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum, IntFlag
+from enum import Enum, Flag, auto
 from copy import copy as shallow_copy
 from numbers import Number
 from typing import TYPE_CHECKING, Iterable, Any, Union, Tuple, MutableMapping
@@ -15,17 +15,18 @@ class BodyElementType(Enum):
     LIMB = "limb"
     TAIL = "tail"
 
-class BodyElementSpecial(Enum):
-    VITAL = "vital"
-    GRASP = "grasp"
-    STANCE = "stance"
+class BodyPartFlag(Flag):
+    NONE = 0
+    VITAL = auto()
+    GRASP = auto()
+    STANCE = auto()
 
 # general rule of placement flags
-class BodyElementPlacement(IntFlag):
-    FORE    = 0x1
-    REAR    = 0x2
-    LEFT    = 0x4
-    RIGHT   = 0x8
+class BodyElementPlacement(Flag):
+    FORE    = auto()
+    REAR    = auto()
+    LEFT    = auto()
+    RIGHT   = auto()
     CENTRAL = FORE|REAR
     MEDIAL  = LEFT|RIGHT
     DEFAULT = CENTRAL|MEDIAL
@@ -37,7 +38,7 @@ class BodyElement:
                  name: str = None,
                  placement: BodyElementPlacement = BodyElementPlacement.DEFAULT,
                  size: float = 1,
-                 specials: Iterable[BodyElementSpecial] = (),
+                 flags: BodyPartFlag = BodyPartFlag.NONE,
                  attacks: Iterable[NaturalWeapon] = (),
                  armor: float = 0):
 
@@ -46,13 +47,12 @@ class BodyElement:
         self.name = name or id_tag
         self.placement = placement
         self.size = size
-        self.specials = list(specials)
+        self.flags = flags
         self.attacks = list(attacks)
         self.armor = armor
 
     def clone(self) -> BodyElement:
         result = shallow_copy(self)
-        result.specials = list(self.specials)
         result.attacks = list(self.attacks)
         return result
 

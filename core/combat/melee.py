@@ -4,12 +4,11 @@ import random
 from typing import TYPE_CHECKING, Sequence, Tuple, Optional, NamedTuple
 
 from core.contest import OpposedResult, ContestResult
-from core.creature import Creature
-from core.equipment import Equipment
 
 if TYPE_CHECKING:
     from core.dice import DicePool
     from core.constants import MeleeRange, AttackForce
+    from core.creature import Creature
     from core.creature.combat import MeleeCombat
     from core.combat.attack import MeleeAttackInstance
 

@@ -16,7 +16,7 @@ from core.dice import dice
 if TYPE_CHECKING:
     from core.creature import Creature
 
-_PRECALC_TABLES = True
+_PRECALC_TABLES = False
 _LEVEL_NUMERALS = ['I', 'II', 'III', 'IV', 'V']
 
 # by default skill level is 0, which grants no bonuses

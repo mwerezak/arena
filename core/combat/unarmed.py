@@ -107,8 +107,12 @@ class NaturalWeapon:
 
         self.name = name or template.name
         self.damtype = template.damtype
-        self.criticals = list(template.criticals).extend(criticals)
-        self.traits = list(template.traits).extend(traits)
+
+        self.criticals = list(template.criticals)
+        self.criticals.extend(criticals)
+
+        self.traits = list(template.traits)
+        self.traits.extend(traits)
 
         self.reach = template.reach + reach
         self.force = template.force + force  # affects both damage and armor penetration as well
