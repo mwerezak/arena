@@ -1,24 +1,65 @@
-from enum import IntFlag
+from enum import Flag, auto
+from typing import TYPE_CHECKING
 
-class CriticalUsage(IntFlag):
-    Offensive = 0x1
-    Defensive = 0x2
+from core.dice import dice
+
+if TYPE_CHECKING:
+    from core.creature import Creature
+    from core.combat.melee import CombatResult
+
+class CriticalUsage(Flag):
+    Offensive = auto()
+    Defensive = auto()
+    Both = Offensive | Defensive
 
 ## Criticals modify the result of an attack or produce some special effect
 class CriticalEffect:
     name: str
     usage: CriticalUsage
 
-    # can_use(self, user: Creature, target: Creature, combat: MeleeCombat) -> bool - if the special can be used
-    # __init__()  - should take parameters needed to resolve the effect of the special in combat
+    def can_use(self, user: Creature, result: CombatResult) -> bool:
+        return False
 
+    def apply(self, user: Creature, result: CombatResult) -> None:
+        pass
 
 # Default Criticals - Anyone can use
 
 # MaxDamageCritical - (offensive) deal max damage instead of rolling
+class MaxDamageCritical(CriticalEffect):
+    name = 'Max Damage'
+    usage = CriticalUsage.Offensive
+
+    def can_use(self, user: Creature, result: CombatResult) -> bool:
+        return result.is_effective_hit() and result.damage.min() < result.damage.max()
+
+    def apply(self, user: Creature, result: CombatResult) -> None:
+        result.damage = dice(result.damage.max())
+
 # HitLocationCritical - (offensive) attack hit location of choice instead of random
+class HitLocationCritical(CriticalEffect):
+    name = 'Choose Hit Location'
+    usage = CriticalUsage.Offensive
+
+    def __init__(self, hitloc: str):
+        self.hitloc = hitloc
+
+    def can_use(self, user: Creature, result: CombatResult) -> bool:
+        return result.is_effective_hit() and result.hitloc != self.hitloc
+
+    def apply(self, user: Creature, result: CombatResult) -> None:
+        result.hitloc = self.hitloc
+
 # SecondaryAttackCritical - (both) simultaneous attack with an offhand or natural weapon, do not roll for criticals
+
 # ImproveParryCritical - (defensive) ignore weapon force difference for defence
+class ImproveParryCritical(CriticalEffect):
+    name = 'Improved Parry'
+    usage = CriticalUsage.Defensive
+
+    def can_use(self, user: Creature, result: CombatResult) -> bool:
+        pass
+
 # CounterAttackCritical - (defensive) make opponent lose AP, force an attack from user
 # PressAttackCritical - (offensive) same as CounterAttackCritical, but on offence
 # BreakGrappleCritical - (defensive) break out of grapple or entanglement for free

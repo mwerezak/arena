@@ -6,7 +6,7 @@ Creatures may also have traits that grant a certain level of expertise (valid le
 from __future__ import annotations
 
 import itertools
-from enum import Enum
+from enum import Enum, IntEnum
 from collections import Counter
 from functools import lru_cache
 from typing import TYPE_CHECKING, Iterable, Sequence, Mapping
@@ -45,6 +45,14 @@ class SkillLevel(Enum):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.value})'
+
+class DifficultyGrade(IntEnum):
+    VeryEasy   = +4
+    Easy       = +2
+    Standard   = +0
+    Hard       = -2
+    Formidable = -4
+    Herculean  = -8
 
 class Contest:
     BASE_DICE = 3

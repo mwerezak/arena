@@ -9,9 +9,9 @@ if TYPE_CHECKING:
     from core.creature import Creature
     from core.combat.attack import MeleeAttack, MeleeAttackInstance
     from core.constants import AttackForce, SizeCategory
-    from core.contest import CombatSkillClass
+    from core.contest import CombatSkillClass, CombatTest
 
-class ShieldData(NamedTuple):
+class ShieldBlock(NamedTuple):
     block_force: AttackForce
     block_bonus: int
     block_ranged: float
@@ -24,14 +24,14 @@ class Weapon(EquipmentTemplate):
                  encumbrance: float,
                  cost: int,
                  melee_attacks: Iterable[MeleeAttack] = (),
-                 shield: Optional[ShieldData] = None):
+                 shield: Optional[ShieldBlock] = None):
 
         self.name = name
         self.size = size
         self.skill_class = skill_class
         self.encumbrance = encumbrance
         self.cost = cost
-        self.shield = shield
+        self.block = shield
 
         self.melee_attacks = list(melee_attacks)
         for attack in melee_attacks:
@@ -43,7 +43,7 @@ class Weapon(EquipmentTemplate):
         return len(self.melee_attacks) > 0
 
     def is_shield(self) -> bool:
-        return self.shield is not None
+        return self.block is not None
 
     def get_melee_attacks(self, attacker: Creature, use_hands: int = 0) -> Iterable[MeleeAttackInstance]:
         for attack in self.melee_attacks:
@@ -55,8 +55,11 @@ class Weapon(EquipmentTemplate):
         if self.size > creature_size.get_step(1):
             return None
 
-        min_hands = 2 if self.is_large_weapon(creature) else 1
-        max_hands = 1 if self.is_light_weapon(creature) else 2
+        min_hands, max_hands = 1,2
+        if self.is_large_weapon(creature):
+            min_hands = 2
+        elif self.is_light_weapon(creature) or self.is_shield():
+            max_hands = 1
         return min_hands, max_hands
 
     def is_large_weapon(self, creature: Creature) -> bool:
@@ -64,6 +67,10 @@ class Weapon(EquipmentTemplate):
 
     def is_light_weapon(self, creature: Creature) -> bool:
         return self.size < creature.size.get_category()
+
+    @property
+    def combat_test(self) -> CombatTest:
+        return self.skill_class.contest
 
     def clone(self, name: str = None) -> Weapon:
         result = shallow_copy(self)

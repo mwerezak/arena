@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Tuple, Union, Mapping, Iterable, Sequence
 if TYPE_CHECKING:
     pass
 
-def dice(numdice: int, sides: int = 1) -> DicePool:
+def dice(numdice: Number, sides: int = 1) -> DicePool:
     """ Convenient constructor for DicePools.
         More complex dicepools can be constructed using arithmetic operators
         e.g. dice(3,6) + 2*dice(2,8) + 1 --> 3d6 + 4d8 + 1
@@ -33,7 +33,7 @@ def dicepool(*elems: Union[Number, Tuple[int, int]]) -> DicePool:
     return DicePool(dice_counter)
 
 class DicePool:
-    __dicepool__: CounterType[int, Number]
+    __dicepool__: CounterType[int, Number]  # TODO rename to _dicepool
 
     def __init__(self, pool = None):
         ## check for the presence of a __dicepool__ magic attribute to
@@ -83,35 +83,35 @@ class DicePool:
             for sides, numdice in self.__dicepool__.items() if sides != 1
         }
 
-    def get_roll_result(self) -> Number:
+    def get_roll_result(self) -> Any:
         """ Returns roll results as a single value """
         return sum(self.get_roll()) + self.get_modifier()
 
     ## Stats
 
-    def min(self) -> Number:
+    def min(self) -> Any:
         return sum(
             numdice if numdice > 0 else numdice*sides
             for sides, numdice in self.__dicepool__.items()
         )
 
-    def max(self) -> Number:
+    def max(self) -> Any:
         return sum(
             numdice*sides if numdice > 0 else numdice
             for sides, numdice in self.__dicepool__.items()
         )
 
-    def mean(self) -> float:
+    def mean(self) -> Any:
         return sum(
                 numdice*(1+sides)/2
                 for sides, numdice in self.__dicepool__.items()
             )
 
-    def std_dev(self) -> float:
+    def std_dev(self) -> Any:
         return self.variance() ** 0.5
 
     ## The variance of a sum of independent random variables is the sum of the variances.
-    def variance(self) -> float:
+    def variance(self) -> Any:
         return sum(
                 self.__element_variance(sides, numdice)
                 for sides, numdice in self.__dicepool__.items()

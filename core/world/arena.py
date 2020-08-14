@@ -10,7 +10,7 @@ from core.action import ActionLoop, Action, Entity
 from core.creature.tactics import SKILL_FACTOR, get_melee_range_priority, get_melee_threat_value
 
 def get_attack_value(creature: Creature, attack: MeleeAttack) -> float:
-    return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.skill_class.contest)]
+    return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.combat_test)]
 
 def try_equip_best_weapons(creature: Creature) -> None:
     creature.unequip_all()

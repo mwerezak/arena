@@ -4,8 +4,6 @@ from core.contest import *
 __all__ = [
     'SkillTrait',
     'SkillLevel',
-    'EvadeTrait',
-    'FinesseTrait',
     'SKILL_EVADE',
     'SKILL_ENDURANCE',
     'SKILL_WILLPOWER',

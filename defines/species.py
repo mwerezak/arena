@@ -4,6 +4,9 @@ from core.creature.bodyplan import Morphology
 from core.creature.template import CreatureTemplate
 from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL, QUADRUPED_UNGULATE
 from defines.traits import *
+from core.creature.traits import FinesseTrait, EvadeTrait
+from core.combat.attack import CannotDefendTrait
+from core.combat.unarmed import HardenedNaturalTrait
 
 ## Natural Weapon Templates
 
@@ -12,10 +15,10 @@ UNARMED_CLAW  = NaturalWeaponTemplate('Claw',   DamageType.Slashing)
 UNARMED_PAW   = NaturalWeaponTemplate('Strike', DamageType.Bludgeon)
 UNARMED_WING  = NaturalWeaponTemplate('Strike', DamageType.Bludgeon, reach=+1)
 
-UNARMED_KICK      = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, reach=+1, force=-1)
+UNARMED_KICK      = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, reach=+1, force=-1, traits=[CannotDefendTrait])
 UNARMED_KICK_QUAD = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, reach=+1)  # quadripeds can kick out with more force
 
-UNARMED_HOOF_BIPED = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, reach=+1, force=-1)
+UNARMED_HOOF_BIPED = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, reach=+1, force=-1, traits=[CannotDefendTrait])
 UNARMED_HOOF       = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, reach=+1)
 
 UNARMED_BITE       = NaturalWeaponTemplate('Bite', DamageType.Puncture, reach=-1, damage=+1)

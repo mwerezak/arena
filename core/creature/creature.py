@@ -1,4 +1,5 @@
 from __future__ import annotations
+from enum import Enum
 from typing import TYPE_CHECKING, Mapping, MutableMapping, Collection, Tuple, Optional, Iterable, Any, Union, List
 
 from core.action import Entity
@@ -6,6 +7,7 @@ from core.creature.traits import SkillTrait
 from core.creature.bodyplan import BodyElementSpecial
 from core.constants import MeleeRange, PrimaryAttribute
 from core.creature.tactics import CombatTactics
+from core.contest import DifficultyGrade
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
@@ -14,8 +16,14 @@ if TYPE_CHECKING:
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
     from core.equipment import Equipment
+    from core.equipment.weapon import ShieldBlock
     from core.contest import Contest, SkillLevel
     from core.creature.traits import CreatureTrait
+
+class Stance(Enum):
+    Standing = 0
+    Crouched = 1
+    Prone    = 2
 
 class Creature(Entity):
     health: float
@@ -23,8 +31,11 @@ class Creature(Entity):
     def __init__(self, template: CreatureTemplate, tactics: CombatTactics = None):
         self.template = template
         self.name = template.name
-        self.health = template.max_health
         self.tactics = tactics or CombatTactics(self)
+
+        self.health = template.max_health
+        self.stance = Stance.Standing
+        self.alive = True
 
         self._traits: MutableMapping[Any, CreatureTrait] = {
             trait.key : trait for trait in template.get_traits()
@@ -184,6 +195,11 @@ class Creature(Entity):
         yield from self.get_unarmed_attacks()
         yield from self.get_held_item_attacks()
 
+    def get_held_shields(self) -> Iterable[Equipment]:
+        for item in self.get_held_items():
+            if item.is_weapon() and item.is_shield():
+                yield item
+
     def get_melee_engage_distance(self) -> MeleeRange:
         attack_reach = (attack.max_reach for attack in self.get_melee_attacks())
         return max(attack_reach, default=MeleeRange(0))
@@ -200,3 +216,18 @@ class Creature(Entity):
     def remove_melee_combat(self, other: Creature) -> None:
         if other in self._melee_combat:
             del self._melee_combat[other]
+
+    def get_stance_combat_modifier(self) -> int:
+        if self.stance == Stance.Prone:
+            return DifficultyGrade.Formidable
+        if self.stance == Stance.Crouched:
+            return DifficultyGrade.Hard
+        return DifficultyGrade.Standard
+
+    def kill(self) -> None:
+        self.alive = False
+        self.stance = Stance.Prone
+        self.set_action_loop(None)
+        for o in self.get_melee_opponents():
+            melee = self.get_melee_combat(o)
+            melee.break_engagement()

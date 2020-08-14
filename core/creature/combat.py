@@ -3,11 +3,13 @@ from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 from core.creature.actions import CreatureAction
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
+from core.combat.melee import can_opportunity_attack
+
 if TYPE_CHECKING:
     from core.constants import MeleeRange
     from core.creature import Creature
-    from core.combat.attack import MeleeAttackInstance
     from core.creature.actions import Action
+    from core.combat.attack import MeleeAttackInstance
 
 def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
     melee = MeleeCombat(a, b)
@@ -39,12 +41,6 @@ class MeleeCombat:
             if getattr(action, 'attacker', None) is creature and getattr(action, 'defender', None) is opponent:
                 creature.set_current_action(None)
         del self.combatants
-
-    def can_opportunity_attack(self, combatant: Creature):
-        cur_action = combatant.get_current_action()
-        if cur_action is None:
-            return True  # idle
-        return getattr(cur_action, 'can_attack', True)
 
 class ChangeMeleeRangeAction(CreatureAction):
     MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
@@ -78,7 +74,7 @@ class ChangeMeleeRangeAction(CreatureAction):
         melee = self.opponent.get_melee_combat(self.protagonist)
         if self.desired_range >= melee.separation:
             return False  # can only opportunity attack when moving closer
-        return melee.can_opportunity_attack(self.opponent)
+        return can_opportunity_attack(self.opponent)
 
     def can_resolve(self) -> bool:
         melee = self.protagonist.get_melee_combat(self.opponent)
@@ -101,6 +97,7 @@ class ChangeMeleeRangeAction(CreatureAction):
         if not contested_change and self.allow_opportunity_attack():
             use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
             if use_attack is not None:
+                # pick attack range - longest range at which use_attack can attack
                 print(f'Opportunity attack: {use_attack}')
 
         success = True

@@ -84,12 +84,13 @@ class Action(ABC):
 class Entity:
     loop: ActionLoop = None
 
-    def set_action_loop(self, loop: ActionLoop):
+    def set_action_loop(self, loop: Optional[ActionLoop]):
         if self.loop != loop:
             if self.loop is not None:
                 self.loop.remove_entity(self)
-            self.loop = loop
-            self.loop.add_entity(self)
+            if loop is not None:
+                self.loop = loop
+                self.loop.add_entity(self)
 
     def get_current_action(self) -> Optional[Action]:
         return self.loop.get_current_action(self)

@@ -4,7 +4,7 @@ import math
 from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
 from core.dice import dice
-from core.combat.attack import MeleeAttack
+from core.combat.attack import MeleeAttack, AttackTrait
 from core.constants import MeleeRange, SizeCategory, FORCE_MEDIUM
 from core.combat.damage import DamageType
 from core.contest import CombatSkillClass
@@ -71,12 +71,18 @@ def _table_lookup(table: Sequence[Tuple[float, Any]], key: float, shift: int = 0
 BASE_MAX_REACH = 1.0   # REACH_SHORT
 BASE_MIN_REACH = 1.0/3 # REACH_CLOSE
 
+class NaturalWeaponTrait(AttackTrait):
+    name = 'Natural Weapon'
+    desc = 'This attack is a natural weapon'
+NaturalWeaponTrait = NaturalWeaponTrait()
+
 class NaturalWeaponTemplate:
     def __init__(self,
                  name: str, damtype: DamageType,
                  force: float = 0, reach: float = 0,
                  damage: float = 0, armpen: Optional[float] = None,
-                 criticals: Iterable[Type[CriticalEffect]] = None):
+                 criticals: Iterable[Type[CriticalEffect]] = (),
+                 traits: Iterable[AttackTrait] = ()):
 
         self.name = name
         self.damtype = damtype
@@ -84,21 +90,25 @@ class NaturalWeaponTemplate:
         self.force = force  # affects both damage and armor penetration as well
         self.damage = damage
         self.armpen = armpen
-        self.criticals = tuple(criticals) if criticals is not None else ()
+        self.criticals = tuple(criticals)
+        self.traits = (NaturalWeaponTrait, *traits)
 
 class NaturalWeapon:
     def __init__(self,
                  template: Union[NaturalWeapon, NaturalWeaponTemplate],
                  name: str = None,
                  force: float = 0, reach: float = 0,
-                 damage: float = 0, armpen: Optional[float] = None):
+                 damage: float = 0, armpen: Optional[float] = None,
+                 criticals: Iterable[Type[CriticalEffect]] = (),
+                 traits: Iterable[AttackTrait] = ()):
 
         if hasattr(template, 'as_template'):
             template = template.as_template()
 
         self.name = name or template.name
         self.damtype = template.damtype
-        self.criticals = template.criticals
+        self.criticals = list(template.criticals).extend(criticals)
+        self.traits = list(template.traits).extend(traits)
 
         self.reach = template.reach + reach
         self.force = template.force + force  # affects both damage and armor penetration as well
@@ -133,8 +143,17 @@ class NaturalWeapon:
             force = force,
             damtype = self.damtype,
             damage = damage,
-            armpen= armor_pen,
-            criticals = self.criticals,
+            armpen = armor_pen,
             skill_class = CombatSkillClass.Unarmed,
+            criticals = self.criticals,
+            traits = self.traits,
         )
 
+
+# class HardenedNaturalTrait(AttackTrait):
+#     name = 'Formidable Natural Weapon'
+#     desc = (
+#         'This attack may be used to avoid damage when defending in melee combat, '
+#         'even if the defender does not posses the Martial Artist trait. '
+#     )
+# HardenedNaturalTrait = HardenedNaturalTrait()
