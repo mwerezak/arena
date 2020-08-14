@@ -4,7 +4,7 @@ import math
 from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
 from core.dice import dice
-from core.combat.attack import MeleeAttack, AttackTrait
+from core.combat.attack import MeleeAttackTemplate, AttackTrait
 from core.constants import MeleeRange, SizeCategory, FORCE_MEDIUM
 from core.combat.damage import DamageType
 from core.contest import CombatSkillClass
@@ -127,7 +127,7 @@ class NaturalWeapon:
             self.name, self.damtype, self.force, self.reach, self.damage, self.armpen, self.criticals
         )
 
-    def create_attack(self, creature: CreatureTemplate) -> MeleeAttack:
+    def create_attack(self, creature: CreatureTemplate) -> MeleeAttackTemplate:
         rel_size = float(creature.size)/float(SizeCategory.Medium.to_size())
 
         max_reach = BASE_MAX_REACH * rel_size + self.reach
@@ -141,7 +141,7 @@ class NaturalWeapon:
         if self.damtype == DamageType.Bludgeon or self.armpen is not None:
             armor_pen = _table_lookup(_ARMOR_PEN_TABLE, float(creature.size), (self.armpen or 0) + self.force)
 
-        return MeleeAttack(
+        return MeleeAttackTemplate(
             name = self.name,
             reach = (MeleeRange(round(max_reach)), MeleeRange(round(min_reach))),
             force = force,

@@ -13,7 +13,7 @@ from core.contest import DifficultyGrade
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
-    from core.combat.attack import MeleeAttack, MeleeAttackInstance
+    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
     from core.creature.combat import MeleeCombat
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
@@ -94,7 +94,7 @@ class Creature(Entity):
 
     ## Melee Combat
 
-    def get_melee_attacks(self) -> Iterable[MeleeAttackInstance]:
+    def get_melee_attacks(self) -> Iterable[MeleeAttack]:
         for bp in self.get_bodyparts():
             yield from bp.get_unarmed_attacks()
 

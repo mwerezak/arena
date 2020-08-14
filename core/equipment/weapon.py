@@ -7,7 +7,7 @@ from core.equipment.template import EquipmentTemplate
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.combat.attack import MeleeAttack, MeleeAttackInstance
+    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
     from core.constants import AttackForce, SizeCategory
     from core.contest import CombatSkillClass, CombatTest
 
@@ -23,7 +23,7 @@ class Weapon(EquipmentTemplate):
                  skill_class: CombatSkillClass,
                  encumbrance: float,
                  cost: int,
-                 melee_attacks: Iterable[MeleeAttack] = (),
+                 melee_attacks: Iterable[MeleeAttackTemplate] = (),
                  shield: Optional[ShieldBlock] = None):
 
         self.name = name
@@ -45,7 +45,7 @@ class Weapon(EquipmentTemplate):
     def is_shield(self) -> bool:
         return self.block is not None
 
-    def get_melee_attacks(self, attacker: Creature, use_hands: int = 0) -> Iterable[MeleeAttackInstance]:
+    def get_melee_attacks(self, attacker: Creature, use_hands: int = 0) -> Iterable[MeleeAttack]:
         for attack in self.melee_attacks:
             yield attack.create_instance(attacker, use_hands)
 

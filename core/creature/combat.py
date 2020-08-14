@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from core.constants import MeleeRange
     from core.creature import Creature
     from core.creature.actions import Action
-    from core.combat.attack import MeleeAttackInstance
+    from core.combat.attack import MeleeAttack
 
 def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
     melee = MeleeCombat(a, b)

@@ -6,7 +6,7 @@ from core.creature.bodyplan import BodyPartFlag, BodyElementType
 if TYPE_CHECKING:
     from core.creature import Creature
     from core.creature.bodyplan import BodyElement
-    from core.combat.attack import MeleeAttack, MeleeAttackInstance
+    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
 
 class BodyPart:
     def __init__(self, parent: Creature, template: BodyElement):
@@ -53,7 +53,7 @@ class BodyPart:
     def is_stance_part(self) -> bool:
         return BodyPartFlag.STANCE in self.flags
 
-    def get_unarmed_attacks(self) -> Iterable[MeleeAttackInstance]:
+    def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
         for attack in self._unarmed_attacks:
             yield attack.create_instance(self.parent, 1)
 

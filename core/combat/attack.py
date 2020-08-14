@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from core.combat.criticals import CriticalEffect
     from core.contest import CombatSkillClass, CombatTest
 
-class MeleeAttack:
+class MeleeAttackTemplate:
     name: str
     force: AttackForce
     damtype: DamageType
@@ -51,9 +51,9 @@ class MeleeAttack:
             return False
         return True
 
-    def create_instance(self, attacker: Creature, use_hands: int) -> MeleeAttackInstance:
+    def create_instance(self, attacker: Creature, use_hands: int) -> MeleeAttack:
         """Use this MeleeAttack as a template to create a new attack adjusted for the given attacker"""
-        return MeleeAttackInstance(self, attacker, use_hands)
+        return MeleeAttack(self, attacker, use_hands)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
@@ -71,9 +71,8 @@ class MeleeAttack:
             return f'[{self.damage}/{self.armpen}*]{self.damtype.format_type_code()}'
         return f'[{self.damage}]{self.damtype.format_type_code()}'
 
-## TODO rename
-class MeleeAttackInstance:
-    def __init__(self, template: MeleeAttack, attacker: Creature, use_hands: int):
+class MeleeAttack:
+    def __init__(self, template: MeleeAttackTemplate, attacker: Creature, use_hands: int):
         self.template = template
         self.attacker = attacker
         self.use_hands = use_hands

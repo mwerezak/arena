@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from core.creature import Creature
     from core.creature.bodypart import BodyPart
     from core.creature.combat import MeleeCombat
-    from core.combat.attack import MeleeAttackInstance
+    from core.combat.attack import MeleeAttack
 
 def can_opportunity_attack(combatant: Creature):
     cur_action = combatant.get_current_action()
@@ -37,8 +37,8 @@ def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
 class CombatResult:
     def __init__(self,
                  melee: MeleeCombat,
-                 use_attack: MeleeAttackInstance,
-                 use_defence: MeleeAttackInstance,
+                 use_attack: MeleeAttack,
+                 use_defence: MeleeAttack,
                  is_hit: bool,
                  is_blocking: bool,
                  hitloc: Optional[BodyPart],

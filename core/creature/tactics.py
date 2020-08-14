@@ -7,11 +7,9 @@ from core.contest import SkillLevel, Contest, SKILL_EVADE
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.creature.combat import ChangeMeleeRangeAction, MeleeCombat
-    from core.combat.attack import MeleeAttackInstance
-    from core.contest import OpposedResult
+    from core.creature.combat import ChangeMeleeRangeAction
+    from core.combat.attack import MeleeAttack
     from core.equipment import Equipment
-    from core.equipment.weapon import ShieldBlock
 
 # relative mean calculated using anydice.com
 SKILL_FACTOR = {
@@ -24,12 +22,12 @@ SKILL_FACTOR = {
 }
 
 # include only weapons that can attack at or within the given ranges
-def get_melee_attack_priority(attacker: Creature, target: Creature, attacks: Iterable[MeleeAttackInstance]) -> Mapping[MeleeAttackInstance, float]:
+def get_melee_attack_priority(attacker: Creature, target: Creature, attacks: Iterable[MeleeAttack]) -> Mapping[MeleeAttack, float]:
     return {
         attack : get_expected_damage(attack, target) * SKILL_FACTOR[attacker.get_skill_level(attack.combat_test)] for attack in attacks
     }
 
-def get_expected_damage(attack: MeleeAttackInstance, target: Creature) -> float:
+def get_expected_damage(attack: MeleeAttack, target: Creature) -> float:
     result = 0
     for bp in target.get_bodyparts():
         result += bp.exposure * bp.get_effective_damage(attack.damage.mean(), attack.armpen.mean())
@@ -40,20 +38,20 @@ class CombatTactics:
         self.parent = parent
 
     # TODO customizable variability
-    def _choose_attack(self, attack_priority: Mapping[MeleeAttackInstance, float]) -> Optional[MeleeAttackInstance]:
+    def _choose_attack(self, attack_priority: Mapping[MeleeAttack, float]) -> Optional[MeleeAttack]:
         return max(attack_priority.keys(), key=lambda k: attack_priority[k], default=None)
 
-    def get_normal_attack(self, target: Creature, range: MeleeRange) -> Optional[MeleeAttackInstance]:
+    def get_normal_attack(self, target: Creature, range: MeleeRange) -> Optional[MeleeAttack]:
         attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(range))
         attack_priority = get_melee_attack_priority(self.parent, target, attacks=attacks)
         return self._choose_attack(attack_priority)
 
-    def get_opportunity_attack(self, target: Creature, attack_ranges: Iterable[MeleeRange]) -> Optional[MeleeAttackInstance]:
+    def get_opportunity_attack(self, target: Creature, attack_ranges: Iterable[MeleeRange]) -> Optional[MeleeAttack]:
         attacks = (attack for attack in self.parent.get_melee_attacks() if any(attack.can_attack(r) for r in attack_ranges))
         attack_priority = get_melee_attack_priority(self.parent, target, attacks)
         return self._choose_attack(attack_priority)
 
-    def get_melee_defence(self, attacker: Creature, attack: MeleeAttackInstance, range: MeleeRange) -> Optional[MeleeAttackInstance]:
+    def get_melee_defence(self, attacker: Creature, attack: MeleeAttack, range: MeleeRange) -> Optional[MeleeAttack]:
         defend_priority = {
             defence : (
                 1.0 - get_defence_damage_mult(attack.force, defence.force),
@@ -95,7 +93,7 @@ class CombatTactics:
         ranges = list(ranges)
         return any(any(attack.can_attack(r) for r in ranges) for attack in self.parent.get_melee_attacks())
 
-    def choose_evade_attack(self, attacker: Creature, attack: MeleeAttackInstance) -> bool:
+    def choose_evade_attack(self, attacker: Creature, attack: MeleeAttack) -> bool:
         return False # TODO
 
     def get_melee_range_priority(self, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:

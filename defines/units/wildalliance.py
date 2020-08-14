@@ -211,8 +211,8 @@ CREATURE_GNOLL_CHIEFTAINS_SON = (
 )
 
 if __name__ == '__main__':
-    from core.combat.attack import MeleeAttack
-    def print_attack(attack: MeleeAttack):
+    from core.combat.attack import MeleeAttackTemplate
+    def print_attack(attack: MeleeAttackTemplate):
         print(f'*** {attack.name} ***')
         print(f'force: {attack.force}')
         print(f'reach: {attack.max_reach} - {attack.min_reach}')

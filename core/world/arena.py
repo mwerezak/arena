@@ -11,10 +11,10 @@ from core.creature.tactics import SKILL_FACTOR
 if TYPE_CHECKING:
     from core.creature.inventory import Inventory
     from core.creature.combat import MeleeCombat, ChangeMeleeRangeAction
-    from core.combat.attack import MeleeAttack
+    from core.combat.attack import MeleeAttackTemplate
     from core.action import Action, Entity
 
-def get_attack_value(creature: Creature, attack: MeleeAttack) -> float:
+def get_attack_value(creature: Creature, attack: MeleeAttackTemplate) -> float:
     return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.combat_test)]
 
 def try_equip_best_weapons(creature: Creature) -> None:
