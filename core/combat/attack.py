@@ -1,14 +1,21 @@
 from __future__ import annotations
+
+import math
 from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
 
 from core.traits import Trait
+from core.constants import SizeCategory
+
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.constants import MeleeRange, AttackForce, PrimaryAttribute
+    from core.constants import MeleeRange, AttackForce, PrimaryAttribute, CreatureSize
     from core.dice import DicePool, dice
     from core.combat.damage import DamageType
     from core.combat.criticals import CriticalEffect
     from core.contest import CombatSkillClass, CombatTest
+
+def get_natural_reach_bonus(size: CreatureSize) -> int:
+    return round(math.sqrt(size/SizeCategory.Medium.to_size()) - 1.0)
 
 class MeleeAttackTemplate:
     name: str
@@ -77,6 +84,10 @@ class MeleeAttack:
         self.attacker = attacker
         self.use_hands = use_hands
 
+        reach_bonus = get_natural_reach_bonus(attacker.size)
+        self.max_reach = template.max_reach.get_step(reach_bonus)
+        self.min_reach = template.min_reach.get_step(reach_bonus)
+
     def can_reach(self, range: MeleeRange) -> bool:
         return self.template.can_reach(range)
 
@@ -97,14 +108,6 @@ class MeleeAttack:
     @property
     def combat_test(self) -> CombatTest:
         return self.template.combat_test
-
-    @property
-    def max_reach(self) -> MeleeRange:
-        return self.template.max_reach
-
-    @property
-    def min_reach(self) -> MeleeRange:
-        return self.template.min_reach
 
     @property
     def str_modifier(self) -> int:

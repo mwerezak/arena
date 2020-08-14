@@ -1,7 +1,7 @@
 from __future__ import annotations
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, Mapping, MutableMapping, Collection, Tuple, Optional, Iterable, Any, Union, List
+from typing import TYPE_CHECKING, MutableMapping, Optional, Iterable, Any, Union
 
 from core.action import Entity
 from core.constants import MeleeRange, PrimaryAttribute
