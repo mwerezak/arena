@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 from core.creature.actions import CreatureAction
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
-from core.combat.melee import can_opportunity_attack
+from core.combat.result import can_opportunity_attack
 
 if TYPE_CHECKING:
     from core.constants import MeleeRange
@@ -18,6 +18,8 @@ def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
     return melee
 
 class MeleeCombat:
+    MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
+
     combatants: Tuple[Creature, Creature]
     separation: MeleeRange
 
@@ -42,30 +44,26 @@ class MeleeCombat:
                 creature.set_current_action(None)
         del self.combatants
 
+    def get_range_shift(self, target_range: MeleeRange, max_shift: int = MAX_RANGE_SHIFT) -> MeleeRange:
+        shift = min(abs(target_range - self.separation), max_shift)
+        if target_range < self.separation:
+            shift *= -1
+        return self.separation.get_step(shift)
+
+    def change_separation(self, value: MeleeRange) -> None:
+        self.separation = value
+
 class ChangeMeleeRangeAction(CreatureAction):
     can_attack = True
-    MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
 
     def __init__(self, opponent: Creature, desired_range: MeleeRange):
         self.opponent = opponent
         self.desired_range = desired_range
 
-    def get_final_separation(self) -> MeleeRange:
-        """Gets the final melee range if the action succeeds"""
-        melee = self.protagonist.get_melee_combat(self.opponent)
-        if melee is None: raise ValueError
-
-        shift = min(abs(self.desired_range - melee.separation), self.MAX_RANGE_SHIFT)
-        if self.desired_range < melee.separation:
-            shift *= -1
-        return melee.separation.get_step(shift)
-
     def get_opportunity_attack_ranges(self) -> Iterable[MeleeRange]:
         """Gets the ranges through which the target will pass"""
         melee = self.protagonist.get_melee_combat(self.opponent)
-        if melee is None: raise ValueError
-
-        final_separation = self.get_final_separation()
+        final_separation = melee.get_range_shift(self.desired_range)
         min_range = min(melee.separation, final_separation)
         max_range = max(melee.separation, final_separation)
         return MeleeRange.range(min_range, max_range+1)
@@ -108,7 +106,7 @@ class ChangeMeleeRangeAction(CreatureAction):
 
         if success:
             prev_range = melee.separation
-            melee.separation = self.get_final_separation()
+            melee.change_separation(melee.get_range_shift(self.desired_range))
             print(f'{self.protagonist} {verb}s distance with {self.opponent} ({prev_range} -> {melee.separation}).')
 
         return None

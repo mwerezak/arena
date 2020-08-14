@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Optional
 
 from core.action import ActionLoop
 from core.creature import Creature
-from core.creature.tactics import SKILL_FACTOR, get_melee_range_priority, get_melee_threat_value
+from core.creature.tactics import SKILL_FACTOR
 
 if TYPE_CHECKING:
     from core.creature.inventory import Inventory
@@ -65,12 +65,12 @@ class Arena:
     def get_next_action(self, entity: Entity) -> Optional[Action]:
         if isinstance(entity, Creature):
             opponents = {
-                o : get_melee_threat_value(entity, o) for o in entity.get_melee_opponents()
+                o : entity.tactics.get_melee_threat_value(o) for o in entity.get_melee_opponents()
             }
 
             opponent = max(opponents, key=lambda k: opponents[k], default=None)
             if opponent is not None:
-                desired_ranges = get_melee_range_priority(entity, opponent)
+                desired_ranges = entity.tactics.get_melee_range_priority(opponent)
                 best_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
                 if best_range is not None:
                     return ChangeMeleeRangeAction(opponent, best_range)

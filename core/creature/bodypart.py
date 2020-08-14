@@ -22,6 +22,9 @@ class BodyPart:
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}({self.parent}:{self.id_tag})>'
 
+    def __str__(self) -> str:
+        return self.template.name
+
     @property
     def id_tag(self) -> str:
         return self.template.id_tag

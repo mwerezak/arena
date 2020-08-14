@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Tuple
 
 from core.constants import MeleeRange
-from core.combat.melee import get_defence_damage_mult
+from core.combat.result import get_defence_damage_mult
 from core.contest import SkillLevel, Contest, SKILL_EVADE
 
 if TYPE_CHECKING:
@@ -34,29 +34,6 @@ def get_expected_damage(attack: MeleeAttackInstance, target: Creature) -> float:
     for bp in target.get_bodyparts():
         result += bp.exposure * bp.get_effective_damage(attack.damage.mean(), attack.armpen.mean())
     return result
-
-def get_melee_range_priority(protagonist: Creature, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
-    range_priority = {}
-    for reach in MeleeRange.range(protagonist.get_melee_engage_distance() + 1):
-        attacks = (attack for attack in protagonist.get_melee_attacks() if attack.can_reach(reach))
-        attack_priority = get_melee_attack_priority(protagonist, opponent, attacks)
-        power = max(attack_priority.values(), default=0.0)
-
-        attacks = (attack for attack in opponent.get_melee_attacks() if attack.can_reach(reach))
-        threat_priority = get_melee_attack_priority(opponent, protagonist, attacks)
-        threat = max(threat_priority.values(), default=0.0)
-        danger = (2 * caution * threat + protagonist.health) / protagonist.health
-
-        range_priority[reach] = power/danger
-    return range_priority
-
-def get_melee_threat_value(protagonist: Creature, opponent: Creature) -> float:
-    threat_priority = get_melee_attack_priority(opponent, protagonist, opponent.get_melee_attacks())
-    threat_value = max(threat_priority.values(), default=0.0)
-
-    attack_priority = get_melee_attack_priority(protagonist, opponent, protagonist.get_melee_attacks())
-    attack_value = max(attack_priority.values(), default=0.0)
-    return threat_value * attack_value / opponent.health
 
 class CombatTactics:
     def __init__(self, parent: Creature):
@@ -93,8 +70,6 @@ class CombatTactics:
         }
         return max(block_priority.keys(), key=lambda k: block_priority[k], default=None)
 
-
-
     def choose_contest_change_range(self, change_range: ChangeMeleeRangeAction) -> bool:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""
         melee = self.parent.get_melee_combat(change_range.protagonist)
@@ -118,7 +93,30 @@ class CombatTactics:
 
     def _can_attack(self, ranges: Iterable[MeleeRange]) -> bool:
         ranges = list(ranges)
-        return any(any(attack.can_reach(r) for r in ranges) for attack in self.parent.get_melee_attacks())
+        return any(any(attack.can_attack(r) for r in ranges) for attack in self.parent.get_melee_attacks())
 
     def choose_evade_attack(self, attacker: Creature, attack: MeleeAttackInstance) -> bool:
         return False # TODO
+
+    def get_melee_range_priority(self, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
+        range_priority = {}
+        for reach in MeleeRange.range(self.parent.get_melee_engage_distance() + 1):
+            attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_reach(reach))
+            attack_priority = get_melee_attack_priority(self.parent, opponent, attacks)
+            power = max(attack_priority.values(), default=0.0)
+
+            attacks = (attack for attack in opponent.get_melee_attacks() if attack.can_reach(reach))
+            threat_priority = get_melee_attack_priority(opponent, self.parent, attacks)
+            threat = max(threat_priority.values(), default=0.0)
+            danger = (2 * caution * threat + self.parent.health) / self.parent.health
+
+            range_priority[reach] = power/danger
+        return range_priority
+
+    def get_melee_threat_value(self, opponent: Creature) -> float:
+        threat_priority = get_melee_attack_priority(opponent, self.parent, opponent.get_melee_attacks())
+        threat_value = max(threat_priority.values(), default=0.0)
+
+        attack_priority = get_melee_attack_priority(self.parent, opponent, self.parent.get_melee_attacks())
+        attack_value = max(attack_priority.values(), default=0.0)
+        return threat_value * attack_value / opponent.health

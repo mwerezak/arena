@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from core.dice import DicePool
     from core.constants import MeleeRange, AttackForce
     from core.creature import Creature
+    from core.creature.bodypart import BodyPart
     from core.creature.combat import MeleeCombat
     from core.combat.attack import MeleeAttackInstance
 
@@ -25,10 +26,10 @@ def get_defence_damage_mult(attack_force: AttackForce, defend_force: AttackForce
         return 0.5
     return 0
 
-def get_random_hitloc(creature: Creature) -> Optional[str]:
-    bodyparts = ( (bp.id_tag, bp.size) for bp in creature.bodyplan )
-    hitlocs, weights = zip(*bodyparts)
-    result = random.choices(hitlocs, weights)
+def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
+    bodyparts = list(creature.get_bodyparts())
+    weights = [ bp.exposure for bp in bodyparts ]
+    result = random.choices(bodyparts, weights)
     if len(result) > 0:
         return result[0]
     return None
@@ -40,7 +41,7 @@ class CombatResult:
                  use_defence: MeleeAttackInstance,
                  is_hit: bool,
                  is_blocking: bool,
-                 hitloc: Optional[str],
+                 hitloc: Optional[BodyPart],
                  damage_mult: float,
                  damage: DicePool,
                  armpen: Optional[DicePool]):
@@ -51,8 +52,9 @@ class CombatResult:
         self.is_hit = is_hit
         self.is_blocking = is_blocking
         self.hitloc = hitloc
-        self.damage = damage
         self.damage_mult = damage_mult
+        self.damage = damage
+        self.armpen = armpen
 
     def is_effective_hit(self) -> bool:
         return self.damage_mult > 0 and self.damage.max() > 0
