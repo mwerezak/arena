@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING, Optional
 from core.action import ActionLoop
 from core.creature import Creature
 from core.creature.tactics import SKILL_FACTOR
+from core.creature.combat import *
 
 if TYPE_CHECKING:
     from core.creature.inventory import Inventory
-    from core.creature.combat import MeleeCombat, ChangeMeleeRangeAction
+    from core.creature.combat import MeleeCombat
     from core.combat.attack import MeleeAttackTemplate
     from core.action import Action, Entity
 
@@ -24,7 +25,7 @@ def try_equip_best_weapons(creature: Creature) -> None:
     weapon_value = {}
     for item in inventory:
         if item.is_weapon():
-            best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(inventory)), default=None)
+            best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=None)
             if best_value is not None:
                 weapon_value[item] = best_value
 
@@ -37,7 +38,7 @@ def try_equip_best_weapons(creature: Creature) -> None:
     for item in sorted(inventory.get_held_items(), key=lambda k: weapon_value[k], reverse=True):
         if len(list(inventory.get_empty_slots())) == 0:
             break
-        _, max_hands = item.get_required_hands(inventory)
+        _, max_hands = item.get_required_hands(creature)
         inventory.try_equip_item(item, use_hands=max_hands)
 
 def print_held_items(inventory: Inventory) -> None:
@@ -61,6 +62,7 @@ class Arena:
 
         print(f'Tick: {self.action_loop.elapsed:.1f}')
         self.action_loop.resolve_next()
+        print()
 
     def get_next_action(self, entity: Entity) -> Optional[Action]:
         if isinstance(entity, Creature):
@@ -70,10 +72,13 @@ class Arena:
 
             opponent = max(opponents, key=lambda k: opponents[k], default=None)
             if opponent is not None:
+                melee = entity.get_melee_combat(opponent)
                 desired_ranges = entity.tactics.get_melee_range_priority(opponent)
                 best_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
-                if best_range is not None:
+                if best_range is not None and best_range != melee.separation:
                     return ChangeMeleeRangeAction(opponent, best_range)
+                else:
+                    return MeleeCombatAction(opponent)
         return None
 
 
@@ -96,13 +101,13 @@ if __name__ == '__main__':
         return c
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
-    goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
+    goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
     satyr = add_creature(CREATURE_SATYR_WARRIOR)
 
-    melee = join_melee_combat(satyr, goblin)
+    melee = join_melee_combat(gnoll, goblin)
 
     arena = Arena(loop, melee)
-    # arena.next_turn()
+    arena.next_turn()
     # arena.next_turn()
     # arena.next_turn()
 

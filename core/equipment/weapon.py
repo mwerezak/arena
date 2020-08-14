@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 from copy import copy as shallow_copy
-from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple
+from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple, Any
 
 from core.equipment.template import EquipmentTemplate
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
+    from core.combat.attack import MeleeAttackTemplate, MeleeAttack, MeleeRange
     from core.constants import AttackForce, SizeCategory
     from core.contest import CombatSkillClass, CombatTest
 
 class ShieldBlock(NamedTuple):
+    block_reach: MeleeRange
     block_force: AttackForce
     block_bonus: int
     block_ranged: float
+
+    def can_block(self, range: MeleeRange):
+        return range >= self.block_reach
 
 class Weapon(EquipmentTemplate):
     def __init__(self,
@@ -31,7 +35,7 @@ class Weapon(EquipmentTemplate):
         self.skill_class = skill_class
         self.encumbrance = encumbrance
         self.cost = cost
-        self.block = shield
+        self.shield = shield
 
         self.melee_attacks = list(melee_attacks)
         for attack in melee_attacks:
@@ -43,11 +47,11 @@ class Weapon(EquipmentTemplate):
         return len(self.melee_attacks) > 0
 
     def is_shield(self) -> bool:
-        return self.block is not None
+        return self.shield is not None
 
-    def get_melee_attacks(self, attacker: Creature, use_hands: int = 0) -> Iterable[MeleeAttack]:
+    def get_melee_attacks(self, attacker: Creature, use_hands: int = 0, source: Any = None) -> Iterable[MeleeAttack]:
         for attack in self.melee_attacks:
-            yield attack.create_instance(attacker, use_hands)
+            yield attack.create_instance(attacker, use_hands, source)
 
     def get_required_hands(self, creature: Creature) -> Optional[Tuple[int, int]]:
         """Return None if the equipment cannot be held, otherwise return the (minimum, maximum) number of hands needed to equip."""

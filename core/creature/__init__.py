@@ -1,1 +1,2 @@
-from core.creature.creature import Creature, Stance
+from core.creature.creature import Creature
+from core.constants import Stance

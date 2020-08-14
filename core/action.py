@@ -84,6 +84,8 @@ class Action(ABC):
 class Entity:
     loop: ActionLoop = None
 
+    # TODO tiebreaker priority
+
     def set_action_loop(self, loop: Optional[ActionLoop]):
         if self.loop != loop:
             if self.loop is not None:

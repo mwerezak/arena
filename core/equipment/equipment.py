@@ -22,4 +22,4 @@ class Equipment:
         return f'{self.__class__.__name__}({self.template!r})'
 
     def __str__(self) -> str:
-        return f'Item: {self.template}'
+        return f'{self.template}'

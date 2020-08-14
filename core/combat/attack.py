@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional
+from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional, Any
 
-from core.traits import Trait
-from core.constants import SizeCategory
+from core.dice import dice
+from core.constants import SizeCategory, PrimaryAttribute
+from core.combat.damage import format_damage
+from core.combat.traits import NaturalWeaponTrait, AttackTrait, CannotDefendTrait
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.constants import MeleeRange, AttackForce, PrimaryAttribute, CreatureSize
-    from core.dice import DicePool, dice
+    from core.constants import MeleeRange, AttackForce, CreatureSize
+    from core.dice import DicePool
     from core.combat.damage import DamageType
     from core.combat.criticals import CriticalEffect
     from core.contest import CombatSkillClass, CombatTest
@@ -58,9 +60,9 @@ class MeleeAttackTemplate:
             return False
         return True
 
-    def create_instance(self, attacker: Creature, use_hands: int) -> MeleeAttack:
+    def create_instance(self, attacker: Creature, use_hands: int, source: Any = None) -> MeleeAttack:
         """Use this MeleeAttack as a template to create a new attack adjusted for the given attacker"""
-        return MeleeAttack(self, attacker, use_hands)
+        return MeleeAttack(self, attacker, use_hands, source)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
@@ -74,15 +76,14 @@ class MeleeAttackTemplate:
         return str(self.max_reach)
 
     def format_damage(self) -> str:
-        if self.armpen is not None:
-            return f'[{self.damage}/{self.armpen}*]{self.damtype.format_type_code()}'
-        return f'[{self.damage}]{self.damtype.format_type_code()}'
+        return format_damage(self.damage, self.armpen, self.damtype)
 
 class MeleeAttack:
-    def __init__(self, template: MeleeAttackTemplate, attacker: Creature, use_hands: int):
+    def __init__(self, template: MeleeAttackTemplate, attacker: Creature, use_hands: int, source: Any = None):
         self.template = template
         self.attacker = attacker
         self.use_hands = use_hands
+        self.source = source
 
         reach_bonus = get_natural_reach_bonus(attacker.size)
         self.max_reach = template.max_reach.get_step(reach_bonus)
@@ -95,7 +96,11 @@ class MeleeAttack:
         return self.can_reach(range)
 
     def can_defend(self, range: MeleeRange) -> bool:
-        return self.template.can_defend() and self.min_reach <= range
+        if not self.template.can_defend():
+            return False
+        if NaturalWeaponTrait in self.traits:
+            return self.can_reach(range)
+        return self.min_reach <= range
 
     @property
     def name(self) -> str:
@@ -137,6 +142,13 @@ class MeleeAttack:
             return self.template.armpen + self.str_modifier
         return dice(0)
 
+    def get_criticals(self) -> Iterable[Type[CriticalEffect]]:
+        return iter(self.template.criticals)
+
+    @property
+    def traits(self) -> Collection[AttackTrait]:
+        return self.template.traits
+
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'
 
@@ -149,15 +161,5 @@ class MeleeAttack:
         return str(self.max_reach)
 
     def format_damage(self) -> str:
-        # noinspection PyTypeChecker
-        if self.armpen.max() > 0:
-            return f'[{self.damage}/{self.armpen}*]{self.damtype.format_type_code()}'
-        return f'[{self.damage}]{self.damtype.format_type_code()}'
+        return format_damage(self.damage, self.armpen, self.damtype)
 
-class AttackTrait(Trait):
-    pass
-
-class CannotDefendTrait(AttackTrait):
-    name = 'Cannot Parry'
-    desc = 'This attack cannot be used to parry in defence.'
-CannotDefendTrait = CannotDefendTrait()

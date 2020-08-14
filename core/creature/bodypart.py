@@ -23,6 +23,10 @@ class BodyPart:
         return f'<{self.__class__.__name__}({self.parent}:{self.id_tag})>'
 
     def __str__(self) -> str:
+        return self.name
+
+    @property
+    def name(self) -> str:
         return self.template.name
 
     @property
@@ -55,28 +59,29 @@ class BodyPart:
 
     def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
         for attack in self._unarmed_attacks:
-            yield attack.create_instance(self.parent, 1)
+            yield attack.create_instance(self.parent, 1, self)
 
     ## Armor and Damage
 
     def get_armor(self) -> float:
         armor_values = (item.armor_value.get(self.id_tag, 0) for item in self.parent.inventory.get_armor_items())
         equipped_armor = max(armor_values, default = 0)
-        return max(equipped_armor + self.natural_armor, 0)
+        return max(equipped_armor, self.natural_armor, 0)
 
     def get_effective_damage(self, damage: float, armpen: float = 0) -> float:
         armor = self.get_armor()
         damage = max(damage - armor, min(armpen, damage))
         if not self.is_vital():
-            damage *= self.size
+            damage *= 0.75
         elif self.template.type == BodyElementType.HEAD:
             damage *= 1.5
         return max(damage, 0)
 
-    def apply_damage(self, damage: float, armpen: float = 0) -> None:
+    def apply_damage(self, damage: float, armpen: float = 0) -> float:
         damage = self.get_effective_damage(damage, armpen)
         if damage > 0:
             # todo this is temporary
             self.parent.health -= damage
             if self.parent.health <= 0:
                 self.parent.kill()
+        return damage

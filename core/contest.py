@@ -144,6 +144,13 @@ class ContestResult:
         crit = int((self.crit_total - versus)/Contest.CRIT_THRESH)
         return min(max(0, crit), Contest.MAX_CRIT)
 
+    def format_details(self, versus: int) -> str:
+        success_text = 'SUCCESS' if self.contest_total > versus else 'FAIL'
+        return (
+            f'[Test] {self.contest} vs {versus} RESULT: {self.base_total}{self.contest_modifier:+d}={self.contest_total} '
+            f'vs {versus} {success_text} (crit level: {self.get_crit_level(versus)})'
+        )
+
 class OpposedResult:
     def __init__(self, pro_result: ContestResult, ant_result: ContestResult, contest_mod: int = 0, crit_mod: int = 0):
         self.pro_result = pro_result  # protagonist

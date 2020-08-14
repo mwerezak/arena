@@ -114,3 +114,9 @@ __all__ = [
     'REACH_CLOSE', 'REACH_SHORT', 'REACH_MEDIUM', 'REACH_LONG', 'REACH_VLONG', 'REACH_EXTREME',
     'FORCE_NONE', 'FORCE_TINY', 'FORCE_SMALL', 'FORCE_MEDIUM', 'FORCE_LARGE', 'FORCE_OVERWM',
 ]
+
+
+class Stance(Enum):
+    Prone    = 0
+    Crouched = 1
+    Standing = 2

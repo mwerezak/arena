@@ -1,15 +1,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
+from core.constants import MeleeRange
 from core.creature.actions import CreatureAction
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
-from core.combat.result import can_opportunity_attack
+from core.combat.resolver import MeleeCombatResolver
 
 if TYPE_CHECKING:
-    from core.constants import MeleeRange
     from core.creature import Creature
     from core.creature.actions import Action
-    from core.combat.attack import MeleeAttack
 
 def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
     melee = MeleeCombat(a, b)
@@ -38,10 +37,6 @@ class MeleeCombat:
         for i, j in [(0,1), (1,0)]:
             creature, opponent = self.combatants[i], self.combatants[j]
             creature.remove_melee_combat(opponent)
-
-            action = creature.get_current_action()
-            if getattr(action, 'attacker', None) is creature and getattr(action, 'defender', None) is opponent:
-                creature.set_current_action(None)
         del self.combatants
 
     def get_range_shift(self, target_range: MeleeRange, max_shift: int = MAX_RANGE_SHIFT) -> MeleeRange:
@@ -52,6 +47,12 @@ class MeleeCombat:
 
     def change_separation(self, value: MeleeRange) -> None:
         self.separation = value
+
+def can_opportunity_attack(combatant: Creature):
+    cur_action = combatant.get_current_action()
+    if cur_action is None:
+        return True  # idle
+    return getattr(cur_action, 'can_attack', True)
 
 class ChangeMeleeRangeAction(CreatureAction):
     can_attack = True
@@ -91,23 +92,36 @@ class ChangeMeleeRangeAction(CreatureAction):
         # determine opponent's reaction
         contested_change = self.opponent.tactics.choose_contest_change_range(self)
 
-        # an attack of opportunity is allowed only if the change is not contested
-        if not contested_change and self.allow_opportunity_attack():
-            use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
-            if use_attack is not None:
-                # pick attack range - longest range at which use_attack can attack
-                print(f'Opportunity attack: {use_attack}')
-
         success = True
+        start_range = melee.separation
+        final_range = melee.get_range_shift(self.desired_range)
+
         if contested_change:
             contest = OpposedResult(ContestResult(self.protagonist, SKILL_EVADE), ContestResult(self.opponent, SKILL_EVADE))
             print(contest.format_details())
             success = contest.success
 
+        elif self.allow_opportunity_attack():
+            # an attack of opportunity is allowed only if the change is not contested
+            use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
+            if use_attack is not None:
+                attack_range = min(melee.separation, use_attack.max_reach)
+
+                melee.change_separation(attack_range)
+                combat = MeleeCombatResolver(self.opponent, self.protagonist)
+                combat.resolve_melee_attack()
+
+                melee.change_separation(final_range)
+                combat.resolve_critical_effects()
+                combat.resolve_damage()
+                combat.resolve_seconary_attacks()
+
+                if melee.separation != final_range:
+                    success = False
+
         if success:
-            prev_range = melee.separation
-            melee.change_separation(melee.get_range_shift(self.desired_range))
-            print(f'{self.protagonist} {verb}s distance with {self.opponent} ({prev_range} -> {melee.separation}).')
+            melee.change_separation(final_range)
+            print(f'{self.protagonist} {verb}s distance with {self.opponent} ({start_range} -> {melee.separation}).')
 
         return None
 
@@ -121,18 +135,24 @@ class MeleeCombatAction(CreatureAction):
         melee = self.protagonist.get_melee_combat(self.defender)
         if melee is None:
             return False  # no longer engaged in melee combat
-        if not any(attack.can_reach(melee.separation) for attack in self.protagonist.get_melee_attacks()):
+        if not any(attack.can_attack(melee.separation) for attack in self.protagonist.get_melee_attacks()):
             return False  # attacker does not have any attacks that can reach
         return True
 
     def resolve(self) -> Optional[Action]:
-        # Process interruptions
+        # TODO Process interruptions
+
         # Choose attack
         # Resolve attack and defense rolls
-        # Apply critical effects
-        # Determine hit location
-        # Apply damage
-        pass
+        attack = MeleeCombatResolver(self.protagonist, self.defender)
+        attack.resolve_melee_attack()
+
+        # Apply critical effects, Apply damage
+        attack.resolve_critical_effects()
+        attack.resolve_damage()
+        attack.resolve_seconary_attacks()
+
+        return None
 
 class InterruptedAction(CreatureAction):
     def __init__(self, duration: float):

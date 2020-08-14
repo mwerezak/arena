@@ -3,8 +3,9 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
+from core.combat.traits import NaturalWeaponTrait, AttackTrait
 from core.dice import dice
-from core.combat.attack import MeleeAttackTemplate, AttackTrait
+from core.combat.attack import MeleeAttackTemplate
 from core.constants import MeleeRange, SizeCategory, FORCE_MEDIUM
 from core.combat.damage import DamageType
 from core.contest import CombatSkillClass
@@ -70,11 +71,6 @@ def _table_lookup(table: Sequence[Tuple[float, Any]], key: float, shift: int = 0
 ## min,max reach at Medium size
 BASE_MAX_REACH = 1.0   # REACH_SHORT
 BASE_MIN_REACH = 1.0/3 # REACH_CLOSE
-
-class NaturalWeaponTrait(AttackTrait):
-    name = 'Natural Weapon'
-    desc = 'This attack is a natural weapon'
-NaturalWeaponTrait = NaturalWeaponTrait()
 
 class NaturalWeaponTemplate:
     def __init__(self,

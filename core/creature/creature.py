@@ -1,30 +1,24 @@
 from __future__ import annotations
 import math
-from enum import Enum
 from typing import TYPE_CHECKING, MutableMapping, Optional, Iterable, Any, Union
 
 from core.action import Entity
-from core.constants import MeleeRange, PrimaryAttribute
+from core.constants import MeleeRange, PrimaryAttribute, Stance
 from core.creature.traits import SkillTrait
 from core.creature.bodypart import BodyPart
 from core.creature.inventory import Inventory
 from core.creature.tactics import CombatTactics
-from core.contest import DifficultyGrade
+from core.contest import DifficultyGrade, SkillLevel
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
-    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
+    from core.combat.attack import MeleeAttack
     from core.creature.combat import MeleeCombat
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
     from core.equipment import Equipment
-    from core.contest import Contest, SkillLevel
+    from core.contest import Contest
     from core.creature.traits import CreatureTrait
-
-class Stance(Enum):
-    Prone    = 0
-    Crouched = 1
-    Standing = 2
 
 class Creature(Entity):
     health: float
@@ -94,14 +88,16 @@ class Creature(Entity):
 
     ## Melee Combat
 
-    def get_melee_attacks(self) -> Iterable[MeleeAttack]:
+    def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
         for bp in self.get_bodyparts():
             yield from bp.get_unarmed_attacks()
 
+    def get_melee_attacks(self) -> Iterable[MeleeAttack]:
+        yield from self.get_unarmed_attacks()
         for item in self.inventory.get_held_items():
             if item.is_weapon():
                 using_hands = sum(1 for bp in self.inventory.get_item_held_by(item) if bp.can_use())
-                yield from item.get_melee_attacks(self, using_hands)
+                yield from item.get_melee_attacks(self, using_hands, item)
 
     def get_held_shields(self) -> Iterable[Equipment]:
         for item in self.inventory.get_held_items():
@@ -164,11 +160,14 @@ class Creature(Entity):
         if self.health <= 0: # todo wounding system
             self.kill()
 
+    @property
+    def max_health(self) -> float:
+        return self.template.max_health
+
     def kill(self) -> None:
         self.alive = False
         self.stance = Stance.Prone
-        self.set_action_loop(None)
-        for o in self.get_melee_opponents():
+        for o in list(self.get_melee_opponents()):
             melee = self.get_melee_combat(o)
             melee.break_engagement()
 

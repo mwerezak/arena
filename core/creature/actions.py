@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from core.action import Action
-from core.creature import Stance
+from core.constants import Stance
 
 if TYPE_CHECKING:
     from core.creature import Creature

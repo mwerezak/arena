@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Tuple
 
 from core.constants import MeleeRange
-from core.combat.result import get_defence_damage_mult
+from core.combat.resolver import get_parry_damage_mult
 from core.contest import SkillLevel, Contest, SKILL_EVADE
+from core.creature.combat import ChangeMeleeRangeAction
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.creature.combat import ChangeMeleeRangeAction
     from core.combat.attack import MeleeAttack
     from core.equipment import Equipment
 
@@ -43,10 +43,16 @@ class CombatTactics:
 
     def get_normal_attack(self, target: Creature, range: MeleeRange) -> Optional[MeleeAttack]:
         attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(range))
-        attack_priority = get_melee_attack_priority(self.parent, target, attacks=attacks)
+        attack_priority = get_melee_attack_priority(self.parent, target, attacks)
+        return self._choose_attack(attack_priority)
+
+    def get_secondary_attack(self, target: Creature, range: MeleeRange, secondary: Iterable[MeleeAttack]) -> Optional[MeleeAttack]:
+        attacks = (attack for attack in secondary if attack.can_attack(range))
+        attack_priority = get_melee_attack_priority(self.parent, target, attacks)
         return self._choose_attack(attack_priority)
 
     def get_opportunity_attack(self, target: Creature, attack_ranges: Iterable[MeleeRange]) -> Optional[MeleeAttack]:
+        attack_ranges = list(attack_ranges)
         attacks = (attack for attack in self.parent.get_melee_attacks() if any(attack.can_attack(r) for r in attack_ranges))
         attack_priority = get_melee_attack_priority(self.parent, target, attacks)
         return self._choose_attack(attack_priority)
@@ -54,17 +60,18 @@ class CombatTactics:
     def get_melee_defence(self, attacker: Creature, attack: MeleeAttack, range: MeleeRange) -> Optional[MeleeAttack]:
         defend_priority = {
             defence : (
-                1.0 - get_defence_damage_mult(attack.force, defence.force),
-                self.parent.get_skill_level(defence.combat_test).value
+                self.parent.get_skill_level(defence.combat_test).value,
+                1.0 - get_parry_damage_mult(attack.force, defence.force),
+                defence.force,
             )
             for defence in self.parent.get_melee_attacks() if defence.can_defend(range)
         }
         return max(defend_priority.keys(), key=lambda k: defend_priority[k], default=None)
 
-    def get_melee_shield(self) -> Optional[Equipment]:
+    def get_melee_shield(self, range: MeleeRange) -> Optional[Equipment]:
         block_priority = {
             item : ( item.shield.block_bonus, item.shield.block_force )
-            for item in self.parent.get_held_shields()
+            for item in self.parent.get_held_shields() if item.shield.can_block(range)
         }
         return max(block_priority.keys(), key=lambda k: block_priority[k], default=None)
 
