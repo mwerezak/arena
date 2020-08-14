@@ -31,14 +31,9 @@ def get_melee_attack_priority(attacker: Creature, target: Creature, attacks: Ite
 
 def get_expected_damage(attack: MeleeAttackInstance, target: Creature) -> float:
     result = 0
-    for bp_id in target.bodyplan.get_bodypart_ids():
-        result += target.bodyplan.get_relative_size(bp_id) * get_expected_damage_part(attack, target, bp_id)
+    for bp in target.get_bodyparts():
+        result += bp.exposure * bp.get_effective_damage(attack.damage.mean(), attack.armpen.mean())
     return result
-
-def get_expected_damage_part(attack: MeleeAttackInstance, target: Creature, bp_id: str) -> float:
-    damage, armpen = attack.damage.mean(), attack.armpen.mean()
-    armor = target.get_armor(bp_id)
-    return max(0.0, damage - armor, min(armpen, damage))
 
 def get_melee_range_priority(protagonist: Creature, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
     range_priority = {}

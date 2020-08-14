@@ -159,6 +159,11 @@ class Creature(Entity):
         if self.stance.value > max_stance.value:
             self.change_stance(max_stance)
 
+    def take_damage(self, amount: float) -> None:
+        self.health -= amount
+        if self.health <= 0: # todo wounding system
+            self.kill()
+
     def kill(self) -> None:
         self.alive = False
         self.stance = Stance.Prone
