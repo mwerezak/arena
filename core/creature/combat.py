@@ -43,10 +43,10 @@ class MeleeCombat:
         del self.combatants
 
 class ChangeMeleeRangeAction(CreatureAction):
+    can_attack = True
     MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
 
-    def __init__(self, protagonist: Creature, opponent: Creature, desired_range: MeleeRange):
-        self.protagonist = protagonist
+    def __init__(self, opponent: Creature, desired_range: MeleeRange):
         self.opponent = opponent
         self.desired_range = desired_range
 
@@ -114,15 +114,16 @@ class ChangeMeleeRangeAction(CreatureAction):
         return None
 
 class MeleeCombatAction(CreatureAction):
-    def __init__(self, attacker: Creature, defender: Creature):
-        self.attacker = attacker
-        self.defender = defender
+    can_attack = True
+
+    def __init__(self, target: Creature):
+        self.defender = target
 
     def can_resolve(self) -> bool:
-        melee = self.attacker.get_melee_combat(self.defender)
+        melee = self.protagonist.get_melee_combat(self.defender)
         if melee is None:
             return False  # no longer engaged in melee combat
-        if not any(attack.can_reach(melee.separation) for attack in self.attacker.get_melee_attacks()):
+        if not any(attack.can_reach(melee.separation) for attack in self.protagonist.get_melee_attacks()):
             return False  # attacker does not have any attacks that can reach
         return True
 
@@ -149,7 +150,6 @@ class AttackInterruptedAction(InterruptedAction):
     """Used to take up the remaining time when a MeleeAttackActon is interrupted or resolved early
     due to a failed interruption attempt."""
     can_defend = False  # already attacked or defended
-    can_attack = False
 
 
 ## MeleeEngageAction - create a melee engagement between two creatures. Interrupts movement

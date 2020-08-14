@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 from enum import Enum
 from typing import TYPE_CHECKING, Mapping, MutableMapping, Collection, Tuple, Optional, Iterable, Any, Union, List
 
@@ -17,14 +18,13 @@ if TYPE_CHECKING:
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
     from core.equipment import Equipment
-    from core.equipment.weapon import ShieldBlock
     from core.contest import Contest, SkillLevel
     from core.creature.traits import CreatureTrait
 
 class Stance(Enum):
-    Standing = 0
+    Prone    = 0
     Crouched = 1
-    Prone    = 2
+    Standing = 2
 
 class Creature(Entity):
     health: float
@@ -125,12 +125,39 @@ class Creature(Entity):
         if other in self._melee_combat:
             del self._melee_combat[other]
 
+    ## Stance
+
+    def change_stance(self, new_stance: Stance) -> None:
+        max_stance = self.get_max_stance()
+        self.stance = Stance(max(new_stance.value, max_stance))
+
     def get_stance_combat_modifier(self) -> int:
         if self.stance == Stance.Prone:
             return DifficultyGrade.Formidable
         if self.stance == Stance.Crouched:
             return DifficultyGrade.Hard
         return DifficultyGrade.Standard
+
+    def get_max_stance(self) -> Stance:
+        total_stance = 0
+        cur_stance = 0
+        for bp in self.get_bodyparts():
+            if bp.is_stance_part():
+                total_stance += 1
+                if bp.can_use():
+                    cur_stance += 1
+
+        threshold = math.ceil(total_stance/2)
+        if cur_stance > threshold:
+            return Stance.Standing
+        if cur_stance >= threshold:
+            return Stance.Crouched
+        return Stance.Prone
+
+    def check_stance(self) -> None:
+        max_stance = self.get_max_stance()
+        if self.stance.value > max_stance.value:
+            self.change_stance(max_stance)
 
     def kill(self) -> None:
         self.alive = False
@@ -139,3 +166,4 @@ class Creature(Entity):
         for o in self.get_melee_opponents():
             melee = self.get_melee_combat(o)
             melee.break_engagement()
+

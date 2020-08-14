@@ -73,7 +73,7 @@ class Arena:
                 desired_ranges = get_melee_range_priority(entity, opponent)
                 best_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
                 if best_range is not None:
-                    return ChangeMeleeRangeAction(entity, opponent, best_range)
+                    return ChangeMeleeRangeAction(opponent, best_range)
         return None
 
 
