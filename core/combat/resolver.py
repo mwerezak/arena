@@ -50,7 +50,6 @@ class MeleeCombatResolver:
 
         self.attacker_crit = 0
         self.defender_crit = 0
-        self.is_hit = False
         self.is_blocking = False
 
         self.damage_mult: float = 0
@@ -151,7 +150,6 @@ class MeleeCombatResolver:
             hitloc = get_random_hitloc(self.defender)
 
         self.is_blocking = is_blocking
-        self.is_hit = primary_result.success
         self.hitloc = hitloc
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
@@ -192,7 +190,6 @@ class MeleeCombatResolver:
             hitloc = get_random_hitloc(self.defender)
 
         self.is_blocking = is_blocking
-        self.is_hit = primary_result.success
         self.hitloc = hitloc
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
@@ -215,7 +212,6 @@ class MeleeCombatResolver:
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
         self.is_blocking = False
-        self.is_hit = True
 
     def resolve_critical_effects(self) -> None:
         if self.attacker_crit > 0:

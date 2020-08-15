@@ -58,6 +58,12 @@ class MeleeCombat:
             return self.combatants[0]
         return None
 
+    def can_attack(self, combatant: Creature) -> bool:
+        opponent = self.get_opponent(combatant)
+        if opponent is None:
+            return False
+        return any(attack.can_attack(self.separation) for attack in combatant.get_melee_attacks())
+
     def break_engagement(self) -> None:
         for i, j in [(0,1), (1,0)]:
             creature, opponent = self.combatants[i], self.combatants[j]
@@ -72,6 +78,7 @@ class MeleeCombat:
 
     def change_separation(self, value: MeleeRange) -> None:
         self.separation = value
+
 
 ## MeleeChangeRangeAction - change melee range (max 4)
 class ChangeMeleeRangeAction(CreatureAction):
@@ -118,15 +125,19 @@ class ChangeMeleeRangeAction(CreatureAction):
         start_range = melee.separation
         final_range = melee.get_range_shift(self.target_range)
 
+        if reaction == 'attack':
+            if not can_interrupt_action(self.opponent) or not self.allow_opportunity_attack():
+                reaction = 'contest'
+
         if reaction == 'contest':
-            action = self.opponent.get_current_action()
-            self.opponent.set_current_action(ContestChangeMeleeRangeAction(action))
+            # action = self.opponent.get_current_action()
+            # self.opponent.set_current_action(ContestChangeMeleeRangeAction(action))
 
             contest = OpposedResult(ContestResult(self.protagonist, SKILL_EVADE), ContestResult(self.opponent, SKILL_EVADE))
             print(contest.format_details())
             success = contest.success
 
-        elif self.allow_opportunity_attack() and can_interrupt_action(self.opponent):
+        elif reaction == 'attack':
             # an attack of opportunity is allowed only if the change is not contested
             use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
             if use_attack is not None:
@@ -155,9 +166,9 @@ class ChangeMeleeRangeAction(CreatureAction):
 
         return None
 
-class ContestChangeMeleeRangeAction(InterruptCooldownAction):
-    can_interrupt = False
-    can_defend = True
+# class ContestChangeMeleeRangeAction(InterruptCooldownAction):
+#     can_interrupt = False
+#     can_defend = True
 
 class OpportunityAttackAction(InterruptCooldownAction):
     can_interrupt = False
@@ -179,7 +190,7 @@ class MeleeCombatAction(CreatureAction):
         melee = self.protagonist.get_melee_combat(self.target)
         if melee is None:
             return False  # no longer engaged in melee combat
-        if not any(attack.can_attack(melee.separation) for attack in self.protagonist.get_melee_attacks()):
+        if not melee.can_attack(self.protagonist):
             return False  # attacker does not have any attacks that can it can use
                           # since we are just cancelling this action, any incoming opposed attack will resolve normally
         return True

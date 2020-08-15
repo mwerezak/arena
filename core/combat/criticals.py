@@ -5,8 +5,10 @@ from typing import TYPE_CHECKING, Optional
 
 from core.dice import dice
 from core.constants import Stance
+from core.creature.actions import CreatureAction
 
 if TYPE_CHECKING:
+    from core.action import Action
     from core.constants import MeleeRange
     from core.creature import Creature
     from core.creature.bodypart import BodyPart
@@ -119,13 +121,47 @@ class ImproveParryCritical(CriticalEffect):
     usage = CriticalUsage.Defensive | CriticalUsage.Melee
 
     def can_use(self) -> bool:
-        return not self.result.is_hit and self.result.damage_mult > 0
+        return self.result.is_effective_hit()
 
     def apply(self) -> None:
         self.result.damage_mult = 0
 
-# CounterAttackCritical - (defensive) make opponent lose AP, force an attack from user
+# DisruptCritical - (both) make opponent lose AP
+class DisruptCritical(CriticalEffect):
+    name = 'Disrupt Opponent'
+    usage = CriticalUsage.General | CriticalUsage.Melee
+
+    # def setup(self) -> None:
+    #     if CriticalUsage.Defensive in self.usage:
+    #         self.name = 'Counter Attack'
+
+    def can_use(self) -> bool:
+        return self.result.melee.can_attack(self.user)
+
+    def apply(self) -> None:
+        opponent = self.result.melee.get_opponent(self.user)
+        action = opponent.get_current_action()
+        if action is not None:
+            action.set_force_next(DisruptedAction())
+        else:
+            opponent.set_current_action(DisruptedAction())
+
+        # from core.creature.combat import MeleeCombatAction
+
+        # action = self.user.get_current_action()
+        # if action is not None:
+        #     action.set_force_next(MeleeCombatAction(opponent))
+        # else:
+        #     self.user.set_current_action(MeleeCombatAction(opponent))
+
 # PressAttackCritical - (offensive) same as CounterAttackCritical, but on offence
+
+class DisruptedAction(CreatureAction):
+    can_interrupt = False
+    can_defend = True
+
+    def resolve(self) -> Optional[Action]:
+        return None
 
 # CloseRangeCritical - (both) reduce melee combat separation to desired step w/o spending AP (max 4 steps)
 class CloseRangeCritical(CriticalEffect):
@@ -212,6 +248,7 @@ DEFAULT_CRITICALS = [
     HitLocationCritical,
     SecondaryAttackCritical,
     ImproveParryCritical,
+    DisruptCritical,
     CloseRangeCritical,
     OpenRangeCritical,
     ChangeStanceCritical,

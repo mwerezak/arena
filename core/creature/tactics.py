@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Any
 from core.constants import MeleeRange
 from core.combat.resolver import get_parry_damage_mult
 from core.contest import SkillLevel, Contest, SKILL_EVADE
-from core.creature.combat import ChangeMeleeRangeAction
+from core.creature.combat import ChangeMeleeRangeAction, can_interrupt_action
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -97,10 +97,15 @@ class CombatTactics:
         elif change_score >= 0:
             contest = False
         else:
-            contest = -max(change_score, 2/3) <= opponent_success
+            #contest = -max(change_score, 2/3) <= opponent_success
+            contest = True
 
         if contest:
-            can_opportunity_attack = change_range.allow_opportunity_attack() and self._can_attack(change_range.get_opportunity_attack_ranges())
+            can_opportunity_attack = (
+                can_interrupt_action(self.parent)
+                and change_range.allow_opportunity_attack()
+                and self._can_attack(change_range.get_opportunity_attack_ranges())
+            )
             threshold = -max(change_score, 2/3) if change_score is not None else 2/3
             if can_opportunity_attack and opponent_success > threshold:
                 return 'attack'

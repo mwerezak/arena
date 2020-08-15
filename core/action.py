@@ -71,6 +71,10 @@ class Action(ABC):
         Optionally returns an Action that must be performed next."""
         return None
 
+    force_next: Action = None
+    def set_force_next(self, next: Action) -> None:
+        self.force_next = next
+
     # def can_interrupt(self, other: 'Action') -> bool:
     #     """Return True if this action can be interrupted by another."""
     #     return True
@@ -232,6 +236,11 @@ class ActionLoop:
         else:
             next_action = current_action.resolve_failed()
         self.entity_actions[entity] = None
+
+        force_next = current_action.force_next
+        if force_next is not None:
+            force_next.set_force_next(next_action)
+            next_action = force_next
 
         if next_action is not None:
             self.schedule_action(entity, next_action)

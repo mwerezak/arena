@@ -61,46 +61,6 @@ class InterruptCooldownAction(CreatureAction):
     def resolve(self) -> Optional[Action]:
         return None  # the action has already been performed
 
-# ## ForceNextAction - replace an action with a wrapper that resolves the wrapped action, then forces another action
-# class ForceNextAction(CreatureAction):
-#     def __init__(self, wrapped: CreatureAction, force_next: CreatureAction):
-#         self.wrapped = wrapped
-#         self.force_next = force_next
-#         self.remaining_windup = wrapped.get_remaining_windup()
-#         self.wrapped_active = wrapped.is_active()
-#
-#     @property
-#     def can_defend(self) -> bool:
-#         return self.wrapped.can_defend
-#
-#     @property
-#     def can_interrupt(self) -> bool:
-#         return self.wrapped.can_interrupt
-#
-#     def get_windup_duration(self) -> float:
-#         return self.remaining_windup
-#
-#     def setup(self, owner: Entity, loop: ActionLoop) -> None:
-#         if not self.wrapped_active:
-#             self.wrapped.setup(owner, loop)
-#
-#
-#
-#     def can_resolve(self) -> bool:
-#         return self.wrapped.can_resolve()
-#
-#     def resolve_failed(self) -> Optional[Action]:
-#         next_action = self.wrapped.resolve_failed()
-#
-#         # if wrapped has a next action, use another ForceNextAction to make that action come after force_next
-#         if next_action is not None:
-#             return ForceNextAction(self.force_next, next_action)
-#         return self.force_next
-#
-#     def resolve(self) -> Optional[Action]:
-#         next_action = self.wrapped.resolve()
-#
-
 ## DelayAction - check if a condition is met
 
 class ChangeStanceAction(CreatureAction):
