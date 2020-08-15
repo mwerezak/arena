@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Any
 
 from core.constants import MeleeRange
 from core.combat.resolver import get_parry_damage_mult
@@ -23,9 +23,12 @@ SKILL_FACTOR = {
 
 # include only weapons that can attack at or within the given ranges
 def get_melee_attack_priority(attacker: Creature, target: Creature, attacks: Iterable[MeleeAttack]) -> Mapping[MeleeAttack, float]:
-    return {
-        attack : get_expected_damage(attack, target) * SKILL_FACTOR[attacker.get_skill_level(attack.combat_test)] for attack in attacks
-    }
+    result = {}
+    for attack in attacks:
+        expected_damage = get_expected_damage(attack, target)
+        skill_factor = SKILL_FACTOR[attacker.get_skill_level(attack.combat_test)]
+        result[attack] = expected_damage * skill_factor
+    return result
 
 def get_expected_damage(attack: MeleeAttack, target: Creature) -> float:
     result = 0
@@ -39,7 +42,7 @@ class CombatTactics:
 
     # TODO customizable variability
     def _choose_attack(self, attack_priority: Mapping[MeleeAttack, float]) -> Optional[MeleeAttack]:
-        return max(attack_priority.keys(), key=lambda k: attack_priority[k], default=None)
+        return max(attack_priority.keys(), key=lambda k: (attack_priority[k], k.force), default=None)
 
     def get_normal_attack(self, target: Creature, range: MeleeRange) -> Optional[MeleeAttack]:
         attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(range))
@@ -58,14 +61,12 @@ class CombatTactics:
         return self._choose_attack(attack_priority)
 
     def get_melee_defence(self, attacker: Creature, attack: MeleeAttack, range: MeleeRange) -> Optional[MeleeAttack]:
-        defend_priority = {
-            defence : (
-                self.parent.get_skill_level(defence.combat_test).value,
-                1.0 - get_parry_damage_mult(attack.force, defence.force),
-                defence.force,
-            )
-            for defence in self.parent.get_melee_attacks() if defence.can_defend(range)
-        }
+        defend_priority = {}
+        for defence in self.parent.get_melee_attacks():
+            if defence.can_defend(range):
+                skill_level = self.parent.get_skill_level(defence.combat_test).value
+                block_effectiveness = 1.0 - get_parry_damage_mult(attack.force, defence.force)
+                defend_priority[defence] = (skill_level, block_effectiveness, defence.force)
         return max(defend_priority.keys(), key=lambda k: defend_priority[k], default=None)
 
     def get_melee_shield(self, range: MeleeRange) -> Optional[Equipment]:
@@ -117,6 +118,13 @@ class CombatTactics:
 
             range_priority[reach] = power/danger
         return range_priority
+
+    def get_desired_melee_range(self, opponent: Creature, *, caution: float = 1.0) -> Optional[MeleeRange]:
+        melee = self.parent.get_melee_combat(opponent)
+        range_priority = self.get_melee_range_priority(opponent, caution=caution)
+
+        # tiebreakers: if range is equal to current range, then greatest range
+        return max(range_priority.keys(), key=lambda k: (range_priority[k], int(k==melee.separation), k), default=None)
 
     def get_melee_threat_value(self, opponent: Creature) -> float:
         threat_priority = get_melee_attack_priority(opponent, self.parent, opponent.get_melee_attacks())

@@ -95,7 +95,7 @@ CREATURE_SATYR_WARDEN = (
         SkillTrait(SKILL_SHIELD, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
-        FinesseTrait,
+        FinesseTrait(),
     )
     .set_loadout(Loadout(
         [ WEAPON_SCIMITAR, SHIELD_MEDIUM, Armor(LINEN_ARMOR, SPECIES_SATYR) ],

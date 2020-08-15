@@ -60,7 +60,11 @@ class Arena:
             if action is not None:
                 idle.set_current_action(action)
 
-        print(f'Tick: {self.action_loop.elapsed:.1f}')
+        print(f'Tick: {self.action_loop.elapsed:.1f} Action Queue:')
+        for item in self.action_loop.action_queue:
+            print(item.action)
+        print()
+
         self.action_loop.resolve_next()
         print()
 
@@ -74,14 +78,12 @@ class Arena:
             if opponent is not None:
                 melee = entity.get_melee_combat(opponent)
                 desired_ranges = entity.tactics.get_melee_range_priority(opponent)
-                best_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
+                best_range = max(desired_ranges, key=lambda k: (desired_ranges[k], int(k==melee.separation), k), default=None)
                 if best_range is not None and best_range != melee.separation:
                     return ChangeMeleeRangeAction(opponent, best_range)
                 else:
                     return MeleeCombatAction(opponent)
         return None
-
-
 
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
@@ -107,7 +109,8 @@ if __name__ == '__main__':
     melee = join_melee_combat(gnoll, goblin)
 
     arena = Arena(loop, melee)
-    arena.next_turn()
+    # while True:
+    #     arena.next_turn()
     # arena.next_turn()
     # arena.next_turn()
 

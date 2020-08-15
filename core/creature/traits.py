@@ -25,18 +25,15 @@ class SkillTrait(FeatTrait):
     def key(self) -> Any:
         return SkillTrait, self.skill
 
+# TODO implement
 class EvadeTrait(FeatTrait):
     name = 'Improved Evade'
     desc = 'When this creature evades, it may make an Acrobatics check to avoid falling prone.'
-EvadeTrait = EvadeTrait()  # no args, so just lock it down
-## TODO Fix Trait retrieval in this case
 
 class FinesseTrait(FeatTrait):
     name = 'Combat Finesse'
     desc = 'This creature may replace STR with DEX when making an attack or defence roll in melee combat.'
-FinesseTrait = FinesseTrait()
 
 class MartialArtistTrait(FeatTrait):
     name = 'Martial Artist'
     desc = 'This creature can used unarmed attacks to parry even when outside of reach.'
-MartialArtistTrait = MartialArtistTrait()

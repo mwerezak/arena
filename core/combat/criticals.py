@@ -136,8 +136,7 @@ class CloseRangeCritical(CriticalEffect):
 
     def setup(self) -> None:
         opponent = self.result.melee.get_opponent(self.user)
-        desired_ranges = self.user.tactics.get_melee_range_priority(opponent)
-        self.target_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
+        self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
         return self.target_range is not None and self.target_range < self.result.melee.separation
@@ -159,8 +158,7 @@ class OpenRangeCritical(CriticalEffect):
 
     def setup(self) -> None:
         opponent = self.result.melee.get_opponent(self.user)
-        desired_ranges = self.user.tactics.get_melee_range_priority(opponent)
-        self.target_range = max(desired_ranges, key=lambda k: desired_ranges[k], default=None)
+        self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
         return self.target_range is not None and self.target_range > self.result.melee.separation

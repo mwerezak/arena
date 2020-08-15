@@ -92,6 +92,9 @@ class Creature(Entity):
     def get_trait(self, key: Any) -> Optional[CreatureTrait]:
         return self._traits.get(key)
 
+    def has_trait(self, key: Any) -> bool:
+        return self.get_trait(key) is not None
+
     def get_skill_level(self, contest: Contest) -> SkillLevel:
         trait: Optional[SkillTrait] = self.get_trait((SkillTrait, contest))
         if trait is not None:

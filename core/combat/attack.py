@@ -55,11 +55,6 @@ class MeleeAttackTemplate:
     def can_reach(self, range: MeleeRange) -> bool:
         return self.min_reach <= range <= self.max_reach
 
-    def can_defend(self) -> bool:
-        if CannotDefendTrait in self.traits:
-            return False
-        return True
-
     def create_instance(self, attacker: Creature, use_hands: int, source: Any = None) -> MeleeAttack:
         """Use this MeleeAttack as a template to create a new attack adjusted for the given attacker"""
         return MeleeAttack(self, attacker, use_hands, source)
@@ -85,6 +80,8 @@ class MeleeAttack:
         self.use_hands = use_hands
         self.source = source
 
+        self.traits = { trait.key : trait for trait in template.traits }
+
         reach_bonus = get_natural_reach_bonus(attacker.size)
         self.max_reach = template.max_reach.get_step(reach_bonus)
         self.min_reach = template.min_reach.get_step(reach_bonus)
@@ -96,9 +93,9 @@ class MeleeAttack:
         return self.can_reach(range)
 
     def can_defend(self, range: MeleeRange) -> bool:
-        if not self.template.can_defend():
+        if self.has_trait(CannotDefendTrait):
             return False
-        if NaturalWeaponTrait in self.traits:
+        if self.has_trait(NaturalWeaponTrait):
             return self.can_reach(range)
         return self.min_reach <= range
 
@@ -113,6 +110,12 @@ class MeleeAttack:
     @property
     def combat_test(self) -> CombatTest:
         return self.template.combat_test
+
+    def get_trait(self, key: Any) -> Optional[AttackTrait]:
+        return self.traits.get(key)
+
+    def has_trait(self, key: Any) -> bool:
+        return self.get_trait(key) is not None
 
     @property
     def str_modifier(self) -> int:
@@ -144,10 +147,6 @@ class MeleeAttack:
 
     def get_criticals(self) -> Iterable[Type[CriticalEffect]]:
         return iter(self.template.criticals)
-
-    @property
-    def traits(self) -> Collection[AttackTrait]:
-        return self.template.traits
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}: {self.name!r}>'

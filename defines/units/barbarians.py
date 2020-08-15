@@ -96,7 +96,7 @@ CREATURE_GOBLIN_ENFORCER = (
     .add_trait(
         SkillTrait(SKILL_ENDURANCE, SkillLevel(1)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
-        EvadeTrait,
+        EvadeTrait(),
     )
     .set_loadout(Loadout(
         LoadoutChoice([

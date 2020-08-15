@@ -32,26 +32,33 @@ class Action(ABC):
         """Return the windup duration, in TU"""
         ...
 
+    def is_active(self) -> bool:
+        return self.loop is not None
+
     def setup(self, owner: Entity, loop: ActionLoop) -> None:
         """Called by the action loop to prepare the Action to be scheduled."""
         self.owner = owner
         self.loop = loop
         self.start_tick = loop.get_tick()
 
-    def can_resolve(self) -> bool:
-        """Return True if the action can be resolved.
-        Called to determine whether an Entity can actually take a given action."""
-        return True
-
     def started(self) -> None:
         """Called when the action has been scheduled"""
         pass
 
     def get_remaining_windup(self) -> float:
+        if not self.is_active():
+            return self.get_windup_duration()
         return self.loop.get_remaining_windup(self)
 
     def get_elapsed_windup(self) -> float:
+        if not self.is_active():
+            return 0
         return self.loop.get_tick() - self.start_tick
+
+    def can_resolve(self) -> bool:
+        """Return True if the action can be resolved.
+        Called to determine whether an Entity can actually take a given action."""
+        return True
 
     @abstractmethod
     def resolve(self) -> Optional[Action]:
@@ -71,6 +78,11 @@ class Action(ABC):
     # def interrupted_by(self, other: 'Action') -> None:
     #     """Called when an action is interrupted."""
     #     pass
+
+    def __repr__(self) -> str:
+        if self.is_active():
+            return f'<{self.__class__.__name__} owned by: {self.owner}, started: {self.start_tick}, remaining: {self.get_remaining_windup()}>'
+        return f'<{self.__class__.__name__}: unbound action>'
 
 
 ## generator based action sequences???
@@ -224,9 +236,9 @@ class ActionLoop:
         if next_action is not None:
             self.schedule_action(entity, next_action)
 
-        # recheck can_resolve() on all other actions?
-        # for action in list(self.queue_items.keys()):
-        #     if not action.can_resolve():
-        #         self.cancel_action(action)
+        # recheck can_resolve on all other actions
+        for action in list(self.queue_items.keys()):
+            if not action.can_resolve():
+                self.cancel_action(action)
 
 # MeleeEngagement

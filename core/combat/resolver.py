@@ -59,6 +59,12 @@ class MeleeCombatResolver:
         self.is_secondary = is_secondary
         self.seconary_attacks: MutableSequence[MeleeCombatResolver] = []
 
+        # TODO
+        self.allow_attacker_followup = True
+        self.allow_defender_followup = False
+        self.attacker_followup = False
+        self.defender_followup = False
+
     def is_effective_hit(self) -> bool:
         return self.damage_mult > 0 and self.damage.max() > 0
 
@@ -68,8 +74,12 @@ class MeleeCombatResolver:
 
     # TODO collect log output to be accessed later instead of printing immediately
     def generate_attack_results(self, force_defenceless: bool = False) -> bool:
-        self.melee = self.attacker.get_melee_combat(self.defender)
-        separation = self.melee.separation
+        melee = self.attacker.get_melee_combat(self.defender)
+        if melee is None:
+            return False
+
+        self.melee = melee
+        separation = melee.separation
 
         # Choose Attack
         if self.use_attack is None or not self.use_attack.can_attack(separation):
@@ -85,6 +95,7 @@ class MeleeCombatResolver:
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
+            print(repr(self.use_defence))
             self._resolve_defender_helpless()
             return True
 
@@ -112,12 +123,12 @@ class MeleeCombatResolver:
             block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
             if block_damage_mult < damage_mult:
                 shield_result = ContestResult(self.defender, self.use_shield.combat_test)
-                block_result = OpposedResult(attack_result, shield_result, self.use_shield.shield.block_bonus)
+                block_result = OpposedResult(shield_result, attack_result, self.use_shield.shield.block_bonus)
 
                 print(f'{self.defender} attempts to block with {self.use_shield}!')
                 print(block_result.format_details())
 
-                if not block_result.success:
+                if block_result.success:
                     is_blocking = True
                     damage_mult = block_damage_mult
 
@@ -203,11 +214,13 @@ class MeleeCombatResolver:
         damage = round(self.damage.get_roll_result() * self.damage_mult)
         armpen = round(self.armpen.get_roll_result() * self.damage_mult)
         if armpen > 0:
-            dstr = f'{damage}/{armpen}* ({self.use_attack.damtype.format_type_code()})'
+            dam_text = f'{damage}/{armpen}* ({self.use_attack.damtype.format_type_code()})'
         else:
-            dstr = f'{damage} ({self.use_attack.damtype.format_type_code()})'
+            dam_text = f'{damage} ({self.use_attack.damtype.format_type_code()})'
 
-        print(f'{self.attacker} hits {self.defender} in the {self.hitloc} for {dstr} damage: {self.use_attack.name}!')
+        mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
+
+        print(f'{self.attacker} hits {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
         wound = self.hitloc.apply_damage(damage, armpen)
         if wound > 0:
@@ -218,6 +231,6 @@ class MeleeCombatResolver:
     def resolve_seconary_attacks(self) -> None:
         # secondary attacks are similar to primary attacks but do not get to resolve secondary attacks of their own
         for secondary in self.seconary_attacks:
-            secondary.generate_attack_results()
-            secondary.resolve_critical_effects()
-            secondary.resolve_damage()
+            if secondary.generate_attack_results():
+                secondary.resolve_critical_effects()
+                secondary.resolve_damage()

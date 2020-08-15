@@ -12,9 +12,7 @@ class AttackTrait(Trait):
 class NaturalWeaponTrait(AttackTrait):
     name = 'Natural Weapon'
     desc = 'This attack is a natural weapon'
-NaturalWeaponTrait = NaturalWeaponTrait()
 
 class CannotDefendTrait(AttackTrait):
     name = 'Cannot Parry'
     desc = 'This attack cannot be used to parry in defence.'
-CannotDefendTrait = CannotDefendTrait()

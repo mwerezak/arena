@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 from core.dice import dice
 from core.constants import MeleeRange
+from core.contest import Contest
 from core.creature.actions import CreatureAction, can_interrupt_action
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
 from core.combat.resolver import MeleeCombatResolver
@@ -33,10 +34,10 @@ def resolve_opposed_initiative(a: Creature, b: Creature) -> Optional[Creature]:
     elif round(a_initiative) != round(b_initiative):
         winner = a if a_initiative > b_initiative else b
 
-    success_text = f'SUCCESS: {winner}' if winner is not None else 'TIE!'
+    success_text = f'{winner} takes initiative!' if winner is not None else 'Tie!'
     print(
-        f'[Initiative] {a} vs {b} RESULT: {a_roll}{a_initiative:+d}={a_total} vs '
-        f'{b_roll}{b_initiative:+d}={b_total} {success_text}'
+        f'[Initiative] {a} vs {b} RESULT: {a_roll}{a_initiative:+.0f}={a_total:.0f} vs '
+        f'{b_roll}{b_initiative:+.0f}={b_total:.0f} {success_text}'
     )
     return winner
 
@@ -218,14 +219,14 @@ class MeleeCombatAction(CreatureAction):
         return None
 
     # return True if an attack actually happened
-    def _resolve_attack(self, attacker: Creature, defender: Creature, *, can_defend: bool = True) -> bool:
+    def _resolve_attack(self, attacker: Creature, defender: Creature, *, can_defend: bool = True) -> Optional[MeleeCombatResolver]:
         attack = MeleeCombatResolver(attacker, defender)
         if attack.generate_attack_results(force_defenceless = not can_defend):
             attack.resolve_critical_effects()
             attack.resolve_damage()
             attack.resolve_seconary_attacks()
-            return True
-        return False
+            return attack
+        return None
 
     def _resolve_simultaneous_attacks(self):
         pro_attack = MeleeCombatResolver(self.protagonist, self.target)
@@ -234,6 +235,15 @@ class MeleeCombatAction(CreatureAction):
 
         random.shuffle(attacks)
         has_result = { attack : attack.generate_attack_results(force_defenceless=True) for attack in attacks }
+
+        pro_crit_level = pro_attack.attacker_crit + ant_attack.defender_crit
+        ant_crit_level = pro_attack.defender_crit + ant_attack.attacker_crit
+
+        pro_attack.attacker_crit = min(max(0, pro_crit_level - ant_crit_level), Contest.MAX_CRIT)
+        pro_attack.defender_crit = 0
+
+        ant_attack.attacker_crit = min(max(0, ant_crit_level - pro_crit_level), Contest.MAX_CRIT)
+        ant_attack.defender_crit = 0
 
         random.shuffle(attacks)
         for attack in attacks:
@@ -265,6 +275,10 @@ class InterruptCooldownAction(CreatureAction):
 class MeleeDefendAction(InterruptCooldownAction):
     can_interrupt = False
     can_defend = False  # already defended
+
+    def resolve(self) -> Optional[Action]:
+        print(f'{self.protagonist} defends.')
+        return None
 
 class OpportunityAttackAction(InterruptCooldownAction):
     can_interrupt = False

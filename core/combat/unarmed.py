@@ -87,7 +87,7 @@ class NaturalWeaponTemplate:
         self.damage = damage
         self.armpen = armpen
         self.criticals = tuple(criticals)
-        self.traits = (NaturalWeaponTrait, *traits)
+        self.traits = (NaturalWeaponTrait(), *traits)
 
 class NaturalWeapon:
     def __init__(self,
