@@ -130,19 +130,19 @@ class Entity:
 # ActionLoop
 @total_ordering
 class ActionQueueItem:
-    windup: float
+    windup: int
     action: Action
 
-    def __init__(self, windup: float, action: Action):
+    def __init__(self, windup: int, action: Action):
         self.windup = windup
         self.action = action
 
-    def elapse(self, amount: float) -> None:
+    def elapse(self, amount: int) -> None:
         self.windup -= amount
 
     @property
     def _sort_key(self) -> Any:
-        return round(self.windup), -self.action.owner.tiebreaker_priority
+        return self.windup, -self.action.owner.tiebreaker_priority
 
     def __eq__(self, other: ActionQueueItem) -> bool:
         return self._sort_key == other._sort_key
@@ -159,7 +159,7 @@ class ActionLoop:
         self.action_queue = []
         self.queue_items = {}
 
-    def get_tick(self) -> float:
+    def get_tick(self) -> int:
         return self.elapsed
 
     def add_entity(self, entity: Entity) -> None:
@@ -202,7 +202,7 @@ class ActionLoop:
         windup = action.get_windup_duration()
 
         self.entity_actions[entity] = action
-        item = ActionQueueItem(windup, action)
+        item = ActionQueueItem(round(windup), action)
         self.queue_items[action] = item
         heapq.heappush(self.action_queue, item)
         action.started()
