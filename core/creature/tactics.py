@@ -76,26 +76,36 @@ class CombatTactics:
         }
         return max(block_priority.keys(), key=lambda k: block_priority[k], default=None)
 
-    def choose_contest_change_range(self, change_range: ChangeMeleeRangeAction) -> bool:
+    def get_range_change_desire(self, opponent: Creature, from_range: MeleeRange, to_range: MeleeRange) -> Optional[float]:
+        """-1.0 to 1.0 scale rating how favorable the given range change is"""
+        range_scores = self.get_melee_range_priority(opponent)
+        from_score = range_scores.get(from_range, 0)
+        to_score = range_scores.get(to_range, 0)
+        if from_score == 0:
+            return None
+        return min(max(-1.0, (to_score/from_score - 1.0)/0.25), 1.0)
+
+    def choose_contest_change_range(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""
+
         melee = self.parent.get_melee_combat(change_range.protagonist)
+        change_score = self.get_range_change_desire(change_range.protagonist, melee.separation, change_range.target_range)
+        opponent_success = Contest.get_opposed_chance(change_range.protagonist, SKILL_EVADE, self.parent)
 
-        # if we are also changing range and the range change takes us closer to the desired range, do not contest
-        cur_action = self.parent.get_current_action()
-        if isinstance(cur_action, ChangeMeleeRangeAction):
-            cur_distance = abs(cur_action.desired_range - melee.separation)
-            new_distance = abs(cur_action.desired_range - change_range.desired_range)
-            if new_distance < cur_distance:
-                return False
+        if change_score is None:
+            contest = True
+        elif change_score >= 0:
+            contest = False
+        else:
+            contest = -max(change_score, 2/3) <= opponent_success
 
-        # if we can opportunity attack and the success chance for contesting
-        # is small enough, do not give up our opportunity attack to contest
-        if change_range.allow_opportunity_attack() and self._can_attack(change_range.get_opportunity_attack_ranges()):
-            change_range_success_chance = Contest.get_opposed_chance(change_range.protagonist, SKILL_EVADE, self.parent)
-            if change_range_success_chance > 0.667:
-                return False
-
-        return True
+        if contest:
+            can_opportunity_attack = change_range.allow_opportunity_attack() and self._can_attack(change_range.get_opportunity_attack_ranges())
+            threshold = -max(change_score, 2/3) if change_score is not None else 2/3
+            if can_opportunity_attack and opponent_success > threshold:
+                return 'attack'
+            return 'contest'
+        return None
 
     def _can_attack(self, ranges: Iterable[MeleeRange]) -> bool:
         ranges = list(ranges)

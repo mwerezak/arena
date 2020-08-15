@@ -75,7 +75,7 @@ class Creature(Entity):
 
     def get_action_rate(self) -> float:
         action_points = self._base_initiative()/12.0
-        return 1.0/action_points
+        return action_points/(1/0.6)
 
     def get_initiative_modifier(self) -> float:
         return self._base_initiative()/2.0 - (self.get_encumbrance())/5.0
@@ -104,7 +104,10 @@ class Creature(Entity):
     ## Melee Combat
 
     def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
+        slots = dict(self.inventory.get_equip_slots())
         for bp in self.get_bodyparts():
+            if bp.is_grasp_part() and slots[bp] is not None:
+                continue # can't use unarmed attacks on bodyparts that are holding weapons
             yield from bp.get_unarmed_attacks()
 
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:

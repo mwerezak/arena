@@ -155,7 +155,7 @@ CREATURE_OGRE_BRUTE = (
 )
 
 CREATURE_ORC_BARBARIAN = (
-    CreatureTemplate('Orc Barbarian')
+    CreatureTemplate('Orc Barbarian', template=SPECIES_ORC)
     .add_trait(
         SkillTrait(SKILL_SHIELD, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
@@ -187,7 +187,7 @@ CREATURE_ORC_BARBARIAN = (
 
 ## Orc Archer
 CREATURE_ORC_ARCHER = (
-    CreatureTemplate('Orc Archer')
+    CreatureTemplate('Orc Archer', template=SPECIES_ORC)
     .add_trait(
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),

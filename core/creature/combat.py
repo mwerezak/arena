@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 from core.dice import dice
 from core.constants import MeleeRange
 from core.contest import Contest
-from core.creature.actions import CreatureAction, can_interrupt_action
+from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
 from core.combat.resolver import MeleeCombatResolver
 
@@ -79,19 +79,19 @@ class ChangeMeleeRangeAction(CreatureAction):
 
     def __init__(self, opponent: Creature, desired_range: MeleeRange):
         self.opponent = opponent
-        self.desired_range = desired_range
+        self.target_range = desired_range
 
     def get_opportunity_attack_ranges(self) -> Iterable[MeleeRange]:
         """Gets the ranges through which the target will pass"""
         melee = self.protagonist.get_melee_combat(self.opponent)
-        final_separation = melee.get_range_shift(self.desired_range)
+        final_separation = melee.get_range_shift(self.target_range)
         min_range = min(melee.separation, final_separation)
         max_range = max(melee.separation, final_separation)
         return MeleeRange.range(min_range, max_range+1)
 
     def allow_opportunity_attack(self) -> bool:
         melee = self.opponent.get_melee_combat(self.protagonist)
-        if self.desired_range >= melee.separation:
+        if self.target_range >= melee.separation:
             return False  # can only opportunity attack when moving closer
         return True
 
@@ -99,25 +99,29 @@ class ChangeMeleeRangeAction(CreatureAction):
         melee = self.protagonist.get_melee_combat(self.opponent)
         if melee is None:
             return False  # no longer engaged in melee combat
-        if melee.separation == self.desired_range:
+        if melee.separation == self.target_range:
             return False  # nothing to do
         return True  # TODO check for movement impairment
 
     def resolve(self) -> Optional[Action]:
         melee = self.protagonist.get_melee_combat(self.opponent)
 
-        verb = 'close' if self.desired_range <= melee.separation else 'open'
-        print(f'{self.protagonist} attempts to {verb} distance with {self.opponent} ({melee.separation} -> {self.desired_range}).')
+        verb = 'close' if self.target_range <= melee.separation else 'open'
+        print(f'{self.protagonist} attempts to {verb} distance with {self.opponent} ({melee.separation} -> {self.target_range}).')
 
         # determine opponent's reaction
-        contested_change = self.opponent.tactics.choose_contest_change_range(self)
+        reaction = None
+        if can_interrupt_action(self.opponent):
+            reaction = self.opponent.tactics.choose_contest_change_range(self)
 
         success = True
         start_range = melee.separation
-        final_range = melee.get_range_shift(self.desired_range)
+        final_range = melee.get_range_shift(self.target_range)
 
-        # TODO contesting a range change interrupts the current action
-        if contested_change:
+        if reaction == 'contest':
+            action = self.opponent.get_current_action()
+            self.opponent.set_current_action(ContestChangeMeleeRangeAction(action))
+
             contest = OpposedResult(ContestResult(self.protagonist, SKILL_EVADE), ContestResult(self.opponent, SKILL_EVADE))
             print(contest.format_details())
             success = contest.success
@@ -126,24 +130,24 @@ class ChangeMeleeRangeAction(CreatureAction):
             # an attack of opportunity is allowed only if the change is not contested
             use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
             if use_attack is not None:
-                attack_range = min(melee.separation, use_attack.max_reach)
+                attack_ranges = (reach for reach in self.get_opportunity_attack_ranges() if use_attack.can_attack(reach))
+                attack_range = max(attack_ranges, default=None)
+                if attack_range is not None:
+                    melee.change_separation(attack_range)
+                    combat = MeleeCombatResolver(self.opponent, self.protagonist)
+                    if combat.generate_attack_results(force_evade=True):
+                        # interrupt their current action to make the opportunity attack
+                        action = self.opponent.get_current_action()
+                        attack_action = OpportunityAttackAction(action)
+                        self.opponent.set_current_action(attack_action)
 
-                melee.change_separation(attack_range)
-                combat = MeleeCombatResolver(self.opponent, self.protagonist)
-                if combat.generate_attack_results():
-                    # interrupt their current action to make the opportunity attack
-                    cur_action = self.opponent.get_current_action()
-                    elapsed_windup = cur_action.get_elapsed_windup() if cur_action is not None else 0
-                    attack_action = OpportunityAttackAction(elapsed_windup)
-                    self.opponent.set_current_action(attack_action)
-
-                    # resolve the outcome of the attack
-                    melee.change_separation(final_range)
-                    combat.resolve_critical_effects()
-                    combat.resolve_damage()
-                    combat.resolve_seconary_attacks()
-                    if melee.separation != final_range:
-                        success = False
+                        # resolve the outcome of the attack
+                        melee.change_separation(final_range)
+                        combat.resolve_critical_effects()
+                        combat.resolve_damage()
+                        combat.resolve_seconary_attacks()
+                        if melee.separation != final_range:
+                            success = False
 
         if success:
             melee.change_separation(final_range)
@@ -151,6 +155,13 @@ class ChangeMeleeRangeAction(CreatureAction):
 
         return None
 
+class ContestChangeMeleeRangeAction(InterruptCooldownAction):
+    can_interrupt = False
+    can_defend = True
+
+class OpportunityAttackAction(InterruptCooldownAction):
+    can_interrupt = False
+    can_defend = False
 
 ## MeleeEngageAction - create a melee engagement between two creatures. Interrupts movement
 ## MeleeChargeAction - perform a melee charge, which can be done outside of engagement
@@ -193,23 +204,20 @@ class MeleeCombatAction(CreatureAction):
 
             # target is attacking us first!
             elif initiative == self.target and self._resolve_attack(self.target, self.protagonist):
-                elapsed_windup = other_action.get_elapsed_windup()
-                defend_action = MeleeAttackCooldownAction(elapsed_windup)
+                defend_action = MeleeAttackCooldownAction(other_action)
                 self.target.set_current_action(defend_action)  # replace the now-resolve attack action with a cooldown
                 # no need to create a MeleeDefendAction - this action is wasted
 
             # protagonist attacks first!
             elif initiative == self.protagonist:
                 if self._resolve_attack(self.protagonist, self.target):
-                    elapsed_windup = other_action.get_elapsed_windup()
-                    defend_action = MeleeDefendAction(elapsed_windup)
+                    defend_action = MeleeDefendAction(other_action)
                     self.target.set_current_action(defend_action)  # interrupt target's action
 
         # interrupt target's action with a MeleeDefendAction
         elif isinstance(other_action, CreatureAction) and other_action.can_defend:
             if self._resolve_attack(self.protagonist, self.target):
-                elapsed_windup = other_action.get_elapsed_windup()
-                defend_action = MeleeDefendAction(elapsed_windup)
+                defend_action = MeleeDefendAction(other_action)
                 self.target.set_current_action(defend_action)
 
         else:
@@ -257,20 +265,6 @@ class MeleeCombatAction(CreatureAction):
         for attack in attacks:
             if has_result[attack]: attack.resolve_seconary_attacks()
 
-class InterruptCooldownAction(CreatureAction):
-    """Used when an action was interrupted to perform a different action immediately, paying the time cost afterwards
-    instead of before. The elapsed time already payed for the action that was interrupted is credited to this one,
-    reducing the total windup duration."""
-
-    def __init__(self, elaspsed_windup: float = 0):
-        self.elaspsed_windup = elaspsed_windup
-
-    def get_windup_duration(self) -> float:
-        return max(self.base_windup / self.owner.get_action_rate() - self.elaspsed_windup, 0)
-
-    def resolve(self) -> Optional[Action]:
-        return None  # the action has already been performed
-
 ## MeleeDefendAction - when interrupted by an attack
 class MeleeDefendAction(InterruptCooldownAction):
     can_interrupt = False
@@ -279,10 +273,6 @@ class MeleeDefendAction(InterruptCooldownAction):
     def resolve(self) -> Optional[Action]:
         print(f'{self.protagonist} defends.')
         return None
-
-class OpportunityAttackAction(InterruptCooldownAction):
-    can_interrupt = False
-    can_defend = False
 
 class MeleeAttackCooldownAction(InterruptCooldownAction):
     can_interrupt = False

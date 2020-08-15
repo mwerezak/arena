@@ -103,10 +103,11 @@ if __name__ == '__main__':
         return c
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
-    goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
+    goblin = add_creature(CREATURE_GOBLIN_INFANTRY)
     satyr = add_creature(CREATURE_SATYR_WARRIOR)
+    orc = add_creature(CREATURE_ORC_BARBARIAN)
 
-    melee = join_melee_combat(gnoll, goblin)
+    melee = join_melee_combat(satyr, orc)
 
     arena = Arena(loop, melee)
     # while True:

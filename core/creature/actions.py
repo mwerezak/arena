@@ -47,6 +47,20 @@ class DitherAction(CreatureAction):
     def resolve(self) -> Optional[Action]:
         return None  # does nothing
 
+class InterruptCooldownAction(CreatureAction):
+    """Used when an action was interrupted to perform a different action immediately, paying the time cost afterwards
+    instead of before. The elapsed time already payed for the action that was interrupted is credited to this one,
+    reducing the total windup duration."""
+
+    def __init__(self, interrupted: Optional[Action] = None):
+        self.elaspsed_windup = interrupted.get_elapsed_windup() if interrupted is not None else 0
+
+    def get_windup_duration(self) -> float:
+        return max(self.base_windup / self.owner.get_action_rate() - self.elaspsed_windup, 0)
+
+    def resolve(self) -> Optional[Action]:
+        return None  # the action has already been performed
+
 # ## ForceNextAction - replace an action with a wrapper that resolves the wrapped action, then forces another action
 # class ForceNextAction(CreatureAction):
 #     def __init__(self, wrapped: CreatureAction, force_next: CreatureAction):
