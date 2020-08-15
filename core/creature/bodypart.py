@@ -72,7 +72,7 @@ class BodyPart:
         armor = self.get_armor()
         damage = max(damage - armor, min(armpen, damage))
         if not self.is_vital():
-            damage *= 0.75
+            damage /= 1.5
         elif self.template.type == BodyElementType.HEAD:
             damage *= 1.5
         return max(damage, 0)

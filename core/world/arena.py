@@ -55,6 +55,10 @@ class Arena:
         self.action_loop = loop
 
     def next_turn(self) -> None:
+        for entity in self.action_loop.get_entities():
+            if isinstance(entity, Creature) and not entity.alive:
+                self.action_loop.remove_entity(entity)
+
         for idle in self.action_loop.get_idle_entities():
             action = self.get_next_action(idle)
             if action is not None:
@@ -80,9 +84,10 @@ class Arena:
                 desired_ranges = entity.tactics.get_melee_range_priority(opponent)
                 best_range = max(desired_ranges, key=lambda k: (desired_ranges[k], int(k==melee.separation), k), default=None)
                 if best_range is not None and best_range != melee.separation:
-                    return ChangeMeleeRangeAction(opponent, best_range)
-                else:
-                    return MeleeCombatAction(opponent)
+                    change_desire = entity.tactics.get_range_change_desire(opponent, melee.separation, best_range)
+                    if change_desire > 0 and random.random() < change_desire:
+                        return ChangeMeleeRangeAction(opponent, best_range)
+                return MeleeCombatAction(opponent)
         return None
 
 if __name__ == '__main__':
@@ -106,8 +111,11 @@ if __name__ == '__main__':
     goblin = add_creature(CREATURE_GOBLIN_INFANTRY)
     satyr = add_creature(CREATURE_SATYR_WARRIOR)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
+    orc2 = add_creature(CREATURE_ORC_BARBARIAN)
+    orc.name = 'Orc 1'
+    orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(satyr, orc)
+    melee = join_melee_combat(orc2, orc)
 
     arena = Arena(loop, melee)
     # while True:

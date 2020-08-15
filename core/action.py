@@ -142,7 +142,7 @@ class ActionQueueItem:
 
     @property
     def _sort_key(self) -> Any:
-        return self.windup, -self.action.owner.tiebreaker_priority
+        return round(self.windup), -self.action.owner.tiebreaker_priority
 
     def __eq__(self, other: ActionQueueItem) -> bool:
         return self._sort_key == other._sort_key

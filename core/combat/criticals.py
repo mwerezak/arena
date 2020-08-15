@@ -159,6 +159,7 @@ class DisruptCritical(CriticalEffect):
 class DisruptedAction(CreatureAction):
     can_interrupt = False
     can_defend = True
+    base_windup = 110
 
     def resolve(self) -> Optional[Action]:
         return None

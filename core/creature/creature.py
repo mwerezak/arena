@@ -104,11 +104,12 @@ class Creature(Entity):
     ## Melee Combat
 
     def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
-        slots = dict(self.inventory.get_equip_slots())
+        # equipped items occupy exactly one of the bodyparts used to hold them
+        occupied = { item : bp for bp, item in self.inventory.get_equip_slots() if item is not None }
+        occupied = set(occupied.values())
         for bp in self.get_bodyparts():
-            if bp.is_grasp_part() and slots[bp] is not None:
-                continue # can't use unarmed attacks on bodyparts that are holding weapons
-            yield from bp.get_unarmed_attacks()
+            if bp not in occupied:
+                yield from bp.get_unarmed_attacks()
 
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:
         yield from self.get_unarmed_attacks()
@@ -185,7 +186,7 @@ class Creature(Entity):
     def kill(self) -> None:
         self.alive = False
         self.stance = Stance.Prone
-        for o in list(self.get_melee_opponents()):
-            melee = self.get_melee_combat(o)
-            melee.break_engagement()
+        # for o in list(self.get_melee_opponents()):
+        #     melee = self.get_melee_combat(o)
+        #     melee.break_engagement()
 
