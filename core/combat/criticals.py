@@ -102,14 +102,14 @@ class SecondaryAttackCritical(CriticalEffect):
 
         secondary_attacks = (
             attack for attack in self.user.get_melee_attacks()
-            if attack.source not in used_sources and attack.can_attack(self.result.melee.separation)
+            if attack.source not in used_sources and attack.can_attack(self.result.melee.get_separation())
         )
 
         self.target = self.result.melee.get_opponent(self.user)
-        self.attack = self.user.tactics.get_secondary_attack(self.target, self.result.melee.separation, secondary_attacks)
+        self.attack = self.user.tactics.get_secondary_attack(self.target, self.result.melee.get_separation(), secondary_attacks)
 
     def can_use(self) -> bool:
-        return not self.result.is_secondary and self.attack is not None and self.attack.can_attack(self.result.melee.separation)
+        return not self.result.is_secondary and self.attack is not None and self.attack.can_attack(self.result.melee.get_separation())
 
     def apply(self) -> None:
         self.result.add_secondary_attack(self.user, self.target, self.attack)
@@ -164,12 +164,12 @@ class CloseRangeCritical(CriticalEffect):
         self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
-        return self.target_range is not None and self.target_range < self.result.melee.separation
+        return self.target_range is not None and self.target_range < self.result.melee.get_separation()
 
     def apply(self) -> None:
-        prev = self.result.melee.separation
-        self.result.melee.separation = self.result.melee.get_range_shift(self.target_range)
-        print(f'{self.user} closes distance with {self.result.melee.get_opponent(self.user)} ({prev} -> {self.result.melee.separation}).')
+        prev = self.result.melee.get_separation()
+        self.result.melee.change_separation(self.target_range)
+        print(f'{self.user} closes distance with {self.result.melee.get_opponent(self.user)} ({prev} -> {self.result.melee.get_separation()}).')
 
     def __str__(self) -> str:
         return f'{self.name}: {self.target_range}'
@@ -187,12 +187,12 @@ class OpenRangeCritical(CriticalEffect):
         self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
-        return self.target_range is not None and self.target_range > self.result.melee.separation
+        return self.target_range is not None and self.target_range > self.result.melee.get_separation()
 
     def apply(self) -> None:
-        prev = self.result.melee.separation
-        self.result.melee.separation = self.result.melee.get_range_shift(self.target_range)
-        print(f'{self.user} opens distance with {self.result.melee.get_opponent(self.user)} ({prev} -> {self.result.melee.separation}).')
+        prev = self.result.melee.get_separation()
+        self.result.melee.change_separation(self.target_range)
+        print(f'{self.user} opens distance with {self.result.melee.get_opponent(self.user)} ({prev} -> {self.result.melee.get_separation()}).')
 
     def __str__(self) -> str:
         return f'{self.name}: {self.target_range}'

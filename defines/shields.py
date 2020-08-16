@@ -1,7 +1,7 @@
 from core.equipment.weapon import Weapon, ShieldBlock
 from core.combat.attack import MeleeAttackTemplate
 from core.combat.damage import DamageType
-from core.combat.traits import CannotDefendTrait
+from core.combat.attacktraits import CannotDefendTrait
 from core.contest import CombatSkillClass
 from core.dice import dice
 from core.constants import *

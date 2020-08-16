@@ -6,14 +6,14 @@ from defines.traits import *
 from core.creature.traits import FinesseTrait
 from defines.weapons import (
     WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
-    WEAPON_BATTLEAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE, WEAPON_GREATAXE,
+    WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE,
 )
 from defines.shields import (
     SHIELD_SMALL, SHIELD_MEDIUM
 )
 from defines.armor import (
     PATTERN_HELMET, PATTERN_CUIRASS, PATTERN_ARMOR, PATTERN_HAUBERK, PATTERN_CHESTPIECE, PATTERN_TAILGUARD,
-    ARMORTYPE_LAMINATED, ARMORTYPE_SCALED, ARMORTYPE_HALF_PLATE, ARMORTYPE_SPLINTED,
+    ARMORTYPE_PADDED, ARMORTYPE_LAMINATED, ARMORTYPE_SCALED, ARMORTYPE_HALF_PLATE, ARMORTYPE_SPLINTED,
     MATERIAL_LINEN, MATERIAL_BRONZE, MATERIAL_LEATHER,
 )
 
@@ -30,7 +30,7 @@ BRONZE_HALF_PLATE_CUIRASS = ArmorTemplate('Half-Plate Cuirass', ARMORTYPE_HALF_P
 BRONZE_PLATE_MAIL_CUIRASS = ArmorTemplate('Splinted Plate Cuirass', ARMORTYPE_SPLINTED, MATERIAL_BRONZE, PATTERN_CUIRASS)
 BRONZE_PLATE_MAIL_ARMOR = ArmorTemplate('Splinted Plate Armor (Half-Suit)', ARMORTYPE_SPLINTED, MATERIAL_BRONZE, PATTERN_ARMOR)
 
-LINEN_HAUBERK = ArmorTemplate('Apron', ARMORTYPE_LAMINATED, MATERIAL_LINEN, PATTERN_HAUBERK)
+LINEN_APRON = ArmorTemplate('Apron', ARMORTYPE_PADDED, MATERIAL_LINEN, PATTERN_HAUBERK)
 LINEN_TAILGUARD = ArmorTemplate('Tailguard', ARMORTYPE_LAMINATED, MATERIAL_LINEN, PATTERN_TAILGUARD)
 
 LEATHER_CUIRASS    = ArmorTemplate('Cuirass', ARMORTYPE_LAMINATED, MATERIAL_LEATHER, PATTERN_CUIRASS)
@@ -138,8 +138,9 @@ CREATURE_MINOTAUR_MILITIA = (
     )
     .set_loadout(Loadout([
         WEAPON_BATTLEAXE,  # basically a hatchet for a minotaur
-        SHIELD_SMALL,
-        Armor(LINEN_HAUBERK, SPECIES_MINOTAUR),
+        LoadoutChoice([(1, SHIELD_SMALL), (1, SHIELD_MEDIUM)]),
+        LoadoutChoice([(1, LINEN_CUIRASS), (1, LINEN_APRON), (1, None)]),
+        LoadoutChoice([(1, Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR)), (1, None)]),
     ]))
 )
 
@@ -147,14 +148,16 @@ CREATURE_MINOTAUR_WARRIOR = (
     CreatureTemplate('Minotaur Protector', template=SPECIES_MINOTAUR)
     .modify_attributes(STR=+1)
     .add_trait(
-        SkillTrait(SKILL_AXE, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
     )
     .set_loadout(Loadout(
-        [ WEAPON_MINOTAUR_AXE ],
+        LoadoutChoice([
+            (1, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(3))]),
+            (1, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(2)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
+        ]),
         LoadoutChoice([(1, Armor(BRONZE_HELMET, SPECIES_MINOTAUR)), (1, None)]),
-        [ Armor(LINEN_HAUBERK, SPECIES_MINOTAUR), Armor(BRONZE_HALF_PLATE_CUIRASS, SPECIES_MINOTAUR) ],
+        [Armor(LINEN_APRON, SPECIES_MINOTAUR), Armor(BRONZE_HALF_PLATE_CUIRASS, SPECIES_MINOTAUR)],
         LoadoutChoice([(3, Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR)), (1, None)]),
     ))
 )
@@ -163,14 +166,16 @@ CREATURE_MINOTAUR_CHAMPION = (
     CreatureTemplate('Minotaur Champion', template=SPECIES_MINOTAUR)
     .modify_attributes(STR=+1,CON=+1)
     .add_trait(
-        SkillTrait(SKILL_AXE, SkillLevel(5)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(4)),
         SkillTrait(SKILL_UNARMED, SkillLevel(3)),
     )
     .set_loadout(Loadout(
-        [ WEAPON_MINOTAUR_AXE ],
+        LoadoutChoice([
+            (2, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(5))]),
+            (1, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(4)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
+        ]),
         LoadoutChoice([(1, Armor(BRONZE_BARBUTE, SPECIES_MINOTAUR)), (3, Armor(BRONZE_HELMET, SPECIES_MINOTAUR))]),
-        [ Armor(LINEN_HAUBERK, SPECIES_MINOTAUR), Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR) ],
+        [Armor(LINEN_APRON, SPECIES_MINOTAUR), Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR)],
         LoadoutChoice([(1, Armor(BRONZE_PLATE_MAIL_ARMOR, SPECIES_MINOTAUR)), (1, Armor(BRONZE_PLATE_MAIL_CUIRASS, SPECIES_MINOTAUR))]),
     ))
 )
@@ -188,7 +193,7 @@ CREATURE_GNOLL_WARRIOR = (
             (1, [WEAPON_MACE, SkillTrait(SKILL_MACE, SkillLevel(2))]),
         ]),
         LoadoutChoice([(2, SHIELD_MEDIUM), (1, SHIELD_SMALL)]),
-        LoadoutChoice([(5, Armor(LEATHER_CUIRASS, SPECIES_GNOLL)), (3, Armor(BRONZE_SCALE_CUIRASS, SPECIES_GNOLL)), (1, None)])
+        LoadoutChoice([(5, Armor(LEATHER_CUIRASS, SPECIES_GNOLL)), (3, Armor(BRONZE_SCALE_CUIRASS, SPECIES_GNOLL)), (1, None)]),
     ))
 )
 
@@ -210,17 +215,3 @@ CREATURE_GNOLL_CHIEFTAINS_SON = (
     ))
 )
 
-if __name__ == '__main__':
-    from core.combat.attack import MeleeAttackTemplate
-    def print_attack(attack: MeleeAttackTemplate):
-        print(f'*** {attack.name} ***')
-        print(f'force: {attack.force}')
-        print(f'reach: {attack.max_reach} - {attack.min_reach}')
-        print(f'damage: {attack.damage}' + (f'/{attack.armpen}*' if attack.armpen is not None else ''))
-
-    def print_creature_attacks(creature: CreatureTemplate):
-        for bp_tag, weapon in creature.get_natural_weapons():
-            print_attack(weapon.create_attack(creature))
-            print(f'location: {bp_tag}')
-
-    from defines.species import *

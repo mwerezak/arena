@@ -2,19 +2,17 @@
 Arena mode: individual creature combat
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
 
 from core.action import ActionLoop
-from core.creature import Creature
-from core.creature.tactics import SKILL_FACTOR, get_expected_damage, get_melee_attack_value
+from core.creature.tactics import SKILL_FACTOR, get_melee_attack_value
 from core.creature.actions import *
-from core.creature.combat import *
+from core.combat.melee import *
 
 if TYPE_CHECKING:
     from core.creature.inventory import Inventory
-    from core.creature.combat import MeleeCombat
+    from core.combat.melee import MeleeCombat
     from core.combat.attack import MeleeAttackTemplate
-    from core.action import Action, Entity
+
 
 def get_attack_value(creature: Creature, attack: MeleeAttackTemplate) -> float:
     return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.combat_test)]
@@ -55,13 +53,13 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     attack_values = (
         get_melee_attack_value(attack, protagonist, opponent)
         for attack in protagonist.get_melee_attacks()
-        if attack.can_attack(melee.separation)
+        if attack.can_attack(melee.get_separation())
     )
     best_score = max(attack_values, default=0)
     equipped = [*protagonist.inventory.get_held_items()]
     available = (item for item in protagonist.inventory if item.is_weapon() and item not in equipped)
     available = {
-        item : protagonist.tactics.get_weapon_value(item, opponent, melee.separation)
+        item : protagonist.tactics.get_weapon_value(item, opponent, melee.get_separation())
         for item in available
     }
 
@@ -78,7 +76,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
                 protagonist.inventory.get_held_items(),
                 key=lambda o: (
                     1 if o.is_shield() else 0, # unequip shields last
-                    protagonist.tactics.get_weapon_value(o, opponent, melee.separation)
+                    protagonist.tactics.get_weapon_value(o, opponent, melee.get_separation())
                 )
             )
             unequip = []
@@ -93,7 +91,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
                         change_weapon = False
                         break
                 else:
-                    change_desire = protagonist.tactics.get_weapon_change_desire(item, candidate, opponent, melee.separation)
+                    change_desire = protagonist.tactics.get_weapon_change_desire(item, candidate, opponent, melee.get_separation())
                     if random.random() > change_desire:
                         break
 
@@ -104,14 +102,16 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
 
     # change range?
     desired_ranges = tactics.get_melee_range_priority(opponent)
-    best_range = max(desired_ranges, key=lambda k: (desired_ranges[k], int(k==melee.separation), k), default=None)
-    if best_range is not None and best_range != melee.separation:
-        change_desire = tactics.get_range_change_desire(opponent, melee.separation, best_range)
+    best_range = max(
+        desired_ranges, default=None, key=lambda r: (desired_ranges[r], 1 if r == melee.get_separation() else 0, r),
+    )
+    if best_range is not None and best_range != melee.get_separation():
+        change_desire = tactics.get_range_change_desire(opponent, melee.get_separation(), best_range)
         print(f'{protagonist} range change desire: {change_desire:.2f}')
         if change_desire > 0 and random.random() < change_desire:
             return ChangeMeleeRangeAction(opponent, best_range)
 
-    if any(attack.can_attack(melee.separation) for attack in protagonist.get_melee_attacks()):
+    if any(attack.can_attack(melee.get_separation()) for attack in protagonist.get_melee_attacks()):
         return MeleeCombatAction(opponent)
 
     return None
@@ -152,7 +152,7 @@ class Arena:
 
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
-    from core.creature.combat import join_melee_combat
+    from core.combat.melee import join_melee_combat
 
     from defines.units.wildalliance import *
     from defines.units.barbarians import *

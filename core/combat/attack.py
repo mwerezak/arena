@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional, A
 from core.dice import dice
 from core.constants import SizeCategory, PrimaryAttribute
 from core.combat.damage import format_damage
-from core.combat.traits import NaturalWeaponTrait, AttackTrait, CannotDefendTrait
+from core.combat.attacktraits import NaturalWeaponTrait, AttackTrait, CannotDefendTrait
 
 if TYPE_CHECKING:
     from core.creature import Creature

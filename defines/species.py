@@ -5,7 +5,7 @@ from core.creature.template import CreatureTemplate
 from defines.bodyplan import HUMANOID, HUMANOID_NOTAIL, QUADRUPED_UNGULATE
 from defines.traits import *
 from core.creature.traits import FinesseTrait, EvadeTrait
-from core.combat.traits import CannotDefendTrait
+from core.combat.attacktraits import CannotDefendTrait
 
 ## Natural Weapon Templates
 

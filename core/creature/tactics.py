@@ -1,10 +1,10 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Any
+from typing import TYPE_CHECKING, Iterable, Mapping, Optional
 
 from core.constants import MeleeRange
 from core.combat.resolver import get_parry_damage_mult
 from core.contest import SkillLevel, Contest, SKILL_EVADE
-from core.creature.combat import ChangeMeleeRangeAction, can_interrupt_action
+from core.combat.melee import ChangeMeleeRangeAction, can_interrupt_action
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -89,7 +89,7 @@ class CombatTactics:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""
 
         melee = self.parent.get_melee_combat(change_range.protagonist)
-        change_score = self.get_range_change_desire(change_range.protagonist, melee.separation, change_range.target_range)
+        change_score = self.get_range_change_desire(change_range.protagonist, melee.get_separation(), change_range.target_range)
         opponent_success = Contest.get_opposed_chance(change_range.protagonist, SKILL_EVADE, self.parent)
 
         if change_score >= 0:
@@ -132,7 +132,7 @@ class CombatTactics:
         range_priority = self.get_melee_range_priority(opponent, caution=caution)
 
         # tiebreakers: if range is equal to current range, then greatest range
-        return max(range_priority.keys(), key=lambda k: (range_priority[k], int(k==melee.separation), k), default=None)
+        return max(range_priority.keys(), key=lambda k: (range_priority[k], int(k==melee.get_separation()), k), default=None)
 
     def get_melee_threat_value(self, opponent: Creature) -> float:
         threat_priority = _get_melee_attack_priority(opponent, self.parent, opponent.get_melee_attacks())

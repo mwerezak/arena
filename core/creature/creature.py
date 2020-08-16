@@ -13,7 +13,7 @@ from core.contest import DifficultyGrade, SkillLevel
 if TYPE_CHECKING:
     from core.constants import CreatureSize
     from core.combat.attack import MeleeAttack
-    from core.creature.combat import MeleeCombat
+    from core.combat.melee import MeleeCombat
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
     from core.equipment import Equipment

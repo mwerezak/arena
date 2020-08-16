@@ -45,11 +45,12 @@ class MeleeCombat:
     MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
 
     combatants: Tuple[Creature, Creature]
-    separation: MeleeRange
+
+    _separation: MeleeRange
 
     def __init__(self, a: Creature, b: Creature):
         self.combatants = (a, b)
-        self.separation = max(a.get_melee_engage_distance(), b.get_melee_engage_distance())
+        self._separation = max(a.get_melee_engage_distance(), b.get_melee_engage_distance())
 
     def get_opponent(self, combatant: Creature) -> Optional[Creature]:
         if combatant == self.combatants[0]:
@@ -58,11 +59,19 @@ class MeleeCombat:
             return self.combatants[0]
         return None
 
+    def get_separation(self) -> MeleeRange:
+        return self._separation
+
+    def change_separation(self, value: MeleeRange, max_shift: Optional[int] = MAX_RANGE_SHIFT) -> None:
+        if max_shift is not None:
+            value = self.get_range_shift(value, max_shift)
+        self._separation = value
+
     def can_attack(self, combatant: Creature) -> bool:
         opponent = self.get_opponent(combatant)
         if opponent is None:
             return False
-        return any(attack.can_attack(self.separation) for attack in combatant.get_melee_attacks())
+        return any(attack.can_attack(self._separation) for attack in combatant.get_melee_attacks())
 
     def break_engagement(self) -> None:
         for i, j in [(0,1), (1,0)]:
@@ -71,14 +80,10 @@ class MeleeCombat:
         del self.combatants
 
     def get_range_shift(self, target_range: MeleeRange, max_shift: int = MAX_RANGE_SHIFT) -> MeleeRange:
-        shift = min(abs(target_range - self.separation), max_shift)
-        if target_range < self.separation:
+        shift = min(abs(target_range - self._separation), max_shift)
+        if target_range < self._separation:
             shift *= -1
-        return self.separation.get_step(shift)
-
-    def change_separation(self, value: MeleeRange) -> None:
-        self.separation = value
-
+        return self._separation.get_step(shift)
 
 ## MeleeChangeRangeAction - change melee range (max 4)
 class ChangeMeleeRangeAction(CreatureAction):
@@ -91,14 +96,15 @@ class ChangeMeleeRangeAction(CreatureAction):
     def get_opportunity_attack_ranges(self) -> Iterable[MeleeRange]:
         """Gets the ranges through which the target will pass"""
         melee = self.protagonist.get_melee_combat(self.opponent)
+        start_separation = melee.get_separation()
         final_separation = melee.get_range_shift(self.target_range)
-        min_range = min(melee.separation, final_separation)
-        max_range = max(melee.separation, final_separation)
+        min_range = min(start_separation, final_separation)
+        max_range = max(start_separation, final_separation)
         return MeleeRange.range(min_range, max_range+1)
 
     def allow_opportunity_attack(self) -> bool:
         melee = self.opponent.get_melee_combat(self.protagonist)
-        if self.target_range >= melee.separation:
+        if self.target_range >= melee.get_separation():
             return False  # can only opportunity attack when moving closer
         return True
 
@@ -106,18 +112,18 @@ class ChangeMeleeRangeAction(CreatureAction):
         melee = self.protagonist.get_melee_combat(self.opponent)
         if melee is None:
             return False  # no longer engaged in melee combat
-        if melee.separation == self.target_range:
+        if melee.get_separation() == self.target_range:
             return False  # nothing to do
         return True  # TODO check for movement impairment
 
     def resolve(self) -> Optional[Action]:
         melee = self.protagonist.get_melee_combat(self.opponent)
 
-        verb = 'close' if self.target_range <= melee.separation else 'open'
-        print(f'{self.protagonist} attempts to {verb} distance with {self.opponent} ({melee.separation} -> {self.target_range}).')
+        verb = 'close' if self.target_range <= melee.get_separation() else 'open'
+        print(f'{self.protagonist} attempts to {verb} distance with {self.opponent} ({melee.get_separation()} -> {self.target_range}).')
 
         success = True
-        start_range = melee.separation
+        start_range = melee.get_separation()
         final_range = melee.get_range_shift(self.target_range)
 
         # determine opponent's reaction
@@ -154,12 +160,12 @@ class ChangeMeleeRangeAction(CreatureAction):
                         combat.resolve_critical_effects()
                         combat.resolve_damage()
                         combat.resolve_seconary_attacks()
-                        if melee.separation != final_range:
+                        if melee.get_separation() != final_range:
                             success = False # range change disrupted by a critical effect
 
         if success:
             melee.change_separation(final_range)
-            print(f'{self.protagonist} {verb}s distance with {self.opponent} ({start_range} -> {melee.separation}).')
+            print(f'{self.protagonist} {verb}s distance with {self.opponent} ({start_range} -> {melee.get_separation()}).')
 
         return None
 
@@ -219,6 +225,8 @@ class MeleeCombatAction(CreatureAction):
     def _resolve_attack(self) -> bool:
         other_action = self.target.get_current_action()
         can_defend = other_action is None or getattr(other_action, 'can_defend', False)
+
+        # TODO defender may choose to evade
 
         attack = MeleeCombatResolver(self.protagonist, self.target)
         if attack.generate_attack_results(force_defenceless = not can_defend):

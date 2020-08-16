@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, Iterable, Type, Mapping, Optional, Union, Any, Sequence, Tuple
 
-from core.combat.traits import NaturalWeaponTrait, AttackTrait
+from core.combat.attacktraits import NaturalWeaponTrait, AttackTrait
 from core.dice import dice
 from core.combat.attack import MeleeAttackTemplate
 from core.constants import MeleeRange, SizeCategory, FORCE_MEDIUM

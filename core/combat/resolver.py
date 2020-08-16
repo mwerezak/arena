@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, MutableSequence, Tuple, Optional, NamedTuple, Iterable, Type
+from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type
 
 from core.contest import OpposedResult, ContestResult, SKILL_EVADE
 from core.combat.criticals import DEFAULT_CRITICALS, CriticalUsage
 
 if TYPE_CHECKING:
     from core.dice import DicePool
-    from core.constants import MeleeRange, AttackForce
+    from core.constants import AttackForce
     from core.creature import Creature
     from core.creature.bodypart import BodyPart
-    from core.creature.combat import MeleeCombat
+    from core.combat.melee import MeleeCombat
     from core.combat.attack import MeleeAttack
     from core.combat.criticals import CriticalEffect
 
@@ -78,7 +78,7 @@ class MeleeCombatResolver:
             return False
 
         self.melee = melee
-        separation = melee.separation
+        separation = melee.get_separation()
 
         # Choose Attack
         if self.use_attack is None or not self.use_attack.can_attack(separation):
@@ -107,7 +107,7 @@ class MeleeCombatResolver:
         return True
 
     def _resolve_melee_defence(self) -> None:
-        separation = self.melee.separation
+        separation = self.melee.get_separation()
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test)
         defend_result = ContestResult(self.defender, self.use_defence.combat_test)
@@ -156,7 +156,7 @@ class MeleeCombatResolver:
         self.armpen = self.use_attack.armpen
 
     def _resolve_melee_evade(self) -> None:
-        separation = self.melee.separation
+        separation = self.melee.get_separation()
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test)
         evade_result = ContestResult(self.defender, SKILL_EVADE)
@@ -196,7 +196,7 @@ class MeleeCombatResolver:
         self.armpen = self.use_attack.armpen
 
     def _resolve_defender_helpless(self) -> None:
-        separation = self.melee.separation
+        separation = self.melee.get_separation()
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test)
         print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs NO DEFENCE!')
