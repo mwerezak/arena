@@ -50,7 +50,7 @@ class DitherAction(CreatureAction):
 class DisruptedAction(CreatureAction):
     can_interrupt = False
     can_defend = True
-    base_windup = DEFAULT_ACTION_WINDUP + 1
+    base_windup = int(DEFAULT_ACTION_WINDUP * 1.2)
 
     def resolve(self) -> Optional[Action]:
         return None
