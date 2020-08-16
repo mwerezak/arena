@@ -242,7 +242,7 @@ class MeleeCombatResolver:
         if len(choices) > 0:
             crit = random.choice(choices)
 
-            print(f'!Critical Effect - {crit}!')
+            print(f'({user}) !Critical Effect - {crit}!')
             crit.apply()
             return True
         return False

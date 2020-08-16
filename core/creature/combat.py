@@ -199,53 +199,54 @@ class MeleeCombatAction(CreatureAction):
         # Process interruptions
         other_action = self.target.get_current_action()  # any action currently being taken by the target?
 
-        # target is idle, create a MeleeDefendAction
-        if other_action is None:
-            if self._resolve_attack(self.protagonist, self.target):
-                defend_action = MeleeDefendAction()
-                self.target.set_current_action(defend_action)
-
         # opposed attack actions!
-        elif isinstance(other_action, MeleeCombatAction) and other_action.target == self.protagonist:
+        if isinstance(other_action, MeleeCombatAction) and other_action.target == self.protagonist:
             initiative = resolve_opposed_initiative(self.protagonist, self.target)
 
             # simultaneous attacks!
             if initiative is None:
                 self._resolve_simultaneous_attacks()
-
-            # target is attacking us first!
-            elif initiative == self.target and self._resolve_attack(self.target, self.protagonist):
-                defend_action = MeleeAttackCooldownAction(other_action)
-                self.target.set_current_action(defend_action)  # replace the now-resolve attack action with a cooldown
-                # no need to create a MeleeDefendAction - this action is wasted
-
-            # protagonist attacks first!
-            elif initiative == self.protagonist:
-                if self._resolve_attack(self.protagonist, self.target):
-                    defend_action = MeleeDefendAction(other_action)
-                    self.target.set_current_action(defend_action)  # interrupt target's action
-
-        # interrupt target's action with a MeleeDefendAction
-        elif isinstance(other_action, CreatureAction) and other_action.can_defend:
-            if self._resolve_attack(self.protagonist, self.target):
-                defend_action = MeleeDefendAction(other_action)
-                self.target.set_current_action(defend_action)
-
+            else:
+                priority = [self._resolve_attack, self._resolve_reverse_attack]
+                if initiative == self.target:
+                    priority.reverse()
+                for resolve in priority:
+                    if resolve():
+                        break
         else:
-            # target cannot defend!
-            self._resolve_attack(self.protagonist, self.target, can_defend=False)
+            self._resolve_attack()
 
         return None
 
     # return True if an attack actually happened
-    def _resolve_attack(self, attacker: Creature, defender: Creature, *, can_defend: bool = True) -> Optional[MeleeCombatResolver]:
-        attack = MeleeCombatResolver(attacker, defender)
+    def _resolve_attack(self) -> bool:
+        other_action = self.target.get_current_action()
+        can_defend = other_action is None or getattr(other_action, 'can_defend', False)
+
+        attack = MeleeCombatResolver(self.protagonist, self.target)
         if attack.generate_attack_results(force_defenceless = not can_defend):
+            if can_defend:
+                defend_action = MeleeDefendAction(other_action)
+                self.target.set_current_action(defend_action)
+
             attack.resolve_critical_effects()
             attack.resolve_damage()
             attack.resolve_seconary_attacks()
-            return attack
-        return None
+            return True
+        return False
+
+    def _resolve_reverse_attack(self) -> bool:
+        attack = MeleeCombatResolver(self.target, self.protagonist)
+        if attack.generate_attack_results():
+            action = self.target.get_current_action()
+            self.target.set_current_action(MeleeAttackCooldownAction(action))
+
+            # no need to create a MeleeDefendAction - this action is wasted
+            attack.resolve_critical_effects()
+            attack.resolve_damage()
+            attack.resolve_seconary_attacks()
+            return True
+        return False
 
     def _resolve_simultaneous_attacks(self):
         pro_attack = MeleeCombatResolver(self.protagonist, self.target)
@@ -280,9 +281,9 @@ class MeleeCombatAction(CreatureAction):
 class MeleeDefendAction(InterruptCooldownAction):
     can_interrupt = False
     can_defend = False  # already defended
+    base_windup = 67
 
     def resolve(self) -> Optional[Action]:
-        print(f'{self.protagonist} defends.')
         return None
 
 class MeleeAttackCooldownAction(InterruptCooldownAction):

@@ -86,15 +86,13 @@ class HitLocationCritical(CriticalEffect):
 # SecondaryAttackCritical - (both) simultaneous attack with an offhand or natural weapon, do not roll for criticals
 class SecondaryAttackCritical(CriticalEffect):
     name = 'Secondary Attack'
-    usage = CriticalUsage.General | CriticalUsage.Melee
+    usage = CriticalUsage.Offensive | CriticalUsage.Melee
 
     target: Creature
     attack: MeleeAttack
 
     def setup(self) -> None:
-        ## TODO refactor shields to use a ShieldBlock object that has a source
-        ## TODO prevent using natural attacks on BodyParts that are holding weapons
-        used_attacks = [ self.result.use_attack, self.result.use_defence ]
+        used_attacks = [ self.result.use_attack ]
         used_attacks.extend(secondary.use_attack for secondary in self.result.seconary_attacks)
         used_sources = [ attack.source for attack in used_attacks if attack is not None ]
 
@@ -131,12 +129,10 @@ class DisruptCritical(CriticalEffect):
     name = 'Disrupt Opponent'
     usage = CriticalUsage.General | CriticalUsage.Melee
 
-    # def setup(self) -> None:
-    #     if CriticalUsage.Defensive in self.usage:
-    #         self.name = 'Counter Attack'
-
     def can_use(self) -> bool:
-        return self.result.melee.can_attack(self.user)
+        opponent = self.result.melee.get_opponent(self.user)
+        action = opponent.get_current_action()
+        return self.result.melee.can_attack(self.user) and (action is None or action.force_next is None)
 
     def apply(self) -> None:
         opponent = self.result.melee.get_opponent(self.user)
@@ -145,14 +141,6 @@ class DisruptCritical(CriticalEffect):
             action.set_force_next(DisruptedAction())
         else:
             opponent.set_current_action(DisruptedAction())
-
-        # from core.creature.combat import MeleeCombatAction
-
-        # action = self.user.get_current_action()
-        # if action is not None:
-        #     action.set_force_next(MeleeCombatAction(opponent))
-        # else:
-        #     self.user.set_current_action(MeleeCombatAction(opponent))
 
 # PressAttackCritical - (offensive) same as CounterAttackCritical, but on offence
 

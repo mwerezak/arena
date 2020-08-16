@@ -55,7 +55,7 @@ class Arena:
         self.action_loop = loop
 
     def next_turn(self) -> None:
-        for entity in self.action_loop.get_entities():
+        for entity in list(self.action_loop.get_entities()):
             if isinstance(entity, Creature) and not entity.alive:
                 self.action_loop.remove_entity(entity)
 
@@ -64,7 +64,7 @@ class Arena:
             if action is not None:
                 idle.set_current_action(action)
 
-        print(f'Tick: {self.action_loop.elapsed:.1f} Action Queue:')
+        print(f'Tick: {self.action_loop.elapsed} Action Queue:')
         for item in self.action_loop.action_queue:
             print(item.action)
         print()
@@ -93,7 +93,6 @@ class Arena:
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
     from core.creature.combat import join_melee_combat
-    #from core.combat.tactics import *
 
     from defines.units.wildalliance import *
     from defines.units.barbarians import *
@@ -115,9 +114,18 @@ if __name__ == '__main__':
     orc.name = 'Orc 1'
     orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(orc2, orc)
+    melee = join_melee_combat(gnoll, orc)
+    for c in melee.combatants:
+        print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
+        print(*c.inventory, sep='\n')
+        print()
 
     arena = Arena(loop, melee)
+
+    def next_turn():
+        last_tick = arena.action_loop.get_tick()
+        while last_tick == arena.action_loop.get_tick():
+            arena.next_turn()
     # while True:
     #     arena.next_turn()
     # arena.next_turn()
