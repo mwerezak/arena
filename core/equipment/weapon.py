@@ -56,6 +56,8 @@ class Weapon(EquipmentTemplate):
         return self.size < creature.size.get_category()
 
     def get_melee_attacks(self, attacker: Creature, use_hands: int = 0, source: Any = None) -> Iterable[MeleeAttack]:
+        min_hands, _ = self.get_required_hands(attacker)
+        use_hands = use_hands - min_hands + 1
         for attack in self.melee_attacks:
             yield attack.create_instance(attacker, use_hands, source)
 

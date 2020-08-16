@@ -125,7 +125,7 @@ class MeleeAttack:
 
         # not sure if this makes two-handed weapons too strong
         # maybe make it just excesss hands? (e.g. using 1-handed weapon in two hands)
-        return int(str_mod * 1.5) if self.use_hands > 1 else str_mod
+        return int(math.ceil(str_mod * 1.5)) if self.use_hands > 1 else str_mod
 
     @property
     def force(self) -> AttackForce:
