@@ -8,7 +8,7 @@ from __future__ import annotations
 import itertools
 from enum import Enum, IntEnum
 from collections import Counter
-from functools import lru_cache
+from functools import lru_cache, total_ordering
 from typing import TYPE_CHECKING, Iterable, Sequence, Mapping
 
 from core.constants import PrimaryAttribute
@@ -20,6 +20,7 @@ _PRECALC_TABLES = False
 _LEVEL_NUMERALS = ['I', 'II', 'III', 'IV', 'V']
 
 # by default skill level is 0, which grants no bonuses
+@total_ordering
 class SkillLevel(Enum):
     none       = 0  # because None is a reserved word
     Competent  = 1
@@ -39,6 +40,9 @@ class SkillLevel(Enum):
     @property
     def critical_mod(self) -> int:
         return self.value - 1
+
+    def __lt__(self, other: SkillLevel) -> bool:
+        return self.value < other.value
 
     def __str__(self) -> str:
         return _LEVEL_NUMERALS[self.value - 1]

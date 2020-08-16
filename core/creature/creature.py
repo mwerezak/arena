@@ -8,7 +8,7 @@ from core.creature.traits import SkillTrait
 from core.creature.bodypart import BodyPart
 from core.creature.inventory import Inventory
 from core.creature.tactics import CombatTactics
-from core.contest import DifficultyGrade, SkillLevel
+from core.contest import DifficultyGrade, SkillLevel, SKILL_RIDING
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
@@ -186,14 +186,19 @@ class Creature(Entity):
 
     ## Mounts
 
-    @property
-    def mount(self) -> Optional[Creature]:
+    def get_mount(self) -> Optional[Creature]:
         return self._mount
+
+    def get_primary_rider(self) -> Optional[Creature]:
+        return max(self.get_riders(), default=None, key=lambda c: c.get_skill_level(SKILL_RIDING))
 
     def get_riders(self) -> Iterable[Creature]:
         return iter(self._riders)
 
     def set_mount(self, mount: Optional[Creature]) -> None:
+        if mount.get_mount() is not None:
+            raise ValueError  # just... no
+
         if mount == self._mount:
             return
         if self._mount is not None:
