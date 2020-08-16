@@ -142,14 +142,14 @@ class CombatTactics:
         attack_value = max(attack_priority.values(), default=0.0)
         return threat_value * attack_value / opponent.health
 
-    def get_weapon_value(self, item: Equipment, opponent: Creature, reach: MeleeRange) -> float:
+    def get_weapon_value(self, item: Equipment, opponent: Creature, reach: Optional[MeleeRange] = None) -> float:
         return max((
             get_melee_attack_value(attack, self.parent, opponent)
             for attack in item.get_melee_attacks(self.parent)
-            if attack.can_attack(reach)
+            if reach is None or attack.can_attack(reach)
         ), default=0)
 
-    def get_weapon_change_desire(self, opponent: Creature, reach: MeleeRange, from_item: Equipment, to_item: Equipment) -> float:
+    def get_weapon_change_desire(self, from_item: Equipment, to_item: Equipment, opponent: Creature, reach: Optional[MeleeRange] = None) -> float:
         from_value = self.get_weapon_value(from_item, opponent, reach)
         to_value = self.get_weapon_value(to_item, opponent, reach)
-        return min(max(0.0, (to_value/from_value-1.1)/1.9), 1.0)
+        return min(max(-1.0, (to_value/from_value - 1.0)/2.0), 1.0)

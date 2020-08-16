@@ -61,17 +61,15 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     equipped = [*protagonist.inventory.get_held_items()]
     available = (item for item in protagonist.inventory if item.is_weapon() and item not in equipped)
     available = {
-        item : max((
-            get_melee_attack_value(attack, protagonist, opponent)
-            for attack in item.get_melee_attacks(protagonist)
-            if attack.can_attack(melee.separation)
-        ), default=0) for item in available
+        item : protagonist.tactics.get_weapon_value(item, opponent, melee.separation)
+        for item in available
     }
 
     candidate = max(available.keys(), key=lambda k: available[k],default=None)
     if candidate is not None:
         candidate_score = available[candidate]
-        change_desire = min(max(0.0, (candidate_score/best_score-1.1)/1.9), 1.0)
+        change_desire = min(max(0.0, (candidate_score/best_score-1.0)/2.0), 1.0)
+
         print(f'{protagonist} weapon change desire: {change_desire:.2f}')
         if change_desire > 0 and random.random() < change_desire:
             min_hands, max_hands = candidate.get_required_hands(protagonist)
@@ -84,17 +82,25 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
                 )
             )
             unequip = []
+
+            change_weapon = True
             for i, item in enumerate(unequip_candidates):
                 if i < min_hands:
-                    unequip.append(item)
-                    continue
-                change_desire = protagonist.tactics.get_weapon_change_desire(opponent, melee.separation, item, candidate)
-                if random.random() < change_desire:
-                    unequip.append(item)
+                    # if candidate is worse overall, we may just want to change range instead
+                    change_desire = 1.0 + protagonist.tactics.get_weapon_change_desire(item, candidate, opponent)
+                    print(f'{item}->{candidate}: {change_desire}')
+                    if random.random() > change_desire:
+                        change_weapon = False
+                        break
                 else:
-                    break
+                    change_desire = protagonist.tactics.get_weapon_change_desire(item, candidate, opponent, melee.separation)
+                    if random.random() > change_desire:
+                        break
 
-            return SwitchHeldItemAction(candidate, *unequip)
+                unequip.append(item)
+
+            if change_weapon:
+                return SwitchHeldItemAction(candidate, *unequip)
 
     # change range?
     desired_ranges = tactics.get_melee_range_priority(opponent)
