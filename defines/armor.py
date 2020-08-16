@@ -6,7 +6,8 @@ ARMORTYPE_LAMINATED  = ArmorType(3, 2.0,  180, 0.10, [MaterialType.Leather, Mate
 ARMORTYPE_SCALED     = ArmorType(4, 3.0,  320, 0.10, [MaterialType.Leather, MaterialType.Metal, MaterialType.Mineral])  # scale mail, lamellar, brigandine
 ARMORTYPE_HALF_PLATE = ArmorType(5, 4.0,  500, 0.10, [MaterialType.Leather, MaterialType.Metal, MaterialType.Mineral])  # hoplite plate - non-fitted plates
 ARMORTYPE_MAIL       = ArmorType(6, 5.0,  900, 0.10, [MaterialType.Metal])  # chainmail, laminar (banded)
-ARMORTYPE_PLATE_MAIL = ArmorType(7, 6.0, 1400, 0.05, [MaterialType.Metal])  # splinted chainmail, coat of plates
+ARMORTYPE_BANDED     = ArmorType(6, 5.0,  900, 0.10, [MaterialType.Metal])  # laminar (banded)
+ARMORTYPE_SPLINTED   = ArmorType(7, 6.0, 1400, 0.05, [MaterialType.Metal])  # splinted chainmail, coat of plates
 ARMORTYPE_FULL_PLATE = ArmorType(8, 7.0, 2400, 0.01, [MaterialType.Metal])  # gothic plate
 
 MATERIAL_BONE    = ArmorMaterial('Bone',     1.5,   0.75, MaterialType.Mineral)
@@ -46,15 +47,15 @@ STEEL_MAIL_SHIRT   = ArmorTemplate('Mail Shirt', ARMORTYPE_MAIL, MATERIAL_STEEL,
 STEEL_MAIL_HAUBERK = ArmorTemplate('Mail Hauberk', ARMORTYPE_MAIL, MATERIAL_STEEL, PATTERN_HAUBERK)
 STEEL_MAIL_SUIT    = ArmorTemplate('Mail Suit', ARMORTYPE_MAIL, MATERIAL_STEEL, PATTERN_SUIT)
 
-STEEL_BANDED_MAIL_CUIRASS = ArmorTemplate('Banded Plate Cuirass', ARMORTYPE_MAIL, MATERIAL_STEEL, PATTERN_CUIRASS)
-STEEL_BANDED_MAIL_ARMOR   = ArmorTemplate('Banded Plate Armor (Half-Suit)', ARMORTYPE_MAIL, MATERIAL_STEEL, PATTERN_ARMOR)
+STEEL_BANDED_MAIL_CUIRASS = ArmorTemplate('Banded Plate Cuirass', ARMORTYPE_BANDED, MATERIAL_STEEL, PATTERN_CUIRASS)
+STEEL_BANDED_MAIL_ARMOR   = ArmorTemplate('Banded Plate Armor (Half-Suit)', ARMORTYPE_BANDED, MATERIAL_STEEL, PATTERN_ARMOR)
 
 STEEL_HALF_PLATE_CUIRASS = ArmorTemplate('Half-Plate Cuirass', ARMORTYPE_HALF_PLATE, MATERIAL_STEEL, PATTERN_CUIRASS)
 STEEL_HALF_PLATE_ARMOR   = ArmorTemplate('Half-Plate Armor (Half-Suit)', ARMORTYPE_HALF_PLATE, MATERIAL_STEEL, PATTERN_ARMOR)
 
-STEEL_PLATE_MAIL_CUIRASS = ArmorTemplate('Splinted Plate Cuirass', ARMORTYPE_PLATE_MAIL, MATERIAL_STEEL, PATTERN_CUIRASS)
-STEEL_PLATE_MAIL_ARMOR   = ArmorTemplate('Splinted Plate Armor (Half-Suit)', ARMORTYPE_PLATE_MAIL, MATERIAL_STEEL, PATTERN_ARMOR)
-STEEL_PLATE_MAIL_SUIT    = ArmorTemplate('Splinted Plate Armor', ARMORTYPE_PLATE_MAIL, MATERIAL_STEEL, PATTERN_SUIT)
+STEEL_PLATE_MAIL_CUIRASS = ArmorTemplate('Splinted Plate Cuirass', ARMORTYPE_SPLINTED, MATERIAL_STEEL, PATTERN_CUIRASS)
+STEEL_PLATE_MAIL_ARMOR   = ArmorTemplate('Splinted Plate Armor (Half-Suit)', ARMORTYPE_SPLINTED, MATERIAL_STEEL, PATTERN_ARMOR)
+STEEL_PLATE_MAIL_SUIT    = ArmorTemplate('Splinted Plate Armor', ARMORTYPE_SPLINTED, MATERIAL_STEEL, PATTERN_SUIT)
 
 STEEL_FULL_PLATE_CUIRASS = ArmorTemplate('Full-Plate Cuirass', ARMORTYPE_FULL_PLATE, MATERIAL_STEEL, PATTERN_CUIRASS)
 STEEL_FULL_PLATE_ARMOR   = ArmorTemplate('Full-Plate Armor (Half-Suit)', ARMORTYPE_FULL_PLATE, MATERIAL_STEEL, PATTERN_ARMOR)
@@ -67,7 +68,7 @@ STEEL_HELMET    = ArmorTemplate('Kettle Helmet', ARMORTYPE_SCALED, MATERIAL_STEE
 STEEL_GREATHELM = ArmorTemplate('Great Helmet', ARMORTYPE_MAIL, MATERIAL_STEEL, PATTERN_HELMET)
 
 STEEL_MORION    = ArmorTemplate('Morion Helmet', ARMORTYPE_SCALED, MATERIAL_STEEL, PATTERN_HELMET)
-STEEL_CLOSEHELM = ArmorTemplate('Close Helmet', ARMORTYPE_PLATE_MAIL, MATERIAL_STEEL, PATTERN_HELMET)
+STEEL_CLOSEHELM = ArmorTemplate('Close Helmet', ARMORTYPE_SPLINTED, MATERIAL_STEEL, PATTERN_HELMET)
 STEEL_ARMET     = ArmorTemplate('Armet', ARMORTYPE_FULL_PLATE, MATERIAL_STEEL, PATTERN_HELMET)
 
 
