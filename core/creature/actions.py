@@ -7,7 +7,7 @@ from core.constants import Stance
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.action import Entity, ActionLoop
+    from core.equipment import Equipment
 
 DEFAULT_ACTION_WINDUP = 100  # corresponds to 1 'action point' worth of time
 
@@ -46,6 +46,14 @@ class DitherAction(CreatureAction):
         self.base_windup = duration  # duration in Time Units
     def resolve(self) -> Optional[Action]:
         return None  # does nothing
+
+class DisruptedAction(CreatureAction):
+    can_interrupt = False
+    can_defend = True
+    base_windup = DEFAULT_ACTION_WINDUP + 1
+
+    def resolve(self) -> Optional[Action]:
+        return None
 
 class InterruptCooldownAction(CreatureAction):
     """Used when an action was interrupted to perform a different action immediately, paying the time cost afterwards
@@ -93,5 +101,36 @@ class ChangeStanceAction(CreatureAction):
 ## figure out how stance (standing/crouching/prone) and movement speed (walk/run/sprint) are supposed to work
 
 ## Inventory related actions...
-## Ready weapon
+
+class SwitchHeldItemAction(CreatureAction):
+    base_windup = int(DEFAULT_ACTION_WINDUP * (2/3)) + 1
+
+    def __init__(self, equip_item: Optional[Equipment], *unequip_items: Equipment):
+        self.equip_item = equip_item
+        self.unequip_items = unequip_items
+
+    def can_resolve(self) -> bool:
+        if self.equip_item is None:
+            return True  # unequipping only
+
+        inventory = self.protagonist.inventory
+        if self.equip_item in inventory.get_held_items():
+            return False
+        if self.equip_item not in inventory or not inventory.can_equip(self.equip_item):
+            return False
+        return True
+
+    def resolve(self) -> Optional[Action]:
+        inventory = self.protagonist.inventory
+
+        for item in self.unequip_items:
+            inventory.unequip_item(item)
+            print(f'{self.protagonist} unequips {item}.')
+        if self.equip_item is not None:
+            min_hands, max_hands = self.equip_item.get_required_hands(self.protagonist)
+            inventory.try_equip_item(self.equip_item, use_hands=max_hands)
+            print(f'{self.protagonist} equips {self.equip_item}.')
+
+        return None
+
 ## reload weapon

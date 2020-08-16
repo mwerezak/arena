@@ -22,16 +22,24 @@ class Inventory:
     def __iter__(self) -> Iterable[Equipment]:
         return iter(self._contents)
 
+    def can_equip(self, equipment: Equipment) -> bool:
+        req_hands = equipment.get_required_hands(self.parent)
+        if req_hands is None:
+            return False
+        min_hands, max_hands = req_hands
+        if min_hands > sum(1 for bp in self.get_equip_slots()):
+            return False
+        return True
+
     def try_equip_item(self, equipment: Equipment, *, use_hands: int = None) -> bool:
         self.unequip_item(equipment)
 
-        req_hands = equipment.get_required_hands(self.parent)
-        if req_hands is None:
+        if not self.can_equip(equipment):
             return False
 
         empty_hands = list(self.get_empty_slots())
 
-        min_hands, max_hands = req_hands
+        min_hands, max_hands = equipment.get_required_hands(self.parent)
         if len(empty_hands) < min_hands:
             return False
 
@@ -54,7 +62,7 @@ class Inventory:
         for bp in self._slots.keys():
             self._slots[bp] = None
 
-    def get_equip_slots(self) -> Iterable[Tuple[BodyPart, Optional[Equipment]]]:
+    def get_slot_equipment(self) -> Iterable[Tuple[BodyPart, Optional[Equipment]]]:
         return iter(self._slots.items())
 
     def get_held_items(self) -> Iterable[Equipment]:
@@ -63,6 +71,11 @@ class Inventory:
     def get_item_held_by(self, equipment: Equipment) -> Iterable[BodyPart]:
         for bp, item in self._slots.items():
             if item == equipment:
+                yield bp
+
+    def get_equip_slots(self) -> Iterable[BodyPart]:
+        for bp, item in self._slots.items():
+            if bp.can_use():
                 yield bp
 
     def get_empty_slots(self) -> Iterable[BodyPart]:

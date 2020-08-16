@@ -1,8 +1,11 @@
-from typing import Any
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any
 
 from core.equipment.template import EquipmentTemplate
 from core.equipment.weapon import Weapon
 from core.equipment.armor import Armor
+if TYPE_CHECKING:
+    from core.creature import Creature
 
 class Equipment:
     def __init__(self, template: EquipmentTemplate, name: str = None):

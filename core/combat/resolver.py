@@ -240,8 +240,8 @@ class MeleeCombatResolver:
         choices = [ c for crit in criticals if (c := crit(user, self, usage)).can_use() ]
 
         if len(choices) > 0:
-            print([c.name for c in choices])
-            crit = random.choice(choices)
+            #print([c.name for c in choices])
+            crit = random.choices(choices, [c.weight for c in choices])[0]
 
             print(f'({user}) !Critical Effect - {crit}!')
             crit.apply()

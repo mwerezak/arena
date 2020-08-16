@@ -105,7 +105,7 @@ class Creature(Entity):
 
     def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
         # equipped items occupy exactly one of the bodyparts used to hold them
-        occupied = { item : bp for bp, item in self.inventory.get_equip_slots() if item is not None }
+        occupied = {item : bp for bp, item in self.inventory.get_slot_equipment() if item is not None}
         occupied = set(occupied.values())
         for bp in self.get_bodyparts():
             if bp not in occupied:

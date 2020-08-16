@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Optional
 
 from core.action import ActionLoop
 from core.creature import Creature
-from core.creature.tactics import SKILL_FACTOR
+from core.creature.tactics import SKILL_FACTOR, get_expected_damage, get_melee_attack_value
+from core.creature.actions import *
 from core.creature.combat import *
 
 if TYPE_CHECKING:
@@ -25,9 +26,7 @@ def try_equip_best_weapons(creature: Creature) -> None:
     weapon_value = {}
     for item in inventory:
         if item.is_weapon():
-            best_value = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=None)
-            if best_value is not None:
-                weapon_value[item] = best_value
+            weapon_value[item] = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=0.0)
 
     for item in sorted(weapon_value.keys(), key=lambda k: weapon_value[k], reverse=True):
         if len(list(inventory.get_empty_slots())) == 0:
@@ -40,6 +39,76 @@ def try_equip_best_weapons(creature: Creature) -> None:
             break
         _, max_hands = item.get_required_hands(creature)
         inventory.try_equip_item(item, use_hands=max_hands)
+
+def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
+    tactics = protagonist.tactics
+
+    opponents = { o : tactics.get_melee_threat_value(o) for o in protagonist.get_melee_opponents() }
+
+    opponent = max(opponents, key=lambda k: opponents[k], default=None)
+    if opponent is None:
+        return None
+
+    melee = protagonist.get_melee_combat(opponent)
+
+    # change weapons?
+    attack_values = (
+        get_melee_attack_value(attack, protagonist, opponent)
+        for attack in protagonist.get_melee_attacks()
+        if attack.can_attack(melee.separation)
+    )
+    best_score = max(attack_values, default=0)
+    equipped = [*protagonist.inventory.get_held_items()]
+    available = (item for item in protagonist.inventory if item.is_weapon() and item not in equipped)
+    available = {
+        item : max((
+            get_melee_attack_value(attack, protagonist, opponent)
+            for attack in item.get_melee_attacks(protagonist)
+            if attack.can_attack(melee.separation)
+        ), default=0) for item in available
+    }
+
+    candidate = max(available.keys(), key=lambda k: available[k],default=None)
+    if candidate is not None:
+        candidate_score = available[candidate]
+        change_desire = min(max(0.0, (candidate_score/best_score-1.1)/1.9), 1.0)
+        print(f'{protagonist} weapon change desire: {change_desire:.2f}')
+        if change_desire > 0 and random.random() < change_desire:
+            min_hands, max_hands = candidate.get_required_hands(protagonist)
+
+            unequip_candidates = sorted(
+                protagonist.inventory.get_held_items(),
+                key=lambda o: (
+                    1 if o.is_shield() else 0, # unequip shields last
+                    protagonist.tactics.get_weapon_value(o, opponent, melee.separation)
+                )
+            )
+            unequip = []
+            for i, item in enumerate(unequip_candidates):
+                if i < min_hands:
+                    unequip.append(item)
+                    continue
+                change_desire = protagonist.tactics.get_weapon_change_desire(opponent, melee.separation, item, candidate)
+                if random.random() < change_desire:
+                    unequip.append(item)
+                else:
+                    break
+
+            return SwitchHeldItemAction(candidate, *unequip)
+
+    # change range?
+    desired_ranges = tactics.get_melee_range_priority(opponent)
+    best_range = max(desired_ranges, key=lambda k: (desired_ranges[k], int(k==melee.separation), k), default=None)
+    if best_range is not None and best_range != melee.separation:
+        change_desire = tactics.get_range_change_desire(opponent, melee.separation, best_range)
+        print(f'{protagonist} range change desire: {change_desire:.2f}')
+        if change_desire > 0 and random.random() < change_desire:
+            return ChangeMeleeRangeAction(opponent, best_range)
+
+    if any(attack.can_attack(melee.separation) for attack in protagonist.get_melee_attacks()):
+        return MeleeCombatAction(opponent)
+
+    return None
 
 def print_held_items(inventory: Inventory) -> None:
     for item in inventory.get_held_items():
@@ -62,9 +131,10 @@ class Arena:
                     self.melee.break_engagement()
 
         for idle in self.action_loop.get_idle_entities():
-            action = self.get_next_action(idle)
-            if action is not None:
-                idle.set_current_action(action)
+            if isinstance(idle, Creature):
+                action = get_next_action(idle)
+                if action is not None:
+                    idle.set_current_action(action)
 
         print(f'Tick: {self.action_loop.elapsed} Action Queue:')
         for item in self.action_loop.action_queue:
@@ -73,24 +143,6 @@ class Arena:
 
         self.action_loop.resolve_next()
         print()
-
-    def get_next_action(self, entity: Entity) -> Optional[Action]:
-        if isinstance(entity, Creature):
-            opponents = {
-                o : entity.tactics.get_melee_threat_value(o) for o in entity.get_melee_opponents()
-            }
-
-            opponent = max(opponents, key=lambda k: opponents[k], default=None)
-            if opponent is not None:
-                melee = entity.get_melee_combat(opponent)
-                desired_ranges = entity.tactics.get_melee_range_priority(opponent)
-                best_range = max(desired_ranges, key=lambda k: (desired_ranges[k], int(k==melee.separation), k), default=None)
-                if best_range is not None and best_range != melee.separation:
-                    change_desire = entity.tactics.get_range_change_desire(opponent, melee.separation, best_range)
-                    if change_desire > 0 and random.random() < change_desire:
-                        return ChangeMeleeRangeAction(opponent, best_range)
-                return MeleeCombatAction(opponent)
-        return None
 
 if __name__ == '__main__':
     from defines.species import SPECIES_GNOLL, SPECIES_GOBLIN
@@ -109,14 +161,14 @@ if __name__ == '__main__':
         return c
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
-    goblin = add_creature(CREATURE_GOBLIN_INFANTRY)
+    goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
     satyr = add_creature(CREATURE_SATYR_WARRIOR)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(gnoll, orc)
+    melee = join_melee_combat(satyr, goblin)
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')
@@ -130,8 +182,7 @@ if __name__ == '__main__':
             arena.next_turn()
             if arena.action_loop.queued_action_count() == 0:
                 break
-    # while True:
-    #     arena.next_turn()
-    # arena.next_turn()
-    # arena.next_turn()
+
+    next_turn()
+
 

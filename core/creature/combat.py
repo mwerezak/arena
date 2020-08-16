@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 from core.dice import dice
 from core.constants import MeleeRange
 from core.contest import Contest
-from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action
+from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action, DEFAULT_ACTION_WINDUP
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
 from core.combat.resolver import MeleeCombatResolver
 
@@ -116,17 +116,14 @@ class ChangeMeleeRangeAction(CreatureAction):
         verb = 'close' if self.target_range <= melee.separation else 'open'
         print(f'{self.protagonist} attempts to {verb} distance with {self.opponent} ({melee.separation} -> {self.target_range}).')
 
-        # determine opponent's reaction
-        reaction = None
-        if can_interrupt_action(self.opponent):
-            reaction = self.opponent.tactics.choose_contest_change_range(self)
-
         success = True
         start_range = melee.separation
         final_range = melee.get_range_shift(self.target_range)
 
+        # determine opponent's reaction
+        reaction = self.opponent.tactics.choose_contest_change_range(self)
         if reaction == 'attack':
-            if not can_interrupt_action(self.opponent) or not self.allow_opportunity_attack():
+            if not self.allow_opportunity_attack() or not can_interrupt_action(self.opponent):
                 reaction = 'contest'
 
         if reaction == 'contest':
@@ -158,7 +155,7 @@ class ChangeMeleeRangeAction(CreatureAction):
                         combat.resolve_damage()
                         combat.resolve_seconary_attacks()
                         if melee.separation != final_range:
-                            success = False
+                            success = False # range change disrupted by a critical effect
 
         if success:
             melee.change_separation(final_range)
@@ -281,7 +278,7 @@ class MeleeCombatAction(CreatureAction):
 class MeleeDefendAction(InterruptCooldownAction):
     can_interrupt = False
     can_defend = False  # already defended
-    base_windup = 67
+    base_windup = int(DEFAULT_ACTION_WINDUP * (2/3)) + 1
 
     def resolve(self) -> Optional[Action]:
         return None

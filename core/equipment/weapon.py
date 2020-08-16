@@ -49,6 +49,12 @@ class Weapon(EquipmentTemplate):
     def is_shield(self) -> bool:
         return self.shield is not None
 
+    def is_large_weapon(self, creature: Creature) -> bool:
+        return self.size > creature.size.get_category()
+
+    def is_light_weapon(self, creature: Creature) -> bool:
+        return self.size < creature.size.get_category()
+
     def get_melee_attacks(self, attacker: Creature, use_hands: int = 0, source: Any = None) -> Iterable[MeleeAttack]:
         for attack in self.melee_attacks:
             yield attack.create_instance(attacker, use_hands, source)
@@ -65,12 +71,6 @@ class Weapon(EquipmentTemplate):
         elif self.is_light_weapon(creature) or self.is_shield():
             max_hands = 1
         return min_hands, max_hands
-
-    def is_large_weapon(self, creature: Creature) -> bool:
-        return self.size > creature.size.get_category()
-
-    def is_light_weapon(self, creature: Creature) -> bool:
-        return self.size < creature.size.get_category()
 
     @property
     def combat_test(self) -> CombatTest:

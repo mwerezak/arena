@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional
 
 from core.dice import dice
 from core.constants import Stance
-from core.creature.actions import CreatureAction
+from core.creature.actions import DisruptedAction
 
 if TYPE_CHECKING:
     from core.action import Action
@@ -26,6 +26,7 @@ class CriticalUsage(Flag):
 class CriticalEffect:
     name: str
     usage: CriticalUsage
+    weight: float = 1.0
 
     def __init__(self, user: Creature, result: MeleeCombatResolver, usage: CriticalUsage):
         self.user = user
@@ -51,6 +52,7 @@ class CriticalEffect:
 class MaxDamageCritical(CriticalEffect):
     name = 'Max Damage'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
+    weight = 5
 
     def can_use(self) -> bool:
         return self.result.is_effective_hit() and self.result.damage.min() < self.result.damage.max()
@@ -62,6 +64,7 @@ class MaxDamageCritical(CriticalEffect):
 class HitLocationCritical(CriticalEffect):
     name = 'Choose Hit Location'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
+    weight = 4
 
     hitloc: Optional[BodyPart]
 
@@ -87,6 +90,7 @@ class HitLocationCritical(CriticalEffect):
 class SecondaryAttackCritical(CriticalEffect):
     name = 'Secondary Attack'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
+    weight = 1
 
     target: Creature
     attack: MeleeAttack
@@ -117,6 +121,7 @@ class SecondaryAttackCritical(CriticalEffect):
 class ImproveParryCritical(CriticalEffect):
     name = 'Improved Parry'
     usage = CriticalUsage.Defensive | CriticalUsage.Melee
+    weight = 2
 
     def can_use(self) -> bool:
         return self.result.is_effective_hit()
@@ -128,6 +133,7 @@ class ImproveParryCritical(CriticalEffect):
 class DisruptCritical(CriticalEffect):
     name = 'Disrupt Opponent'
     usage = CriticalUsage.General | CriticalUsage.Melee
+    weight = 5
 
     def can_use(self) -> bool:
         opponent = self.result.melee.get_opponent(self.user)
@@ -144,18 +150,12 @@ class DisruptCritical(CriticalEffect):
 
 # PressAttackCritical - (offensive) same as CounterAttackCritical, but on offence
 
-class DisruptedAction(CreatureAction):
-    can_interrupt = False
-    can_defend = True
-    base_windup = 110
-
-    def resolve(self) -> Optional[Action]:
-        return None
 
 # CloseRangeCritical - (both) reduce melee combat separation to desired step w/o spending AP (max 4 steps)
 class CloseRangeCritical(CriticalEffect):
     name = 'Close Distance'
     usage = CriticalUsage.General | CriticalUsage.Melee
+    weight = 5
 
     target_range: MeleeRange
 
@@ -178,6 +178,7 @@ class CloseRangeCritical(CriticalEffect):
 class OpenRangeCritical(CriticalEffect):
     name = 'Open Distance'
     usage = CriticalUsage.Defensive | CriticalUsage.Melee
+    weight = 3
 
     target_range: MeleeRange
 
@@ -204,6 +205,7 @@ class OpenRangeCritical(CriticalEffect):
 class ChangeStanceCritical(CriticalEffect):
     name = 'Change Stance'
     usage = CriticalUsage.Defensive | CriticalUsage.Melee
+    weight = 5
 
     target_stance: Stance
 
