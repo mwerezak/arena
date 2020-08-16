@@ -58,6 +58,8 @@ class Arena:
         for entity in list(self.action_loop.get_entities()):
             if isinstance(entity, Creature) and not entity.alive:
                 self.action_loop.remove_entity(entity)
+                if entity in self.melee.combatants:
+                    self.melee.break_engagement()
 
         for idle in self.action_loop.get_idle_entities():
             action = self.get_next_action(idle)
@@ -111,8 +113,8 @@ if __name__ == '__main__':
     satyr = add_creature(CREATURE_SATYR_WARRIOR)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
-    orc.name = 'Orc 1'
-    orc2.name = 'Orc 2'
+    # orc.name = 'Orc 1'
+    # orc2.name = 'Orc 2'
 
     melee = join_melee_combat(gnoll, orc)
     for c in melee.combatants:
@@ -126,6 +128,8 @@ if __name__ == '__main__':
         last_tick = arena.action_loop.get_tick()
         while last_tick == arena.action_loop.get_tick():
             arena.next_turn()
+            if arena.action_loop.queued_action_count() == 0:
+                break
     # while True:
     #     arena.next_turn()
     # arena.next_turn()

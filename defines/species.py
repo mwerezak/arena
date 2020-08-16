@@ -91,7 +91,7 @@ BODYPLAN_GNOLL = (
     .select('*')
         .set(armor = 1)  # thick fur
     .select('tail')
-        .set(size = 1.5)
+        .set(size = 1)
     .select('l_arm', 'r_arm')
         .add_unarmed_attack(NaturalWeapon(UNARMED_PUNCH, force=-1))
         .add_unarmed_attack(NaturalWeapon(UNARMED_CLAW, force=-1))
@@ -118,7 +118,7 @@ BODYPLAN_SATYR = (
     .select('lbody', 'l_leg', 'r_leg', 'tail')
         .set(armor = 1) #thick fur on the lower body, thin at the top
     .select('tail')
-        .set(size = 0.5) # goat tail is fairly small
+        .set(size = 0.3)
     .select('l_arm', 'r_arm')
         .add_unarmed_attack(NaturalWeapon(UNARMED_PUNCH, force=-1))
     .select('l_leg', 'r_leg')
@@ -166,7 +166,7 @@ BODYPLAN_MINOTAUR = (
     .select('*')
         .set(armor = 1) #thick hide
     .select('tail')
-        .set(size = 2)
+        .set(size = 1.3)
     .select('l_arm', 'r_arm')
         .add_unarmed_attack(NaturalWeapon(UNARMED_PUNCH, force=-1))
     .select('l_leg', 'r_leg')

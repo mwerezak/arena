@@ -98,14 +98,14 @@ HUMANOID = (
     .select('l_arm')
     .set(
         name      = 'Left Arm',
-        size      = 3,
+        size      = 2,
         placement = Placement.CENTRAL | Placement.LEFT,
         flags     = BodyPartFlag.GRASP,
     )
     .select('r_arm')
     .set(
         name      = 'Right Arm',
-        size      = 3,
+        size      = 2,
         placement = Placement.CENTRAL | Placement.RIGHT,
         flags     = BodyPartFlag.GRASP,
     )
@@ -119,21 +119,21 @@ HUMANOID = (
     .select('l_leg')
     .set(
         name      = 'Left Leg',
-        size      = 3,
+        size      = 2,
         placement = Placement.CENTRAL | Placement.LEFT,
         flags     = BodyPartFlag.STANCE,
     )
     .select('r_leg')
     .set(
         name = 'Right Leg',
-        size      = 3,
+        size      = 2,
         placement = Placement.CENTRAL | Placement.RIGHT,
         flags     = BodyPartFlag.STANCE,
     )
     .select('tail')
     .set(
         name      = 'Tail',
-        size      = 1,
+        size      = 0.6,
         placement = Placement.REAR,
     )
     .finalize()
