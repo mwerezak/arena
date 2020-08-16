@@ -209,18 +209,15 @@ class ChangeStanceCritical(CriticalEffect):
 
     target_stance: Stance
 
-    def setup(self) -> None:
-        self.target_stance = self.user.get_max_stance()
-
     def can_use(self) -> bool:
-        return self.user.stance.value < self.target_stance.value
+        return self.user.stance < self.user.max_stance
 
     def apply(self) -> None:
         self.user.change_stance(self.target_stance)
         print(f'{self.user} {self._action_text[self.user.stance]}.')
 
     _action_text = {
-        Stance.Standing : 'gets up',
+        Stance.Standing : 'stands up',
         Stance.Crouched : 'crouches',
         Stance.Prone    : 'goes prone',
     }

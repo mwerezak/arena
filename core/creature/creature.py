@@ -1,6 +1,6 @@
 from __future__ import annotations
 import math
-from typing import TYPE_CHECKING, MutableMapping, Optional, Iterable, Any, Union
+from typing import TYPE_CHECKING, MutableMapping, Optional, Iterable, Any, Union, Set
 
 from core.action import Entity
 from core.constants import MeleeRange, PrimaryAttribute, Stance
@@ -37,6 +37,8 @@ class Creature(Entity):
         self._traits = { trait.key : trait for trait in template.get_traits() }
 
         self._mount: Optional[Creature] = None
+        self._riders: Set[Creature] = set()
+
         self._melee_combat: MutableMapping[Creature, MeleeCombat] = {}
 
         self.inventory = Inventory(self, (bp for bp in self.get_bodyparts() if bp.is_grasp_part()))
@@ -143,8 +145,7 @@ class Creature(Entity):
     ## Stance
 
     def change_stance(self, new_stance: Stance) -> None:
-        max_stance = self.get_max_stance()
-        self.stance = Stance(max(new_stance.value, max_stance))
+        self.stance = min(max(self.min_stance, new_stance), self.max_stance)
 
     def get_stance_combat_modifier(self) -> int:
         if self.stance == Stance.Prone:
@@ -153,7 +154,17 @@ class Creature(Entity):
             return DifficultyGrade.Hard
         return DifficultyGrade.Standard
 
-    def get_max_stance(self) -> Stance:
+    @property
+    def min_stance(self) -> Stance:
+        if self._mount is not None:
+            return Stance.Mounted
+        return Stance.Prone
+
+    @property
+    def max_stance(self) -> Stance:
+        if self._mount is not None:
+            return Stance.Mounted
+
         total_stance = 0
         cur_stance = 0
         for bp in self.get_bodyparts():
@@ -170,9 +181,34 @@ class Creature(Entity):
         return Stance.Prone
 
     def check_stance(self) -> None:
-        max_stance = self.get_max_stance()
-        if self.stance.value > max_stance.value:
-            self.change_stance(max_stance)
+        if self.stance > self.max_stance:
+            self.change_stance(self.max_stance)
+
+    ## Mounts
+
+    @property
+    def mount(self) -> Optional[Creature]:
+        return self._mount
+
+    def get_riders(self) -> Iterable[Creature]:
+        return iter(self._riders)
+
+    def set_mount(self, mount: Optional[Creature]) -> None:
+        if mount == self._mount:
+            return
+        if self._mount is not None:
+            self.dismount()
+        if mount is not None:
+            self._mount = mount
+            mount._riders.add(self)
+
+    def dismount(self) -> None:
+        if self._mount is not None:
+            # noinspection PyProtectedMember
+            self._mount._riders.remove(self)
+        self._mount = None
+
+    ## Damage and Health
 
     def take_damage(self, amount: float) -> None:
         self.health -= amount

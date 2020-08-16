@@ -95,10 +95,15 @@ class AttackForce(IntClass):
             return self.__NAMES[self]
         return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
 
+@total_ordering
 class Stance(Enum):
     Prone    = 0
     Crouched = 1
     Standing = 2
+    Mounted  = 3
+
+    def __lt__(self, other: Stance) -> bool:
+        return self.value < other.value
 
 REACH_CLOSE   = MeleeRange(0)
 REACH_SHORT   = MeleeRange(1)

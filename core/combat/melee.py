@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from core.creature.actions import Action
 
 def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
+    """Used to setup a melee combat between two combatants"""
+
+    # TODO mounts/riders share a single MeleeCombat instance
+
     melee = MeleeCombat(a, b)
     a.add_melee_combat(b, melee)
     b.add_melee_combat(a, melee)
