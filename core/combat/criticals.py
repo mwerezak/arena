@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Optional
 from core.dice import dice
 from core.constants import Stance
 from core.creature.actions import DisruptedAction
+from core.contest import ContestResult, OpposedResult, DifficultyGrade, SKILL_ACROBATICS
 
 if TYPE_CHECKING:
-    from core.action import Action
     from core.constants import MeleeRange
     from core.creature import Creature
     from core.creature.bodypart import BodyPart
@@ -29,9 +29,9 @@ class CriticalEffect:
     usage: CriticalUsage
     weight: float = 1.0
 
-    def __init__(self, user: Creature, result: MeleeCombatResolver, usage: CriticalUsage):
+    def __init__(self, user: Creature, combat: MeleeCombatResolver, usage: CriticalUsage):
         self.user = user
-        self.result = result
+        self.combat = combat
         self.usage = usage
         self.setup()
 
@@ -56,10 +56,10 @@ class MaxDamageCritical(CriticalEffect):
     weight = 5
 
     def can_use(self) -> bool:
-        return self.result.is_effective_hit() and self.result.damage.min() < self.result.damage.max()
+        return self.combat.is_effective_hit() and self.combat.damage.min() < self.combat.damage.max()
 
     def apply(self) -> None:
-        self.result.damage = dice(self.result.damage.max())
+        self.combat.damage = dice(self.combat.damage.max())
 
 # HitLocationCritical - (offensive) attack hit location of choice instead of random
 class HitLocationCritical(CriticalEffect):
@@ -70,8 +70,8 @@ class HitLocationCritical(CriticalEffect):
     hitloc: Optional[BodyPart]
 
     def setup(self) -> None:
-        attack = self.result.use_attack
-        target = self.result.melee.get_opponent(self.user)
+        attack = self.combat.use_attack
+        target = self.combat.melee.get_opponent(self.user)
         hitlocs = {
             bp : bp.get_effective_damage(attack.damage.mean(), attack.armpen.mean())
             for bp in target.get_bodyparts()
@@ -79,10 +79,10 @@ class HitLocationCritical(CriticalEffect):
         self.hitloc = max(hitlocs.keys(), key=lambda k: (hitlocs[k], random.random()), default=None)
 
     def can_use(self) -> bool:
-        return self.result.is_effective_hit() and self.result.hitloc != self.hitloc and self.hitloc is not None
+        return self.combat.is_effective_hit() and self.combat.hitloc != self.hitloc and self.hitloc is not None
 
     def apply(self) -> None:
-        self.result.hitloc = self.hitloc
+        self.combat.hitloc = self.hitloc
 
     def __str__(self) -> str:
         return f'{self.name}: {self.hitloc}'
@@ -97,23 +97,23 @@ class SecondaryAttackCritical(CriticalEffect):
     attack: MeleeAttack
 
     def setup(self) -> None:
-        used_attacks = [ self.result.use_attack ]
-        used_attacks.extend(secondary.use_attack for secondary in self.result.seconary_attacks)
+        used_attacks = [self.combat.use_attack]
+        used_attacks.extend(secondary.use_attack for secondary in self.combat.seconary_attacks)
         used_sources = [ attack.source for attack in used_attacks if attack is not None ]
 
         secondary_attacks = (
             attack for attack in self.user.get_melee_attacks()
-            if attack.source not in used_sources and attack.can_attack(self.result.melee.get_separation())
+            if attack.source not in used_sources and attack.can_attack(self.combat.melee.get_separation())
         )
 
-        self.target = self.result.melee.get_opponent(self.user)
-        self.attack = self.user.tactics.get_secondary_attack(self.target, self.result.melee.get_separation(), secondary_attacks)
+        self.target = self.combat.melee.get_opponent(self.user)
+        self.attack = self.user.tactics.get_secondary_attack(self.target, self.combat.melee.get_separation(), secondary_attacks)
 
     def can_use(self) -> bool:
-        return not self.result.is_secondary and self.attack is not None and self.attack.can_attack(self.result.melee.get_separation())
+        return not self.combat.is_secondary and self.attack is not None and self.attack.can_attack(self.combat.melee.get_separation())
 
     def apply(self) -> None:
-        self.result.add_secondary_attack(self.user, self.target, self.attack)
+        self.combat.add_secondary_attack(self.user, self.target, self.attack)
 
     def __str__(self) -> str:
         return f'{self.name}: {self.attack.name}'
@@ -125,10 +125,10 @@ class ImproveParryCritical(CriticalEffect):
     weight = 2
 
     def can_use(self) -> bool:
-        return self.result.is_effective_hit()
+        return self.combat.is_effective_hit()
 
     def apply(self) -> None:
-        self.result.damage_mult = 0
+        self.combat.damage_mult = 0
 
 # DisruptCritical - (both) make opponent lose AP
 class DisruptCritical(CriticalEffect):
@@ -137,12 +137,12 @@ class DisruptCritical(CriticalEffect):
     weight = 5
 
     def can_use(self) -> bool:
-        opponent = self.result.melee.get_opponent(self.user)
+        opponent = self.combat.melee.get_opponent(self.user)
         action = opponent.get_current_action()
-        return self.result.melee.can_attack(self.user) and (action is None or action.force_next is None)
+        return self.combat.melee.can_attack(self.user) and (action is None or action.force_next is None)
 
     def apply(self) -> None:
-        opponent = self.result.melee.get_opponent(self.user)
+        opponent = self.combat.melee.get_opponent(self.user)
         action = opponent.get_current_action()
         if action is not None:
             action.set_force_next(DisruptedAction())
@@ -161,16 +161,16 @@ class CloseRangeCritical(CriticalEffect):
     target_range: MeleeRange
 
     def setup(self) -> None:
-        opponent = self.result.melee.get_opponent(self.user)
+        opponent = self.combat.melee.get_opponent(self.user)
         self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
-        return self.target_range is not None and self.target_range < self.result.melee.get_separation()
+        return self.target_range is not None and self.target_range < self.combat.melee.get_separation()
 
     def apply(self) -> None:
-        prev = self.result.melee.get_separation()
-        self.result.melee.change_separation(self.target_range)
-        print(f'{self.user} closes distance with {self.result.melee.get_opponent(self.user)} ({prev} -> {self.result.melee.get_separation()}).')
+        prev = self.combat.melee.get_separation()
+        self.combat.melee.change_separation(self.target_range)
+        print(f'{self.user} closes distance with {self.combat.melee.get_opponent(self.user)} ({prev} -> {self.combat.melee.get_separation()}).')
 
     def __str__(self) -> str:
         return f'{self.name}: {self.target_range}'
@@ -184,16 +184,16 @@ class OpenRangeCritical(CriticalEffect):
     target_range: MeleeRange
 
     def setup(self) -> None:
-        opponent = self.result.melee.get_opponent(self.user)
+        opponent = self.combat.melee.get_opponent(self.user)
         self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
-        return self.target_range is not None and self.target_range > self.result.melee.get_separation()
+        return self.target_range is not None and self.target_range > self.combat.melee.get_separation()
 
     def apply(self) -> None:
-        prev = self.result.melee.get_separation()
-        self.result.melee.change_separation(self.target_range)
-        print(f'{self.user} opens distance with {self.result.melee.get_opponent(self.user)} ({prev} -> {self.result.melee.get_separation()}).')
+        prev = self.combat.melee.get_separation()
+        self.combat.melee.change_separation(self.target_range)
+        print(f'{self.user} opens distance with {self.combat.melee.get_opponent(self.user)} ({prev} -> {self.combat.melee.get_separation()}).')
 
     def __str__(self) -> str:
         return f'{self.name}: {self.target_range}'
@@ -226,9 +226,26 @@ class ChangeStanceCritical(CriticalEffect):
     def __str__(self) -> str:
         return f'{self.name}: {self.target_stance}'
 
-
 # GripTargetCritical - (offensive) grapple target for free - only for certain natural weapons
 # EntangleCritical - (both) use an entangling weapon
+
+class KnockdownCritical(CriticalEffect):
+    name = 'Knock Down'
+    usage = CriticalUsage.Offensive | CriticalUsage.Melee
+    weight = 3
+
+    def can_use(self) -> bool:
+        opponent = self.combat.melee.get_opponent(self.user)
+        return opponent.stance > Stance.Prone and self.combat.is_effective_hit() and opponent.size <= self.user.size * 2
+
+    def apply(self) -> None:
+        opponent = self.combat.melee.get_opponent(self.user)
+        modifier = opponent.get_resist_knockdown_modifier()
+        acro_result = ContestResult(opponent, SKILL_ACROBATICS, modifier)
+        knockdown_result = OpposedResult(self.combat.primary_result.pro_result, acro_result)
+        print(knockdown_result.format_details())
+        if knockdown_result.success:
+            opponent.knock_down()
 
 # ImpaleCritical - (offensive) certain ranged attacks can lodge projectiles in the target
 

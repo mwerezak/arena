@@ -34,37 +34,38 @@ def get_melee_attack_value(attack: MeleeAttack, attacker: Creature, target: Crea
     return expected_damage * skill_factor
 
 # include only weapons that can attack at or within the given ranges
-def _get_melee_attack_priority(attacker: Creature, target: Creature, attacks: Iterable[MeleeAttack]) -> Mapping[MeleeAttack, float]:
+def get_melee_attack_priority(attacker: Creature, target: Creature, attacks: Iterable[MeleeAttack]) -> Mapping[MeleeAttack, float]:
     return {attack : get_melee_attack_value(attack, attacker, target) for attack in attacks}
+
+def choose_attack(attack_priority: Mapping[MeleeAttack, float]) -> Optional[MeleeAttack]:
+    best_value = max(attack_priority.values(), default=None)
+    if best_value is None:
+        return None
+    top = { attack : value**3 for attack, value in attack_priority.items() if value > 0.75*best_value }
+    result = random.choices(list(top.keys()), list(top.values()))
+    if len(result) > 0:
+        return result[0]
+    return None
 
 class CombatTactics:
     def __init__(self, parent: Creature):
         self.parent = parent
 
-    # TODO customizable variability
-    def _choose_attack(self, attack_priority: Mapping[MeleeAttack, float]) -> Optional[MeleeAttack]:
-        best_value = max(attack_priority.values(), default=None)
-        if best_value is None:
-            return None
-        top = { attack : value*value for attack, value in attack_priority.items() if value > 0.75*best_value }
-        choice = random.choices(list(top.keys()), list(top.values()))
-        return choice[0]
-
     def get_normal_attack(self, target: Creature, reach: MeleeRange) -> Optional[MeleeAttack]:
         attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(reach))
-        attack_priority = _get_melee_attack_priority(self.parent, target, attacks)
-        return self._choose_attack(attack_priority)
+        attack_priority = get_melee_attack_priority(self.parent, target, attacks)
+        return choose_attack(attack_priority)
 
     def get_secondary_attack(self, target: Creature, reach: MeleeRange, secondary: Iterable[MeleeAttack]) -> Optional[MeleeAttack]:
         attacks = (attack for attack in secondary if attack.can_attack(reach))
-        attack_priority = _get_melee_attack_priority(self.parent, target, attacks)
-        return self._choose_attack(attack_priority)
+        attack_priority = get_melee_attack_priority(self.parent, target, attacks)
+        return choose_attack(attack_priority)
 
     def get_opportunity_attack(self, target: Creature, attack_ranges: Iterable[MeleeRange]) -> Optional[MeleeAttack]:
         attack_ranges = list(attack_ranges)
         attacks = (attack for attack in self.parent.get_melee_attacks() if any(attack.can_attack(r) for r in attack_ranges))
-        attack_priority = _get_melee_attack_priority(self.parent, target, attacks)
-        return self._choose_attack(attack_priority)
+        attack_priority = get_melee_attack_priority(self.parent, target, attacks)
+        return choose_attack(attack_priority)
 
     def get_melee_defence(self, attacker: Creature, attack: MeleeAttack, reach: MeleeRange) -> Optional[MeleeAttack]:
         defend_priority = {}
@@ -72,7 +73,7 @@ class CombatTactics:
             if defence.can_defend(reach):
                 skill_level = self.parent.get_skill_level(defence.combat_test).value
                 block_effectiveness = 1.0 - get_parry_damage_mult(attack.force, defence.force)
-                defend_priority[defence] = (skill_level, block_effectiveness, defence.force)
+                defend_priority[defence] = (skill_level, block_effectiveness, defence.force, random.random())
         return max(defend_priority.keys(), key=lambda k: defend_priority[k], default=None)
 
     def get_melee_shield(self, range: MeleeRange) -> Optional[Equipment]:
@@ -123,11 +124,11 @@ class CombatTactics:
         melee = self.parent.get_melee_combat(opponent)
         for reach in MeleeRange.range(melee.get_min_separation(), self.parent.get_melee_engage_distance() + 1):
             pro_attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(reach))
-            attack_priority = _get_melee_attack_priority(self.parent, opponent, pro_attacks)
+            attack_priority = get_melee_attack_priority(self.parent, opponent, pro_attacks)
             power = max(attack_priority.values(), default=0.0)
 
             ant_attacks = (attack for attack in opponent.get_melee_attacks() if attack.can_attack(reach))
-            threat_priority = _get_melee_attack_priority(opponent, self.parent, ant_attacks)
+            threat_priority = get_melee_attack_priority(opponent, self.parent, ant_attacks)
             threat = max(threat_priority.values(), default=0.0)
             danger = (2 * caution * threat + self.parent.health) / self.parent.health
 
@@ -142,10 +143,10 @@ class CombatTactics:
         return max(range_priority.keys(), key=lambda k: (round(range_priority[k],2), int(k==melee.get_separation()), k), default=None)
 
     def get_melee_threat_value(self, opponent: Creature) -> float:
-        threat_priority = _get_melee_attack_priority(opponent, self.parent, opponent.get_melee_attacks())
+        threat_priority = get_melee_attack_priority(opponent, self.parent, opponent.get_melee_attacks())
         threat_value = max(threat_priority.values(), default=0.0)
 
-        attack_priority = _get_melee_attack_priority(self.parent, opponent, self.parent.get_melee_attacks())
+        attack_priority = get_melee_attack_priority(self.parent, opponent, self.parent.get_melee_attacks())
         attack_value = max(attack_priority.values(), default=0.0)
         return threat_value * attack_value / opponent.health
 

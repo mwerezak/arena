@@ -4,7 +4,7 @@ import random
 from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tuple
 
 from core.constants import Stance
-from core.contest import OpposedResult, ContestResult, SKILL_EVADE, DifficultyGrade, ContestModifier
+from core.contest import OpposedResult, UnopposedResult, ContestResult, DifficultyGrade, ContestModifier, SKILL_EVADE, SKILL_ACROBATICS
 from core.combat.criticals import DEFAULT_CRITICALS, CriticalUsage
 
 if TYPE_CHECKING:
@@ -58,6 +58,7 @@ class MeleeCombatResolver:
         self.use_defence = use_defence
         self.use_shield = None
 
+        self.primary_result = None
         self.attacker_crit = 0
         self.defender_crit = 0
         self.is_blocking = False
@@ -68,12 +69,6 @@ class MeleeCombatResolver:
         self.is_secondary = is_secondary
         self.seconary_attacks: MutableSequence[MeleeCombatResolver] = []
 
-        # TODO
-        self.allow_attacker_followup = True
-        self.allow_defender_followup = False
-        self.attacker_followup = False
-        self.defender_followup = False
-
     def is_effective_hit(self) -> bool:
         return self.damage_mult > 0 and self.damage.max() > 0
 
@@ -82,7 +77,7 @@ class MeleeCombatResolver:
         self.seconary_attacks.append(secondary)
 
     # TODO collect log output to be accessed later instead of printing immediately
-    def generate_attack_results(self, *, force_defenceless: bool = False, force_evade = False) -> bool:
+    def generate_attack_results(self, *, force_nodefence: bool = False, force_evade = False) -> bool:
         melee = self.attacker.get_melee_combat(self.defender)
         if melee is None:
             return False
@@ -96,13 +91,13 @@ class MeleeCombatResolver:
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             return False # no attack happens
 
-        if force_defenceless and force_evade:
+        if force_nodefence and force_evade:
             pass  # todo allow one or the other
         if force_evade:
             self._resolve_melee_evade()
             return True
-        if force_defenceless:
-            self._resolve_defender_helpless()
+        if force_nodefence:
+            self._resolve_melee_nodefence()
             return True
 
         # Choose Defence
@@ -110,7 +105,7 @@ class MeleeCombatResolver:
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             print(repr(self.use_defence))
-            self._resolve_defender_helpless()
+            self._resolve_melee_nodefence()
             return True
 
         self._resolve_melee_defence()
@@ -136,8 +131,6 @@ class MeleeCombatResolver:
         # defender may attempt to block
         is_blocking, damage_mult = self._resolve_shield_block(attack_result, damage_mult)
 
-        # TODO defender may attempt to evade?
-
         self.attacker_crit = 0
         self.defender_crit = 0
         if primary_result.success:
@@ -149,6 +142,7 @@ class MeleeCombatResolver:
         if damage_mult > 0:
             hitloc = get_random_hitloc(self.defender)
 
+        self.primary_result = primary_result
         self.is_blocking = is_blocking
         self.hitloc = hitloc
         self.damage_mult = damage_mult
@@ -182,34 +176,44 @@ class MeleeCombatResolver:
         if damage_mult > 0:
             hitloc = get_random_hitloc(self.defender)
 
+        self.primary_result = primary_result
         self.is_blocking = is_blocking
         self.hitloc = hitloc
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
 
-    def _resolve_defender_helpless(self) -> None:
+    def _resolve_melee_nodefence(self) -> None:
         separation = self.melee.get_separation()
 
         attack_modifier = get_stance_modifier(self.attacker)
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
+        primary_result = UnopposedResult(attack_result)
         print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name}!')
-        print(attack_result.format_details(10))
+        print(primary_result.format_details())
 
-        # TODO defender may attempt to evade?
+        damage_mult = 1.0 if primary_result.success else 0.0
 
-        is_blocking, damage_mult = self._resolve_shield_block(attack_result, 1.0)
+        # defender may attempt to block
+        is_blocking = False
+        if primary_result.success:
+            is_blocking, damage_mult = self._resolve_shield_block(attack_result, damage_mult)
 
-        self.attacker_crit = max(attack_result.get_crit_level(10), 1)
+        # if the attacker succeeds, they always get at least 1 critical effect
+        self.attacker_crit = max(primary_result.crit_level, 1) if primary_result.success else 0
         self.defender_crit = 0
 
-        self.hitloc = get_random_hitloc(self.defender)
+        hitloc = None
+        if damage_mult > 0:
+            hitloc = get_random_hitloc(self.defender)
+
+        self.primary_result = primary_result
         self.is_blocking = is_blocking
+        self.hitloc = hitloc
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
-        self.is_blocking = False
 
     def _resolve_shield_block(self, attack_result: ContestResult, damage_mult: float) -> Tuple[bool, float]:
         separation = self.melee.get_separation()
@@ -271,13 +275,13 @@ class MeleeCombatResolver:
 
         damage = round(self.damage.get_roll_result() * self.damage_mult)
         armpen = round(self.armpen.get_roll_result() * self.damage_mult)
+
         if armpen > 0:
             dam_text = f'{damage}/{armpen}* ({self.use_attack.damtype.format_type_code()})'
         else:
             dam_text = f'{damage} ({self.use_attack.damtype.format_type_code()})'
 
         mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
-
         print(f'{self.attacker} hits {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
         wound = self.hitloc.apply_damage(damage, armpen)
@@ -285,6 +289,15 @@ class MeleeCombatResolver:
             print(f'{self.defender} is wounded for {wound:.1f} damage (armour {self.hitloc.get_armor()}). Health: {round(self.defender.health)}/{self.defender.max_health}')
         else:
             print(f'The armor absorbs the blow (armour {self.hitloc.get_armor()}). Health: {round(self.defender.health)}/{self.defender.max_health}')
+
+        # knockdown due to damage
+        if damage > self.defender.size * 2/3:
+            if self.defender.stance > Stance.Prone:
+                acro_result = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
+                test_result = UnopposedResult(acro_result)
+                print(test_result.format_details())
+                if not test_result.success:
+                    self.defender.knock_down()
 
     def resolve_seconary_attacks(self) -> None:
         # secondary attacks are similar to primary attacks but do not get to resolve secondary attacks of their own

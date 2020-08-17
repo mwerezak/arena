@@ -97,6 +97,7 @@ CREATURE_GOBLIN_ENFORCER = (
         SkillTrait(SKILL_ENDURANCE, SkillLevel(1)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
         SkillTrait(SKILL_EVADE, SkillLevel(2)),
+        SkillTrait(SKILL_ACROBATICS, SkillLevel(1)),
         EvadeTrait(),
     )
     .set_loadout(Loadout(
@@ -120,6 +121,8 @@ CREATURE_GOBLIN_BOAR_RIDER = (
         SkillTrait(SKILL_RIDING, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(1)),
+        SkillTrait(SKILL_EVADE, SkillLevel(1)),
+        SkillTrait(SKILL_ACROBATICS, SkillLevel(1)),
     )
     .set_loadout(Loadout(
         [WEAPON_LONGSPEAR],

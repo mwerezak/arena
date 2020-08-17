@@ -112,6 +112,7 @@ CREATURE_SATYR_OUTRIDER = (
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_RIDING, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
+        FinesseTrait(),
     )
     .set_loadout(Loadout(
         [WEAPON_LONGSPEAR],
@@ -136,16 +137,16 @@ CREATURE_MINOTAUR_MILITIA = (
         SkillTrait(SKILL_AXE, SkillLevel(1)),
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
     )
-    .set_loadout(Loadout([
-        WEAPON_BATTLEAXE,  # basically a hatchet for a minotaur
+    .set_loadout(Loadout(
+        [WEAPON_BATTLEAXE],  # basically a hatchet for a minotaur
         LoadoutChoice([(1, SHIELD_SMALL), (1, SHIELD_MEDIUM)]),
         LoadoutChoice([(1, LINEN_CUIRASS), (1, LINEN_APRON), (1, None)]),
         LoadoutChoice([(1, Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR)), (1, None)]),
-    ]))
+    ))
 )
 
 CREATURE_MINOTAUR_WARRIOR = (
-    CreatureTemplate('Minotaur Protector', template=SPECIES_MINOTAUR)
+    CreatureTemplate('Minotaur Fighter', template=SPECIES_MINOTAUR)
     .modify_attributes(STR=+1)
     .add_trait(
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
@@ -154,7 +155,7 @@ CREATURE_MINOTAUR_WARRIOR = (
     .set_loadout(Loadout(
         LoadoutChoice([
             (1, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(3))]),
-            (1, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(2)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
+            (2, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(2)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
         ]),
         LoadoutChoice([(1, Armor(BRONZE_HELMET, SPECIES_MINOTAUR)), (1, None)]),
         [Armor(LINEN_APRON, SPECIES_MINOTAUR), Armor(BRONZE_HALF_PLATE_CUIRASS, SPECIES_MINOTAUR)],
@@ -171,7 +172,7 @@ CREATURE_MINOTAUR_CHAMPION = (
     )
     .set_loadout(Loadout(
         LoadoutChoice([
-            (2, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(5))]),
+            (1, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(5))]),
             (1, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(4)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
         ]),
         LoadoutChoice([(1, Armor(BRONZE_BARBUTE, SPECIES_MINOTAUR)), (3, Armor(BRONZE_HELMET, SPECIES_MINOTAUR))]),

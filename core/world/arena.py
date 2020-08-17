@@ -42,8 +42,10 @@ def try_equip_best_weapons(creature: Creature) -> None:
 def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     tactics = protagonist.tactics
 
-    opponents = { o : tactics.get_melee_threat_value(o) for o in protagonist.get_melee_opponents() }
+    if protagonist.stance < protagonist.max_stance:
+        return ChangeStanceAction(protagonist.max_stance)
 
+    opponents = { o : tactics.get_melee_threat_value(o) for o in protagonist.get_melee_opponents() }
     opponent = max(opponents, key=lambda k: opponents[k], default=None)
     if opponent is None:
         return None
@@ -162,6 +164,8 @@ if __name__ == '__main__':
     loop = ActionLoop()
 
     def add_creature(template):
+        #t = CreatureTemplate(template=template)
+        #t.set_loadout(Loadout([WEAPON_CLUB]))
         c = Creature(template)
         try_equip_best_weapons(c)
         c.set_action_loop(loop)
@@ -172,11 +176,11 @@ if __name__ == '__main__':
     satyr = add_creature(CREATURE_SATYR_WARRIOR)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
-    mino = add_creature(CREATURE_MINOTAUR_MILITIA)
+    mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(gnoll, orc)
+    melee = join_melee_combat(mino, orc)
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')

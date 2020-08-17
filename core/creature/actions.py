@@ -8,8 +8,11 @@ from core.constants import Stance
 if TYPE_CHECKING:
     from core.creature import Creature
     from core.equipment import Equipment
+    from core.action import Entity, ActionLoop
 
 DEFAULT_ACTION_WINDUP = 100  # corresponds to 1 'action point' worth of time
+SHORT_ACTION_WINDUP = int(DEFAULT_ACTION_WINDUP * (2/3)) + 1
+LONG_ACTION_WINDUP = int(DEFAULT_ACTION_WINDUP * (4/3))
 
 def can_interrupt_action(combatant: Creature) -> bool:
     action = combatant.get_current_action()
@@ -50,7 +53,7 @@ class DitherAction(CreatureAction):
 class DisruptedAction(CreatureAction):
     can_interrupt = False
     can_defend = True
-    base_windup = int(DEFAULT_ACTION_WINDUP * 1.2)
+    base_windup = LONG_ACTION_WINDUP
 
     def resolve(self) -> Optional[Action]:
         return None
@@ -72,14 +75,20 @@ class InterruptCooldownAction(CreatureAction):
 ## DelayAction - check if a condition is met
 
 class ChangeStanceAction(CreatureAction):
-    base_windup = DEFAULT_ACTION_WINDUP/2
+    base_windup = int(LONG_ACTION_WINDUP/2) # changing through two stance levels (e.g. Prone -> Standing) is a long action
+    can_interrupt = False
 
     def __init__(self, target_stance: Stance):
         self.target_stance = target_stance
 
+    @property
+    def can_defend(self) -> bool:
+        # not defending when getting up is actually good as otherwise the attacker can keep you down for a long time
+        return self.target_stance < self.protagonist.stance
+
     def get_windup_duration(self) -> float:
-        stance_change = abs(self.owner.stance.value - self.target_stance.value)
-        return self.base_windup * stance_change / self.owner.get_action_rate()
+        stance_change = self.target_stance.value - self.owner.stance.value
+        return self.base_windup * max(stance_change, 1) / self.owner.get_action_rate()
 
     def can_resolve(self) -> bool:
         return self.owner.stance != self.target_stance
@@ -103,7 +112,7 @@ class ChangeStanceAction(CreatureAction):
 ## Inventory related actions...
 
 class SwitchHeldItemAction(CreatureAction):
-    base_windup = int(DEFAULT_ACTION_WINDUP * (2/3)) + 1
+    base_windup = SHORT_ACTION_WINDUP
 
     def __init__(self, equip_item: Optional[Equipment], *unequip_items: Equipment):
         self.equip_item = equip_item

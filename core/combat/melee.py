@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 from core.dice import dice
 from core.constants import MeleeRange, SizeCategory
 from core.contest import Contest
-from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action, DEFAULT_ACTION_WINDUP
+from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action, SHORT_ACTION_WINDUP
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
 from core.combat.resolver import MeleeCombatResolver, get_stance_modifier
 
@@ -277,7 +277,7 @@ class MeleeCombatAction(CreatureAction):
         # TODO defender may choose to evade
 
         attack = MeleeCombatResolver(self.protagonist, self.target)
-        if attack.generate_attack_results(force_defenceless = not can_defend):
+        if attack.generate_attack_results(force_nodefence= not can_defend):
             if can_defend:
                 defend_action = MeleeDefendAction(other_action)
                 self.target.set_current_action(defend_action)
@@ -307,7 +307,7 @@ class MeleeCombatAction(CreatureAction):
         attacks = [pro_attack, ant_attack]
 
         random.shuffle(attacks)
-        has_result = { attack : attack.generate_attack_results(force_defenceless=True) for attack in attacks }
+        has_result = {attack : attack.generate_attack_results(force_nodefence=True) for attack in attacks}
 
         pro_crit_level = pro_attack.attacker_crit + ant_attack.defender_crit
         ant_crit_level = pro_attack.defender_crit + ant_attack.attacker_crit
@@ -334,7 +334,7 @@ class MeleeCombatAction(CreatureAction):
 class MeleeDefendAction(InterruptCooldownAction):
     can_interrupt = False
     can_defend = False  # already defended
-    base_windup = int(DEFAULT_ACTION_WINDUP * (2/3)) + 1
+    base_windup = SHORT_ACTION_WINDUP
 
     def resolve(self) -> Optional[Action]:
         return None

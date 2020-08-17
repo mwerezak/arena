@@ -178,12 +178,36 @@ class ContestResult:
         crit = int((self.crit_total - versus) / Contest.CRIT_THRESH)
         return min(max(0, crit), Contest.MAX_CRIT)
 
-    def format_details(self, versus: int) -> str:
-        mod_text = f'({self.modifier.contest:+d})' if self.modifier.contest != 0 else ''
-        success_text = 'SUCCESS' if self.contest_total > versus else 'FAIL'
+class UnopposedResult:
+    DEFAULT_TARGET = 10  # 50% chance of success
+
+    def __init__(self, result: ContestResult, target: int = DEFAULT_TARGET):
+        self.result = result
+        self.target = target
+
+    @property
+    def protagonist(self) -> Creature:
+        return self.result.protagonist
+
+    @property
+    def pro_result(self) -> ContestResult:
+        return self.result
+
+    @property
+    def success(self) -> bool:
+        return self.result.contest_total > self.target
+
+    @property
+    def crit_level(self) -> int:
+        return self.result.get_crit_level(self.target)
+
+    def format_details(self) -> str:
+        result = self.result
+        mod_text = f'({result.modifier.contest:+d})' if result.modifier.contest != 0 else ''
+        success_text = 'SUCCESS' if self.success else 'FAIL'
         return (
-            f'[Test] {self.contest} vs {versus} RESULT: {self.base_total}{self.contest_modifier:+d}{mod_text}={self.contest_total} '
-            f'vs {versus} {success_text} (crit level: {self.get_crit_level(versus)})'
+            f'[Test] {result.contest} RESULT: {result.base_total}{result.contest_modifier:+d}{mod_text}={result.contest_total} '
+            f'vs {self.target} {success_text} (crit level: {self.crit_level})'
         )
 
 class OpposedResult:
@@ -263,11 +287,11 @@ SKILL_PERCEPTION = Contest('Perception', ['INT', 'POW'], innate=True)
 SKILL_EVADE      = Contest('Evade',      ['DEX', 'DEX'], innate=True)
 SKILL_STEALTH    = Contest('Stealth',    ['DEX', 'INT'])
 SKILL_RIDING     = Contest('Riding',     ['DEX', 'POW'])
+SKILL_ACROBATICS = Contest('Acrobatics', ['STR', 'DEX'])
 
 # not sure if these will be used
-SKILL_ATHLETICS  = Contest('Athletics',  ['STR', 'DEX'], innate=True)
 SKILL_BRAWN      = Contest('Brawn',      ['STR', 'SIZ'], innate=True)
-SKILL_ACROBATICS = Contest('Acrobatics', ['STR', 'DEX'])
+
 
 ## Combat Contest Types
 

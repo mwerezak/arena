@@ -1,6 +1,6 @@
 from __future__ import annotations
 import math
-from typing import TYPE_CHECKING, MutableMapping, Optional, Iterable, Any, Union, Set
+from typing import TYPE_CHECKING, MutableMapping, Optional, Iterable, Any, Union, Set, Tuple
 
 from core.action import Entity
 from core.constants import MeleeRange, PrimaryAttribute, Stance
@@ -8,7 +8,7 @@ from core.creature.traits import SkillTrait
 from core.creature.bodypart import BodyPart
 from core.creature.inventory import Inventory
 from core.creature.tactics import CombatTactics
-from core.contest import DifficultyGrade, SkillLevel, SKILL_RIDING
+from core.contest import ContestModifier, DifficultyGrade, SkillLevel, SKILL_RIDING
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
@@ -158,13 +158,7 @@ class Creature(Entity):
         if self._mount is not None:
             return Stance.Mounted
 
-        total_stance = 0
-        cur_stance = 0
-        for bp in self.get_bodyparts():
-            if bp.is_stance_part():
-                total_stance += 1
-                if bp.can_use():
-                    cur_stance += 1
+        cur_stance, total_stance = self.get_stance_count()
 
         threshold = math.ceil(total_stance/2)
         if cur_stance > threshold:
@@ -173,9 +167,33 @@ class Creature(Entity):
             return Stance.Crouched
         return Stance.Prone
 
+    def get_stance_count(self) -> Tuple[int, int]:
+        total_stance = 0
+        cur_stance = 0
+        for bp in self.get_bodyparts():
+            if bp.is_stance_part():
+                total_stance += 1
+                if bp.can_use():
+                    cur_stance += 1
+        return cur_stance, total_stance
+
     def check_stance(self) -> None:
         if self.stance > self.max_stance:
             self.change_stance(self.max_stance)
+
+    def get_resist_knockdown_modifier(self) -> ContestModifier:
+        grade = DifficultyGrade.Standard
+        if self.stance < self.max_stance:
+            grade = DifficultyGrade.Easy
+
+        leg_count, leg_total = self.get_stance_count()
+        return grade.to_modifier() + ContestModifier(leg_count - 2 + (leg_count - leg_total))
+
+    def knock_down(self) -> None:
+        if self.get_mount() is not None:
+            self.dismount()
+        self.change_stance(Stance.Prone)
+        print(f'{self} is knocked down!')
 
     ## Mounts
 
@@ -220,6 +238,7 @@ class Creature(Entity):
     def kill(self) -> None:
         self.alive = False
         self.stance = Stance.Prone
+        print(f'{self} is incapacitated!')
         # for o in list(self.get_melee_opponents()):
         #     melee = self.get_melee_combat(o)
         #     melee.break_engagement()
