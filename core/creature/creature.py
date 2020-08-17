@@ -8,7 +8,11 @@ from core.creature.traits import SkillTrait
 from core.creature.bodypart import BodyPart
 from core.creature.inventory import Inventory
 from core.creature.tactics import CombatTactics
-from core.contest import ContestModifier, DifficultyGrade, SkillLevel, SKILL_RIDING
+from core.creature.actions import StunnedAction
+from core.contest import (
+    Contest, ContestResult, ContestModifier, DifficultyGrade, SkillLevel,
+    OpposedResult, UnopposedResult, SKILL_RIDING, SKILL_ENDURANCE,
+)
 
 if TYPE_CHECKING:
     from core.constants import CreatureSize
@@ -17,7 +21,6 @@ if TYPE_CHECKING:
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
     from core.equipment import Equipment
-    from core.contest import Contest
     from core.creature.traits import CreatureTrait
 
 class Creature(Entity):
@@ -29,9 +32,10 @@ class Creature(Entity):
         self.name = template.name
         self.tactics = tactics or CombatTactics(self)
 
-        self.health = template.max_health
-        self.stance = Stance.Standing
-        self.alive = True
+        self._stance = Stance.Standing
+        self._health = template.max_health
+        self._conscious = True
+        self._alive = True
 
         self._bodyparts = { bp.id_tag : BodyPart(self, bp) for bp in template.bodyplan }
         self._traits = { trait.key : trait for trait in template.get_traits() }
@@ -106,6 +110,9 @@ class Creature(Entity):
     ## Melee Combat
 
     def get_unarmed_attacks(self) -> Iterable[MeleeAttack]:
+        if not self.is_conscious():
+            return
+
         # equipped items occupy exactly one of the bodyparts used to hold them
         occupied = {item : bp for bp, item in self.inventory.get_slot_equipment() if item is not None}
         occupied = set(occupied.values())
@@ -114,6 +121,9 @@ class Creature(Entity):
                 yield from bp.get_unarmed_attacks()
 
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:
+        if not self.is_conscious():
+            return
+
         yield from self.get_unarmed_attacks()
         for item in self.inventory.get_held_items():
             if item.is_weapon():
@@ -121,6 +131,9 @@ class Creature(Entity):
                 yield from item.get_melee_attacks(self, using_hands, item)
 
     def get_held_shields(self) -> Iterable[Equipment]:
+        if not self.is_conscious():
+            return
+
         for item in self.inventory.get_held_items():
             if item.is_weapon() and item.is_shield():
                 yield item
@@ -144,8 +157,15 @@ class Creature(Entity):
 
     ## Stance
 
+    @property
+    def stance(self) -> Stance:
+        return self._stance
+
     def change_stance(self, new_stance: Stance) -> None:
-        self.stance = min(max(self.min_stance, new_stance), self.max_stance)
+        prev_stance = self._stance
+        self._stance = min(max(self.min_stance, new_stance), self.max_stance)
+        # if self._stance != prev_stance:
+        #     print(f'{self} changes stance ({prev_stance} -> {self._stance}).')
 
     @property
     def min_stance(self) -> Stance:
@@ -177,20 +197,26 @@ class Creature(Entity):
                     cur_stance += 1
         return cur_stance, total_stance
 
+    _lost_stance_text = {
+        Stance.Standing : 'can no longer stand',
+        Stance.Crouched : 'falls over'
+    }
     def check_stance(self) -> None:
         if self.stance > self.max_stance:
+            print(f'{self} {self._lost_stance_text[self.stance]}!')
             self.change_stance(self.max_stance)
 
-    def get_resist_knockdown_modifier(self) -> ContestModifier:
+    def get_resist_knockdown_modifier(self, difficulty_step: int = 0) -> ContestModifier:
         grade = DifficultyGrade.Standard
         if self.stance < self.max_stance:
             grade = DifficultyGrade.Easy
+        grade = grade.get_step(difficulty_step)
 
         leg_count, leg_total = self.get_stance_count()
         return grade.to_modifier() + ContestModifier(leg_count - 2 + (leg_count - leg_total))
 
     def knock_down(self) -> None:
-        if self.get_mount() is not None:
+        if self._mount is not None:
             self.dismount()
         self.change_stance(Stance.Prone)
         print(f'{self} is knocked down!')
@@ -226,20 +252,73 @@ class Creature(Entity):
 
     ## Damage and Health
 
-    def take_damage(self, amount: float) -> None:
-        self.health -= amount
-        if self.health <= 0: # todo wounding system
-            self.kill()
+    @property
+    def health(self) -> float:
+        return self._health
 
     @property
     def max_health(self) -> float:
         return self.template.max_health
 
+    def is_conscious(self) -> bool:
+        return self._conscious
+
+    def set_conscious(self, value: bool) -> None:
+        if value == self._conscious:
+            return
+
+        self._conscious = value
+        if not self._conscious:
+            self.dismount()
+            self.change_stance(Stance.Prone)
+            self.set_current_action(None)
+
+    def is_alive(self) -> bool:
+        return self._alive
+
+    def is_seriously_wounded(self) -> bool:
+        return self.health <= 0
+
+    def get_injury_result(self, attack_result: Optional[ContestResult] = None) -> Union[OpposedResult, UnopposedResult]:
+        endurance_test = ContestResult(self, SKILL_ENDURANCE)
+        if attack_result is None:
+            return UnopposedResult(endurance_test)
+        return OpposedResult(endurance_test, attack_result)
+
+    def apply_wounds(self, amount: float, attack_result: Optional[ContestResult] = None) -> None:
+        prev_health = self.health
+        self._health -= amount
+
+        if prev_health > -self.max_health >= self.health:
+            injury_result = self.get_injury_result(attack_result)
+
+            print(injury_result.format_details())
+            if not injury_result.success:
+                self.kill()
+                print(f'{self} is killed!')
+            else:
+                self.set_conscious(False)
+                print(f'{self} is incapacitated!')
+
+        elif prev_health > 0 >= self.health:
+            self.stun(can_defend=False)
+            injury_result = self.get_injury_result(attack_result)
+
+            print(f'{self} is seriously wounded!')
+            print(injury_result.format_details())
+            if not injury_result.success:
+                self.set_conscious(False)
+                print(f'{self} is incapacitated!')
+
+    def stun(self, can_defend: bool = True) -> None:
+        action = self.get_current_action()
+        if action is not None and action.is_resolving():
+            action.set_force_next(StunnedAction(can_defend))
+        else:
+            self.set_current_action(StunnedAction(can_defend))
+
     def kill(self) -> None:
-        self.alive = False
-        self.stance = Stance.Prone
-        print(f'{self} is incapacitated!')
-        # for o in list(self.get_melee_opponents()):
-        #     melee = self.get_melee_combat(o)
-        #     melee.break_engagement()
+        self.set_conscious(False)
+        self._alive = False
+
 

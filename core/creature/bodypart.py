@@ -1,18 +1,20 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Optional
 
 from core.creature.bodyplan import BodyPartFlag, BodyElementType
+from core.contest import ContestResult
 
 if TYPE_CHECKING:
     from core.creature import Creature
     from core.creature.bodyplan import BodyElement
-    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
+    from core.combat.attack import MeleeAttack
 
 class BodyPart:
     def __init__(self, parent: Creature, template: BodyElement):
         self.parent = parent
         self.template = template
         self.size = parent.bodyplan.get_relative_size(self.id_tag)
+        self._injured = False
 
         self._unarmed_attacks = [
             natural_weapon.create_attack(parent.template)
@@ -46,7 +48,7 @@ class BodyPart:
         return self.template.armor
 
     def can_use(self) -> bool:
-        return True  # todo
+        return not self._injured
 
     def is_vital(self) -> bool:
         return BodyPartFlag.VITAL in self.flags
@@ -69,19 +71,54 @@ class BodyPart:
         return max(equipped_armor, self.natural_armor, 0)
 
     def get_effective_damage(self, damage: float, armpen: float = 0) -> float:
+        """Calculates the amount of health that would be lost if damage is applied to this BodyPart"""
         armor = self.get_armor()
         damage = max(damage - armor, min(armpen, damage))
+
         if not self.is_vital():
             damage /= 1.5
         elif self.template.type == BodyElementType.HEAD:
             damage *= 1.5
         return max(damage, 0)
 
-    def apply_damage(self, damage: float, armpen: float = 0) -> float:
-        damage = self.get_effective_damage(damage, armpen)
-        if damage > 0:
-            # todo this is temporary
-            self.parent.health -= damage
-            if self.parent.health <= 0:
-                self.parent.kill()
-        return damage
+    def apply_damage(self, damage: float, armpen: float = 0, attack_result: Optional[ContestResult] = None) -> float:
+        if damage <= 0:
+            return 0
+
+        armor = self.get_armor()
+        damage = max(damage - armor, min(armpen, damage))
+
+        if not self._injured and damage > self.size * self.parent.max_health:
+            print(f'{self.parent} suffers an injury to the {self}...')
+            injury_result = self.parent.get_injury_result(attack_result)
+            print(injury_result.format_details())
+            if not injury_result.success:
+                self.injure_part()
+
+        wound = damage
+        if not self.is_vital():
+            wound /= 1.5
+        elif self.template.type == BodyElementType.HEAD:
+            wound *= 1.5
+
+        if wound > 0:
+            print(f'{self.parent} is wounded for {wound:.1f} damage (armour {armor}).')
+            self.parent.apply_wounds(damage, attack_result)
+        else:
+            print(f'The armor absorbs the blow (armour {armor}).')
+        print(f'{self.parent} health: {round(self.parent.health)}/{self.parent.max_health}')
+
+        return wound
+
+    def injure_part(self) -> None:
+        self._injured = True
+        if self.is_stance_part():
+            self.parent.check_stance()
+        if self.is_vital():
+            self.parent.stun(can_defend=True)
+        if self.is_grasp_part():
+            held_items = (item for bp, item in self.parent.inventory.get_held_items() if bp == self)
+            for item in held_items:
+                self.parent.inventory.remove(item)
+                print(f'{self} drops the {item}.')
+

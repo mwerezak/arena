@@ -144,10 +144,10 @@ class DisruptCritical(CriticalEffect):
     def apply(self) -> None:
         opponent = self.combat.melee.get_opponent(self.user)
         action = opponent.get_current_action()
-        if action is not None:
-            action.set_force_next(DisruptedAction())
-        else:
+        if action is None:
             opponent.set_current_action(DisruptedAction())
+        else:
+            action.set_force_next(DisruptedAction())
 
 # PressAttackCritical - (offensive) same as CounterAttackCritical, but on offence
 
@@ -240,9 +240,9 @@ class KnockdownCritical(CriticalEffect):
 
     def apply(self) -> None:
         opponent = self.combat.melee.get_opponent(self.user)
-        modifier = opponent.get_resist_knockdown_modifier()
+        modifier = opponent.get_resist_knockdown_modifier(+1)
         acro_result = ContestResult(opponent, SKILL_ACROBATICS, modifier)
-        knockdown_result = OpposedResult(self.combat.primary_result.pro_result, acro_result)
+        knockdown_result = OpposedResult(self.combat.attack_result, acro_result)
         print(knockdown_result.format_details())
         if knockdown_result.success:
             opponent.knock_down()

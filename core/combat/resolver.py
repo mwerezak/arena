@@ -32,12 +32,22 @@ def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
     return None
 
 # affects attack and parry, but not blocking
-def get_stance_modifier(creature: Creature) -> ContestModifier:
+def get_combat_modifier(creature: Creature) -> ContestModifier:
     grade = DifficultyGrade.Standard
     if creature.stance == Stance.Crouched:
         grade = DifficultyGrade.Hard
     elif creature.stance == Stance.Prone:
         grade = DifficultyGrade.Formidable
+
+    if creature.is_seriously_wounded():
+        grade = grade.get_step(+1)
+
+    return grade.to_modifier()
+
+def get_block_modifier(creature: Creature) -> ContestModifier:
+    grade = DifficultyGrade.Standard
+    if creature.is_seriously_wounded():
+        grade = grade.get_step(+1)
     return grade.to_modifier()
 
 class MeleeCombatResolver:
@@ -68,6 +78,10 @@ class MeleeCombatResolver:
 
         self.is_secondary = is_secondary
         self.seconary_attacks: MutableSequence[MeleeCombatResolver] = []
+
+    @property
+    def attack_result(self) -> ContestResult:
+        return self.primary_result.pro_result
 
     def is_effective_hit(self) -> bool:
         return self.damage_mult > 0 and self.damage.max() > 0
@@ -114,8 +128,8 @@ class MeleeCombatResolver:
     def _resolve_melee_defence(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_modifier = get_stance_modifier(self.attacker)
-        defend_modifier = get_stance_modifier(self.defender)
+        attack_modifier = get_combat_modifier(self.attacker)
+        defend_modifier = get_combat_modifier(self.defender)
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         defend_result = ContestResult(self.defender, self.use_defence.combat_test, defend_modifier)
@@ -152,8 +166,8 @@ class MeleeCombatResolver:
     def _resolve_melee_evade(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_modifier = get_stance_modifier(self.attacker)
-        evade_modifier = get_stance_modifier(self.defender)
+        attack_modifier = get_combat_modifier(self.attacker)
+        evade_modifier = get_combat_modifier(self.defender)
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         evade_result = ContestResult(self.defender, SKILL_EVADE, evade_modifier)
@@ -186,7 +200,7 @@ class MeleeCombatResolver:
     def _resolve_melee_nodefence(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_modifier = get_stance_modifier(self.attacker)
+        attack_modifier = get_combat_modifier(self.attacker)
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         primary_result = UnopposedResult(attack_result)
@@ -222,7 +236,8 @@ class MeleeCombatResolver:
         if self.use_shield is not None and self.use_shield.shield.can_block(separation):
             block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
             if block_damage_mult < damage_mult:
-                shield_result = ContestResult(self.defender, self.use_shield.combat_test, ContestModifier(self.use_shield.shield.block_bonus))
+                modifier = get_block_modifier(self.defender) + ContestModifier(self.use_shield.shield.block_bonus)
+                shield_result = ContestResult(self.defender, self.use_shield.combat_test, modifier)
                 block_result = OpposedResult(shield_result, attack_result)
 
                 print(f'{self.defender} attempts to block with {self.use_shield}!')
@@ -284,20 +299,15 @@ class MeleeCombatResolver:
         mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
         print(f'{self.attacker} hits {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
-        wound = self.hitloc.apply_damage(damage, armpen)
-        if wound > 0:
-            print(f'{self.defender} is wounded for {wound:.1f} damage (armour {self.hitloc.get_armor()}). Health: {round(self.defender.health)}/{self.defender.max_health}')
-        else:
-            print(f'The armor absorbs the blow (armour {self.hitloc.get_armor()}). Health: {round(self.defender.health)}/{self.defender.max_health}')
+        wound = self.hitloc.apply_damage(damage, armpen, self.attack_result)
 
         # knockdown due to damage
-        if damage > self.defender.size * 2/3:
-            if self.defender.stance > Stance.Prone:
-                acro_result = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
-                test_result = UnopposedResult(acro_result)
-                print(test_result.format_details())
-                if not test_result.success:
-                    self.defender.knock_down()
+        if self.defender.stance > Stance.Prone and damage > self.defender.size * 2/3:
+            acro_result = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
+            test_result = UnopposedResult(acro_result)
+            print(test_result.format_details())
+            if not test_result.success:
+                self.defender.knock_down()
 
     def resolve_seconary_attacks(self) -> None:
         # secondary attacks are similar to primary attacks but do not get to resolve secondary attacks of their own

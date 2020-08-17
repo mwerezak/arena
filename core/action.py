@@ -12,12 +12,19 @@ may be modified as the sequence resolves, for example, to append new actions to 
 from __future__ import annotations
 
 import heapq
+from enum import Enum
 from functools import total_ordering
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Optional, Iterable, MutableMapping, List, Any
 if TYPE_CHECKING:
     pass
 
+
+class ActionStatus(Enum):
+    Inactive    = 0
+    Pending     = 1
+    Resolving   = 2
+    Resolved    = 3
 
 # noinspection PyMethodMayBeStatic
 class Action(ABC):
@@ -26,6 +33,7 @@ class Action(ABC):
     owner: Entity = None
     loop: ActionLoop = None
     start_tick: float = None
+    status: ActionStatus = ActionStatus.Inactive
 
     @abstractmethod
     def get_windup_duration(self) -> float:
@@ -34,6 +42,12 @@ class Action(ABC):
 
     def is_active(self) -> bool:
         return self.loop is not None
+
+    def is_resolving(self) -> bool:
+        return self.status == ActionStatus.Resolving
+
+    def is_resolved(self) -> bool:
+        return self.status == ActionStatus.Resolved
 
     def setup(self, owner: Entity, loop: ActionLoop) -> None:
         """Called by the action loop to prepare the Action to be scheduled."""
@@ -205,15 +219,21 @@ class ActionLoop:
         item = ActionQueueItem(round(windup), action)
         self.queue_items[action] = item
         heapq.heappush(self.action_queue, item)
+
+        action.status = ActionStatus.Pending
         action.started()
 
-    def cancel_action(self, action: Action):
+    def cancel_action(self, action: Action) -> None:
+        if action.is_resolving():
+            return
+
         entity = action.owner
         if entity is not None and self.entity_actions[entity] == action:
             self.entity_actions[entity] = None
         item = self.queue_items.pop(action)
         self.action_queue.remove(item)
         heapq.heapify(self.action_queue)
+        action.status = ActionStatus.Inactive
 
     def resolve_next(self) -> None:
         if len(self.action_queue) == 0:
@@ -231,17 +251,19 @@ class ActionLoop:
 
         # next, resolve the current action
         entity = current_action.owner
+        current_action.status = ActionStatus.Resolving
         if current_action.can_resolve():
             next_action = current_action.resolve()
         else:
             next_action = current_action.resolve_failed()
-        self.entity_actions[entity] = None
+        current_action.status = ActionStatus.Resolved
 
         force_next = current_action.force_next
         if force_next is not None:
             force_next.set_force_next(next_action)
             next_action = force_next
 
+        self.entity_actions[entity] = None  # this must come before schedule_action() and after the current action has resolved
         if next_action is not None:
             self.schedule_action(entity, next_action)
 

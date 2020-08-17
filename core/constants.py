@@ -105,6 +105,9 @@ class Stance(Enum):
     def __lt__(self, other: Stance) -> bool:
         return self.value < other.value
 
+    def __str__(self) -> str:
+        return self.name
+
 REACH_CLOSE   = MeleeRange(0)
 REACH_SHORT   = MeleeRange(1)
 REACH_MEDIUM  = MeleeRange(2)

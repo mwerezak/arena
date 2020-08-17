@@ -6,7 +6,7 @@ Creatures may also have traits that grant a certain level of expertise (valid le
 from __future__ import annotations
 
 import itertools
-from enum import Enum, IntEnum
+from enum import Enum
 from collections import Counter
 from functools import lru_cache, total_ordering
 from typing import TYPE_CHECKING, Iterable, Sequence, Mapping, NamedTuple
@@ -105,7 +105,7 @@ class Contest:
         roll_table = get_opposed_roll_table(pro_level.bonus_dice, ant_level.bonus_dice)
         return sum(p for result, p in roll_table.items() if result > target)
 
-class DifficultyGrade(IntEnum):
+class DifficultyGrade(Enum):
     VeryEasy   = +4
     Easy       = +2
     Standard   = +0
@@ -123,6 +123,13 @@ class DifficultyGrade(IntEnum):
 
     def to_modifier(self) -> ContestModifier:
         return ContestModifier(self.contest_mod, self.critical_mod)
+
+    def get_step(self, step: int) -> DifficultyGrade:
+        if step == 0:
+            return self
+        values = list(DifficultyGrade)
+        index = values.index(self) + step
+        return values[min(max(0, index), len(values) - 1)]
 
 class ContestModifier(NamedTuple):
     contest: int = 0

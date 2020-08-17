@@ -58,6 +58,16 @@ class DisruptedAction(CreatureAction):
     def resolve(self) -> Optional[Action]:
         return None
 
+class StunnedAction(CreatureAction):
+    can_interrupt = False
+    base_windup = LONG_ACTION_WINDUP
+
+    def __init__(self, can_defend: bool):
+        self.can_defend = can_defend
+
+    def resolve(self) -> Optional[Action]:
+        return None
+
 class InterruptCooldownAction(CreatureAction):
     """Used when an action was interrupted to perform a different action immediately, paying the time cost afterwards
     instead of before. The elapsed time already payed for the action that was interrupted is credited to this one,

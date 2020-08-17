@@ -71,7 +71,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
         candidate_score = available[candidate]
         change_desire = min(max(0.0, (candidate_score/best_score-1.0)/2.0), 1.0)
 
-        print(f'{protagonist} weapon change desire: {change_desire:.2f}')
+        #print(f'{protagonist} weapon change desire: {change_desire:.2f}')
         if change_desire > 0 and random.random() < change_desire:
             min_hands, max_hands = candidate.get_required_hands(protagonist)
 
@@ -110,7 +110,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     )
     if best_range is not None and best_range != melee.get_separation():
         change_desire = tactics.get_range_change_desire(opponent, melee.get_separation(), best_range)
-        print(f'{protagonist} range change desire: {change_desire:.2f}')
+        #print(f'{protagonist} range change desire: {change_desire:.2f}')
         if change_desire > 0 and random.random() < change_desire:
             return ChangeMeleeRangeAction(opponent, best_range)
 
@@ -134,7 +134,7 @@ class Arena:
 
     def next_turn(self) -> None:
         for entity in list(self.action_loop.get_entities()):
-            if isinstance(entity, Creature) and not entity.alive:
+            if isinstance(entity, Creature) and not entity.is_conscious():
                 self.action_loop.remove_entity(entity)
                 if entity in self.melee.combatants:
                     self.melee.break_engagement()
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(mino, orc)
+    melee = join_melee_combat(satyr, orc)
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')
@@ -196,5 +196,6 @@ if __name__ == '__main__':
                 break
 
     next_turn()
+    orc.apply_wounds(12)
 
 
