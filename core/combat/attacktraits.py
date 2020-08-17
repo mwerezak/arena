@@ -11,7 +11,11 @@ class AttackTrait(Trait):
 
 class NaturalWeaponTrait(AttackTrait):
     name = 'Natural Weapon'
-    desc = 'This attack is a natural weapon'
+    desc = 'This attack is an unarmed attack'
+
+class FormidableNatural(AttackTrait):
+    name = 'Formidable Natural Weapon'
+    desc = 'This attack does not have the usual parry restrictions of an unarmed attack'
 
 class CannotDefendTrait(AttackTrait):
     name = 'Cannot Parry'

@@ -76,7 +76,7 @@ Swords II
 Shield II
 Endurance I
 Unarmed I
-Evade
+Evade II
 
 Sabre
 Small Shield (70%) or Buckler (30%)
@@ -187,7 +187,7 @@ Swords II
 Shields I
 Endurance II
 Unarmed I
-Evade
+Evade I
 
 Longbow, 30 Arrows
 Shortsword (50%) or Broadsword (50%)
@@ -277,8 +277,8 @@ Leather Helmet (30%) or Leather Cap (50%) or Nothing (20%)
 Hide Armor (30%) or Leather Cuirass (50%) or Leather Armor (20%)
 
 =Goblin Enforcers
-Sword III
-Evade
+Sword II
+Evade II
 Endurance I
 Unarmed II
 Finesse
@@ -294,6 +294,7 @@ Sword I
 Riding II
 Unarmed I
 Endurance I
+Evade I
 
 Longspear
 Short Sword (50%) or Dagger (50%)
@@ -306,6 +307,7 @@ Warg
 Mace III
 Endurance III
 Unarmed III
+Evade I
 
 Greatclub
 Hide Armor (30%) or Hide Cuirass (30%) or Nothing (40%)
@@ -328,6 +330,7 @@ Shield I
 Archery I
 Endurance II
 Unarmed I
+Evade I
 
 Short Bow, 30 Arrows
 Battle Axe (40%) or Falchion (30%) or Mace (30%)
@@ -343,6 +346,7 @@ Polearm I
 Shield I
 Stealth I
 Endurance I
+Evade I
 Evade
 Finesse
 
@@ -355,6 +359,7 @@ Archery II
 Sword I
 Stealth I
 Endurance I
+Evade I
 Evade
 Finesse
 
@@ -366,7 +371,7 @@ Polearm/Sword II
 Shield I
 Endurance II
 Unarmed I
-Evade
+Evade I
 Finesse
 
 Spear (40%) or Shortsword (30%) or Scimitar (30%)
@@ -379,7 +384,7 @@ Sword III
 Shield III
 Endurance III
 Unarmed II
-Evade
+Evade I
 Finesse
 
 Scimitar, Medium Shield
@@ -396,6 +401,7 @@ Shield II
 Riding II
 Endurance III
 Unarmed I
+Evade I
 
 Longspear
 Medium Shield (70%) or Small Shield (30%)
@@ -437,6 +443,7 @@ Javelin I
 Unarmed II
 Stealth II
 Endurance II
+Evade I
 
 5 Javelins
 Hatchet (70%) or Battle Axe (30%)
@@ -449,6 +456,7 @@ Axe I
 Unarmed I
 Stealth II
 Endurance II
+Evade I
 
 Shortbow, 30 Arrows
 Hatchet (70%) or Battle Axe (30%)
@@ -459,7 +467,7 @@ Axe/Mace II
 Shield I
 Unarmed II
 Endurance II
-Evade
+Evade I
 
 Battle Axe (70%) or Mace (30%)
 Medium Shield (70%) or Small Shield (30%)
@@ -469,7 +477,7 @@ Leather Cuirass (50%) or Bronze Scale Cuirass (30%) or Nothing (20%)
 Axe IV
 Unarmed III
 Endurance III
-Evade
+Evade I
 
 Greataxe
 Leather Armor (50%) or Nothing (50%)

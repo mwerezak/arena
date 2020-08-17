@@ -96,13 +96,14 @@ CREATURE_GOBLIN_ENFORCER = (
     .add_trait(
         SkillTrait(SKILL_ENDURANCE, SkillLevel(1)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+        SkillTrait(SKILL_EVADE, SkillLevel(2)),
         EvadeTrait(),
     )
     .set_loadout(Loadout(
         LoadoutChoice([
-            (1, [WEAPON_SHORTSWORD, WEAPON_SHORTSWORD, SkillTrait(SKILL_BLADE, SkillLevel(3)), FinesseTrait]),
-            (2, [WEAPON_SHORTSWORD, WEAPON_DAGGER, SkillTrait(SKILL_BLADE, SkillLevel(3)), FinesseTrait]),
-            (1, [WEAPON_MACE, SHIELD_SMALL, SkillTrait(SKILL_MACE, SkillLevel(3)), SkillTrait(SKILL_SHIELD, SkillLevel(1))]),
+            (1, [WEAPON_SHORTSWORD, WEAPON_SHORTSWORD, SkillTrait(SKILL_BLADE, SkillLevel(2)), FinesseTrait]),
+            (2, [WEAPON_SHORTSWORD, WEAPON_DAGGER, SkillTrait(SKILL_BLADE, SkillLevel(2)), FinesseTrait]),
+            (1, [WEAPON_MACE, SHIELD_SMALL, SkillTrait(SKILL_MACE, SkillLevel(2)), SkillTrait(SKILL_SHIELD, SkillLevel(1))]),
         ]),
         LoadoutChoice([(1, Armor(HIDE_ARMOR, SPECIES_GOBLIN)), (1, None)]),
         LoadoutChoice([(1, Armor(IRON_HELMET, SPECIES_GOBLIN)), (1, Armor(LEATHER_HELMET, SPECIES_GOBLIN))]),

@@ -64,9 +64,9 @@ class Morphology:
 
     def __init__(self, elements: Iterable[BodyElement]):
         self.elements = { elem.id_tag : elem.clone() for elem in elements }
-        self.update()
+        self.finalize()
 
-    def update(self) -> None:
+    def finalize(self) -> None:
         total_size = sum(bp.size for bp in self)
         self.rel_size = { bp.id_tag : bp.size/total_size for bp in self }
 
@@ -102,12 +102,12 @@ class Morphology:
 
     def add(self, elem: BodyElement) -> Morphology:
         self.elements[elem.id_tag] = elem
-        self.update()
+        self.finalize()
         return self
 
     def remove(self, id_tag: str) -> Morphology:
         del self.elements[id_tag]
-        self.update()
+        self.finalize()
         return self
 
 class MorphologySelection:
@@ -142,5 +142,5 @@ class MorphologySelection:
         return self.source.select(*args)
 
     def finalize(self) -> Morphology:
-        self.source.update()
+        self.source.finalize()
         return self.source

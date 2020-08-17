@@ -124,7 +124,7 @@ class NaturalWeapon:
         )
 
     def create_attack(self, creature: CreatureTemplate) -> MeleeAttackTemplate:
-        rel_size = float(creature.size)/float(SizeCategory.Medium.to_size())
+        rel_size = creature.size/SizeCategory.Medium.to_size()
 
         max_reach = BASE_MAX_REACH * rel_size + self.reach
         min_reach = BASE_MIN_REACH * rel_size + self.reach

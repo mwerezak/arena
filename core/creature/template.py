@@ -19,12 +19,12 @@ class CreatureTemplate:
 
         if template is not None:
             self.name = template.name
-            self.bodyplan = Morphology(template.bodyplan)
+            self.bodyplan = Morphology(bodyplan or template.bodyplan)
             self.attributes = dict(template.attributes)
             self.traits = dict(template.traits)
             self.loadout = template.loadout
         else:
-            self.bodyplan = bodyplan
+            self.bodyplan = Morphology(bodyplan)
             self.attributes: MutableMapping[PrimaryAttribute, int] = {attr : 0 for attr in PrimaryAttribute}
             self.traits: MutableMapping[Type[CreatureTrait], CreatureTrait] = {}
             self.loadout = loadout or Loadout()
