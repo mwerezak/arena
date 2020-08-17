@@ -4,6 +4,7 @@ Arena mode: individual creature combat
 from __future__ import annotations
 
 from core.action import ActionLoop
+from core.creature import Creature
 from core.creature.tactics import SKILL_FACTOR, get_melee_attack_value
 from core.creature.actions import *
 from core.combat.melee import *
@@ -175,7 +176,7 @@ if __name__ == '__main__':
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(mino, orc)
+    melee = join_melee_combat(gnoll, orc)
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')

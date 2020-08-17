@@ -66,9 +66,10 @@ class Morphology:
         self.elements = { elem.id_tag : elem.clone() for elem in elements }
         self.finalize()
 
-    def finalize(self) -> None:
+    def finalize(self) -> Morphology:
         total_size = sum(bp.size for bp in self)
         self.rel_size = { bp.id_tag : bp.size/total_size for bp in self }
+        return self
 
     def __iter__(self) -> Iterable[BodyElement]:
         return iter(self.elements.values())

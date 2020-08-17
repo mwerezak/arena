@@ -170,36 +170,45 @@ HUMANOID_NOTAIL = (
 
 STANDARD_SERPENTINE = (
     Morphology([
-        BodyElement('head',  BodyElementType.head,      name='Head'            ),
-        BodyElement('fore1', BodyElementType.upperbody, name='Fore Fore-Length'),
-        BodyElement('fore2', BodyElementType.upperbody, name='Mid fore-Length' ),
-        BodyElement('fore3', BodyElementType.upperbody, name='Rear fore-length'),
-        BodyElement('mid1',  BodyElementType.lowerbody, name='Rore Mid-Length' ),
-        BodyElement('mid2',  BodyElementType.lowerbody, name='Mid Mid-Length'  ),
-        BodyElement('mid3',  BodyElementType.lowerbody, name='Rear Mid-Length' ),
-        BodyElement('rear1', BodyElementType.limb,      name='Fore Rear-Length'),
-        BodyElement('rear2', BodyElementType.limb,      name='Mid Rear-Length' ),
-        BodyElement('rear3', BodyElementType.limb,      name='Rear Rear-Length'),
-        BodyElement('tail',  BodyElementType.limb,      name='Tail Tip'        ),
+        BodyElement('head',  BodyElementType.HEAD,      name='Head'            ),
+        BodyElement('fore1', BodyElementType.UPPERBODY, name='Neck'            ),
+        BodyElement('fore2', BodyElementType.UPPERBODY, name='Mid Fore-Length' ),
+        BodyElement('fore3', BodyElementType.UPPERBODY, name='Rear Fore-length'),
+        BodyElement('mid1',  BodyElementType.LOWERBODY, name='Fore Mid-Length' ),
+        BodyElement('mid2',  BodyElementType.LOWERBODY, name='Mid Mid-Length'  ),
+        BodyElement('mid3',  BodyElementType.LOWERBODY, name='Rear Mid-Length' ),
+        BodyElement('rear1', BodyElementType.LIMB,      name='Fore Rear-Length'),
+        BodyElement('rear2', BodyElementType.LIMB,      name='Mid Rear-Length' ),
+        BodyElement('rear3', BodyElementType.LIMB,      name='Rear Rear-Length'),
+        BodyElement('tail',  BodyElementType.LIMB,      name='Tail Tip'        ),
     ])
     .select('head')
     .set(
+        size      = 2,
         placement = Placement.FORE,
+        flags     = BodyPartFlag.VITAL,
     )
     .select('fore1', 'fore2', 'fore3')
     .set(
+        size      = 3,
         placement = Placement.MEDIAL | Placement.FORE,
+        flags     = BodyPartFlag.VITAL | BodyPartFlag.STANCE,
     )
     .select('mid1', 'mid2', 'mid3')
     .set(
+        size      = 3,
         placement = Placement.MEDIAL,
+        flags     = BodyPartFlag.VITAL | BodyPartFlag.STANCE,
     )
     .select('rear1', 'rear2', 'rear3')
     .set(
+        size      = 2,
         placement = Placement.MEDIAL | Placement.REAR,
+        flags     = BodyPartFlag.STANCE,
     )
     .select('tail')
     .set(
+        size      = 1,
         placement = Placement.REAR,
     )
     .finalize()
