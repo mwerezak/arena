@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from enum import Flag, auto
 from typing import TYPE_CHECKING, Optional
 
@@ -75,7 +76,7 @@ class HitLocationCritical(CriticalEffect):
             bp : bp.get_effective_damage(attack.damage.mean(), attack.armpen.mean())
             for bp in target.get_bodyparts()
         }
-        self.hitloc = max(hitlocs.keys(), key=lambda k: hitlocs[k], default=None)
+        self.hitloc = max(hitlocs.keys(), key=lambda k: (hitlocs[k], random.random()), default=None)
 
     def can_use(self) -> bool:
         return self.result.is_effective_hit() and self.result.hitloc != self.hitloc and self.hitloc is not None

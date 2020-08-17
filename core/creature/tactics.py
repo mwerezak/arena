@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional
 
+import random
 from core.constants import MeleeRange
 from core.combat.resolver import get_parry_damage_mult
 from core.contest import SkillLevel, Contest, SKILL_EVADE
@@ -42,7 +43,12 @@ class CombatTactics:
 
     # TODO customizable variability
     def _choose_attack(self, attack_priority: Mapping[MeleeAttack, float]) -> Optional[MeleeAttack]:
-        return max(attack_priority.keys(), key=lambda k: (attack_priority[k], k.force), default=None)
+        best_value = max(attack_priority.values(), default=None)
+        if best_value is None:
+            return None
+        top = { attack : value*value for attack, value in attack_priority.items() if value > 0.75*best_value }
+        choice = random.choices(list(top.keys()), list(top.values()))
+        return choice[0]
 
     def get_normal_attack(self, target: Creature, reach: MeleeRange) -> Optional[MeleeAttack]:
         attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(reach))
@@ -85,7 +91,7 @@ class CombatTactics:
             return 1.0
         return min(max(-1.0, (to_score/from_score - 1.0)/0.25), 1.0)
 
-    def choose_contest_change_range(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
+    def choose_change_range_response(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""
 
         melee = self.parent.get_melee_combat(change_range.protagonist)
@@ -133,7 +139,7 @@ class CombatTactics:
         range_priority = self.get_melee_range_priority(opponent, caution=caution)
 
         # tiebreakers: if range is equal to current range, then greatest range
-        return max(range_priority.keys(), key=lambda k: (range_priority[k], int(k==melee.get_separation()), k), default=None)
+        return max(range_priority.keys(), key=lambda k: (round(range_priority[k],2), int(k==melee.get_separation()), k), default=None)
 
     def get_melee_threat_value(self, opponent: Creature) -> float:
         threat_priority = _get_melee_attack_priority(opponent, self.parent, opponent.get_melee_attacks())
