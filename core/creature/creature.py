@@ -147,13 +147,6 @@ class Creature(Entity):
     def change_stance(self, new_stance: Stance) -> None:
         self.stance = min(max(self.min_stance, new_stance), self.max_stance)
 
-    def get_stance_combat_modifier(self) -> int:
-        if self.stance == Stance.Prone:
-            return DifficultyGrade.Formidable
-        if self.stance == Stance.Crouched:
-            return DifficultyGrade.Hard
-        return DifficultyGrade.Standard
-
     @property
     def min_stance(self) -> Stance:
         if self._mount is not None:

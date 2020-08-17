@@ -9,7 +9,7 @@ import itertools
 from enum import Enum, IntEnum
 from collections import Counter
 from functools import lru_cache, total_ordering
-from typing import TYPE_CHECKING, Iterable, Sequence, Mapping
+from typing import TYPE_CHECKING, Iterable, Sequence, Mapping, NamedTuple
 
 from core.constants import PrimaryAttribute
 from core.dice import dice
@@ -49,14 +49,6 @@ class SkillLevel(Enum):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.value})'
-
-class DifficultyGrade(IntEnum):
-    VeryEasy   = +4
-    Easy       = +2
-    Standard   = +0
-    Hard       = -2
-    Formidable = -4
-    Herculean  = -8
 
 class Contest:
     BASE_DICE = 3
@@ -113,14 +105,50 @@ class Contest:
         roll_table = get_opposed_roll_table(pro_level.bonus_dice, ant_level.bonus_dice)
         return sum(p for result, p in roll_table.items() if result > target)
 
+class DifficultyGrade(IntEnum):
+    VeryEasy   = +4
+    Easy       = +2
+    Standard   = +0
+    Hard       = -2
+    Formidable = -4
+    Herculean  = -8
+
+    @property
+    def contest_mod(self) -> int:
+        return self.value
+
+    @property
+    def critical_mod(self) -> int:
+        return min(self.value, 0) # difficulty grade can make it harder to critical, but not easier
+
+    def to_modifier(self) -> ContestModifier:
+        return ContestModifier(self.contest_mod, self.critical_mod)
+
+class ContestModifier(NamedTuple):
+    contest: int = 0
+    critical: int = 0
+
+    def __add__(self, other: ContestModifier) -> ContestModifier:
+        return ContestModifier(
+            self.contest + other.contest,
+            self.critical + other.critical,
+        )
+
+    def __sub__(self, other: ContestModifier) -> ContestModifier:
+        return self + (-other)
+
+    def __neg__(self) -> ContestModifier:
+        return ContestModifier(self.contest * -1, self.critical * -1)
+
 class ContestResult:
     base_result: Sequence[int]
     base_total: int
 
-    def __init__(self, protagonist: Creature, contest: Contest):
+    def __init__(self, protagonist: Creature, contest: Contest, modifier: ContestModifier = ContestModifier()):
         self.contest = contest
         self.protagonist = protagonist
         self.skill_level = protagonist.get_skill_level(contest)
+        self.modifier = modifier
         self.reroll()
 
     def reroll(self) -> None:
@@ -128,39 +156,40 @@ class ContestResult:
         self.base_result = sorted(contest_dice.get_roll(), reverse=True)[:Contest.BASE_DICE]
         self.base_total = sum(self.base_result)
 
+    # the modifier from skill level - does not include the situational modifier
     @property
     def contest_modifier(self) -> int:
         return self.contest.get_attribute_modifier(self.protagonist) + self.contest.get_skill_modifier(self.skill_level)
 
     @property
     def contest_total(self) -> int:
-        return self.base_total + self.contest_modifier
+        return self.base_total + self.contest_modifier + self.modifier.contest
 
+    # the modifier from skill level - does not include the situational modifier
     @property
     def crit_modifier(self) -> int:
         return self.contest.get_crit_modifier(self.skill_level)
 
     @property
     def crit_total(self) -> int:
-        return self.base_total + self.crit_modifier
+        return self.base_total + self.crit_modifier + self.modifier.critical
 
     def get_crit_level(self, versus: int) -> int:
-        crit = int((self.crit_total - versus)/Contest.CRIT_THRESH)
+        crit = int((self.crit_total - versus) / Contest.CRIT_THRESH)
         return min(max(0, crit), Contest.MAX_CRIT)
 
     def format_details(self, versus: int) -> str:
+        mod_text = f'({self.modifier.contest:+d})' if self.modifier.contest != 0 else ''
         success_text = 'SUCCESS' if self.contest_total > versus else 'FAIL'
         return (
-            f'[Test] {self.contest} vs {versus} RESULT: {self.base_total}{self.contest_modifier:+d}={self.contest_total} '
+            f'[Test] {self.contest} vs {versus} RESULT: {self.base_total}{self.contest_modifier:+d}{mod_text}={self.contest_total} '
             f'vs {versus} {success_text} (crit level: {self.get_crit_level(versus)})'
         )
 
 class OpposedResult:
-    def __init__(self, pro_result: ContestResult, ant_result: ContestResult, contest_mod: int = 0, crit_mod: int = 0):
+    def __init__(self, pro_result: ContestResult, ant_result: ContestResult):
         self.pro_result = pro_result  # protagonist
         self.ant_result = ant_result  # antagonist
-        self.contest_mod = contest_mod
-        self.crit_mod = crit_mod
 
     @property
     def protagonist(self) -> Creature:
@@ -172,22 +201,24 @@ class OpposedResult:
 
     @property
     def success(self) -> bool:
-        return self.pro_result.contest_total + self.contest_mod > self.ant_result.contest_total
+        return self.pro_result.contest_total > self.ant_result.contest_total
 
     @property
     def crit_level(self) -> int:
         if self.success:
-            return self.pro_result.get_crit_level(self.ant_result.crit_total - self.crit_mod)
-        return self.ant_result.get_crit_level(self.pro_result.crit_total + self.crit_mod)
+            return self.pro_result.get_crit_level(self.ant_result.crit_total)
+        else:
+            return self.ant_result.get_crit_level(self.pro_result.crit_total)
 
     def format_details(self) -> str:
         p, a = self.pro_result, self.ant_result
-        mod_text = f'({self.contest_mod:+d})' if self.contest_mod != 0 else ''
+        pro_mod_text = f'({p.modifier.contest:+d})' if p.modifier.contest != 0 else ''
+        ant_mod_text = f'({a.modifier.contest:+d})' if a.modifier.contest != 0 else ''
         success_text = 'SUCCESS' if self.success else 'FAIL'
         return (
             f'[Opposed Contest] {p.contest} vs {a.contest} '
-            f'RESULT: {p.base_total}{p.contest_modifier:+d}{mod_text}={p.contest_total+self.contest_mod} vs '
-            f'{a.base_total}{a.contest_modifier:+d}={a.contest_total} '
+            f'RESULT: {p.base_total}{p.contest_modifier:+d}{pro_mod_text}={p.contest_total} vs '
+            f'{a.base_total}{a.contest_modifier:+d}{ant_mod_text}={a.contest_total} '
             f'{success_text} (crit level: {self.crit_level})'
         )
 

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type
+from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tuple
 
-from core.contest import OpposedResult, ContestResult, SKILL_EVADE
+from core.constants import Stance
+from core.contest import OpposedResult, ContestResult, SKILL_EVADE, DifficultyGrade, ContestModifier
 from core.combat.criticals import DEFAULT_CRITICALS, CriticalUsage
 
 if TYPE_CHECKING:
@@ -29,6 +30,15 @@ def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
     if len(result) > 0:
         return result[0]
     return None
+
+# affects attack and parry, but not blocking
+def get_stance_modifier(creature: Creature) -> ContestModifier:
+    grade = DifficultyGrade.Standard
+    if creature.stance == Stance.Crouched:
+        grade = DifficultyGrade.Hard
+    elif creature.stance == Stance.Prone:
+        grade = DifficultyGrade.Formidable
+    return grade.to_modifier()
 
 class MeleeCombatResolver:
     melee: MeleeCombat
@@ -109,8 +119,11 @@ class MeleeCombatResolver:
     def _resolve_melee_defence(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_result = ContestResult(self.attacker, self.use_attack.combat_test)
-        defend_result = ContestResult(self.defender, self.use_defence.combat_test)
+        attack_modifier = get_stance_modifier(self.attacker)
+        defend_modifier = get_stance_modifier(self.defender)
+
+        attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
+        defend_result = ContestResult(self.defender, self.use_defence.combat_test, defend_modifier)
         primary_result = OpposedResult(attack_result, defend_result)
 
         print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs {self.use_defence.name}!')
@@ -121,22 +134,9 @@ class MeleeCombatResolver:
             damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_defence.force)
 
         # defender may attempt to block
-        is_blocking = False
-        self.use_shield = self.defender.tactics.get_melee_shield(separation)
-        if self.use_shield is not None and self.use_shield.shield.can_block(separation):
-            block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
-            if block_damage_mult < damage_mult:
-                shield_result = ContestResult(self.defender, self.use_shield.combat_test)
-                block_result = OpposedResult(shield_result, attack_result, self.use_shield.shield.block_bonus)
+        is_blocking, damage_mult = self._resolve_shield_block(attack_result, damage_mult)
 
-                print(f'{self.defender} attempts to block with {self.use_shield}!')
-                print(block_result.format_details())
-
-                if block_result.success:
-                    is_blocking = True
-                    damage_mult = block_damage_mult
-
-        # TODO defender may attempt to evade
+        # TODO defender may attempt to evade?
 
         self.attacker_crit = 0
         self.defender_crit = 0
@@ -158,8 +158,11 @@ class MeleeCombatResolver:
     def _resolve_melee_evade(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_result = ContestResult(self.attacker, self.use_attack.combat_test)
-        evade_result = ContestResult(self.defender, SKILL_EVADE)
+        attack_modifier = get_stance_modifier(self.attacker)
+        evade_modifier = get_stance_modifier(self.defender)
+
+        attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
+        evade_result = ContestResult(self.defender, SKILL_EVADE, evade_modifier)
         primary_result = OpposedResult(attack_result, evade_result)
 
         print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs {SKILL_EVADE}!')
@@ -169,18 +172,8 @@ class MeleeCombatResolver:
 
         # defender may attempt to block
         is_blocking = False
-        self.use_shield = self.defender.tactics.get_melee_shield(separation)
-        if self.use_shield is not None and self.use_shield.shield.can_block(separation):
-            if primary_result.success:
-                shield_result = ContestResult(self.defender, self.use_shield.combat_test)
-                block_result = OpposedResult(shield_result, attack_result, self.use_shield.shield.block_bonus)
-
-                print(f'{self.defender} attempts to block with {self.use_shield}!')
-                print(block_result.format_details())
-
-                if block_result.success:
-                    is_blocking = True
-                    damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
+        if primary_result.success:
+            is_blocking, damage_mult = self._resolve_shield_block(attack_result, damage_mult)
 
         self.attacker_crit = primary_result.crit_level if primary_result.success else 0
         self.defender_crit = 0
@@ -198,20 +191,42 @@ class MeleeCombatResolver:
     def _resolve_defender_helpless(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_result = ContestResult(self.attacker, self.use_attack.combat_test)
-        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs NO DEFENCE!')
+        attack_modifier = get_stance_modifier(self.attacker)
+
+        attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
+        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name}!')
         print(attack_result.format_details(10))
 
-        # TODO defender may attempt to evade
+        # TODO defender may attempt to evade?
+
+        is_blocking, damage_mult = self._resolve_shield_block(attack_result, 1.0)
 
         self.attacker_crit = max(attack_result.get_crit_level(10), 1)
         self.defender_crit = 0
 
         self.hitloc = get_random_hitloc(self.defender)
-        self.damage_mult = 1.0
+        self.is_blocking = is_blocking
+        self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
         self.is_blocking = False
+
+    def _resolve_shield_block(self, attack_result: ContestResult, damage_mult: float) -> Tuple[bool, float]:
+        separation = self.melee.get_separation()
+
+        self.use_shield = self.defender.tactics.get_melee_shield(separation)
+        if self.use_shield is not None and self.use_shield.shield.can_block(separation):
+            block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
+            if block_damage_mult < damage_mult:
+                shield_result = ContestResult(self.defender, self.use_shield.combat_test, ContestModifier(self.use_shield.shield.block_bonus))
+                block_result = OpposedResult(shield_result, attack_result)
+
+                print(f'{self.defender} attempts to block with {self.use_shield}!')
+                print(block_result.format_details())
+
+                if block_result.success:
+                    return True, block_damage_mult
+        return False, damage_mult
 
     def resolve_critical_effects(self) -> None:
         if self.attacker_crit > 0:

@@ -7,7 +7,7 @@ from core.constants import MeleeRange, SizeCategory
 from core.contest import Contest
 from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action, DEFAULT_ACTION_WINDUP
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
-from core.combat.resolver import MeleeCombatResolver
+from core.combat.resolver import MeleeCombatResolver, get_stance_modifier
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -180,8 +180,11 @@ class ChangeMeleeRangeAction(CreatureAction):
         if reaction == 'contest':
             # action = self.opponent.get_current_action()
             # self.opponent.set_current_action(ContestChangeMeleeRangeAction(action))
+            contest = OpposedResult(
+                ContestResult(self.protagonist, SKILL_EVADE, get_stance_modifier(self.protagonist)),
+                ContestResult(self.opponent, SKILL_EVADE, get_stance_modifier(self.opponent))
+            )
 
-            contest = OpposedResult(ContestResult(self.protagonist, SKILL_EVADE), ContestResult(self.opponent, SKILL_EVADE))
             print(contest.format_details())
             success = contest.success
 
