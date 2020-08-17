@@ -3,7 +3,7 @@ import random
 from typing import TYPE_CHECKING, Tuple, Optional, Iterable
 
 from core.dice import dice
-from core.constants import MeleeRange
+from core.constants import MeleeRange, SizeCategory
 from core.contest import Contest
 from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action, DEFAULT_ACTION_WINDUP
 from core.contest import ContestResult, OpposedResult, SKILL_EVADE
@@ -12,14 +12,6 @@ from core.combat.resolver import MeleeCombatResolver
 if TYPE_CHECKING:
     from core.creature import Creature
     from core.creature.actions import Action
-
-def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
-    """Used to setup a melee combat between two combatants"""
-
-    melee = MeleeCombat(a, b)
-    a.add_melee_combat(b, melee)
-    b.add_melee_combat(a, melee)
-    return melee
 
 def resolve_opposed_initiative(a: Creature, b: Creature) -> Optional[Creature]:
     a_initiative = a.get_initiative_modifier()
@@ -43,23 +35,36 @@ def resolve_opposed_initiative(a: Creature, b: Creature) -> Optional[Creature]:
     )
     return winner
 
-class MeleeCombat:
+# Mounted combat: engaging in combat with a creature always includes engaging in combat with their mount and all other riders and vice versa for being engaged
+def join_melee_combat(a: Creature, b: Creature) -> MeleeCombat:
+    """Used to setup a melee combat between two combatants"""
+    a_mount = a.get_mount()
+    a_base = a_mount or a
+
+    b_mount = b.get_mount()
+    b_base = b_mount or b
+
+    separation = MeleeSeparation(a_base, b_base)
+    a_combatants = [a_base, *a_base.get_riders()]
+    b_combatants = [b_base, *b_base.get_riders()]
+    for i in a_combatants:
+        for j in b_combatants:
+            if i is not None and j is not None:
+                melee = MeleeCombat(i, j, separation)
+                i.add_melee_combat(j, melee)
+                j.add_melee_combat(i, melee)
+
+    return a.get_melee_combat(b)
+
+class MeleeSeparation:
     MAX_RANGE_SHIFT = 4  # the max change allowed with a single action
-
-    combatants: Tuple[Creature, Creature]
-
+    _pair: Tuple[Creature, Creature]
     _separation: MeleeRange
 
     def __init__(self, a: Creature, b: Creature):
-        self.combatants = (a, b)
-        self._separation = max(a.get_melee_engage_distance(), b.get_melee_engage_distance())
-
-    def get_opponent(self, combatant: Creature) -> Optional[Creature]:
-        if combatant == self.combatants[0]:
-            return self.combatants[1]
-        if combatant == self.combatants[1]:
-            return self.combatants[0]
-        return None
+        self._pair = (a, b)
+        combatants = [a, *a.get_riders(), b, *b.get_riders()]
+        self._separation = max(c.get_melee_engage_distance() for c in combatants)
 
     def get_separation(self) -> MeleeRange:
         return self._separation
@@ -69,11 +74,54 @@ class MeleeCombat:
             value = self.get_range_shift(value, max_shift)
         self._separation = value
 
+    def get_range_shift(self, target_range: MeleeRange, max_shift: int = MAX_RANGE_SHIFT) -> MeleeRange:
+        shift = min(abs(target_range - self._separation), max_shift)
+        if target_range < self._separation:
+            shift *= -1
+        return self._separation.get_step(shift)
+
+class MeleeCombat:
+    combatants: Tuple[Creature, Creature]
+
+    def __init__(self, a: Creature, b: Creature, separation: MeleeSeparation):
+        self.combatants = (a, b)
+        self._separation = separation
+
+    def get_opponent(self, combatant: Creature) -> Optional[Creature]:
+        if combatant == self.combatants[0]:
+            return self.combatants[1]
+        if combatant == self.combatants[1]:
+            return self.combatants[0]
+        return None
+
+    # separation modifier for being mounted
+    def _get_mount_modifier(self) -> int:
+        result = 0
+        for c in self.combatants:
+            mount = c.get_mount()
+            if mount is None:
+                continue
+            base_size = SizeCategory.Medium.to_size()
+            result += round((mount.size - base_size)/base_size)
+        return result
+
+    def get_separation(self) -> MeleeRange:
+        return self._separation.get_separation().get_step(self._get_mount_modifier())
+
+    def get_min_separation(self) -> MeleeRange:
+        return MeleeRange(self._get_mount_modifier())
+
+    def change_separation(self, value: MeleeRange, max_shift: Optional[int] = MeleeSeparation.MAX_RANGE_SHIFT) -> None:
+        return self._separation.change_separation(value, max_shift)
+
+    def get_range_shift(self, target_range: MeleeRange, max_shift: int = MeleeSeparation.MAX_RANGE_SHIFT) -> MeleeRange:
+        return self._separation.get_range_shift(target_range, max_shift)
+
     def can_attack(self, combatant: Creature) -> bool:
         opponent = self.get_opponent(combatant)
         if opponent is None:
             return False
-        return any(attack.can_attack(self._separation) for attack in combatant.get_melee_attacks())
+        return any(attack.can_attack(self.get_separation()) for attack in combatant.get_melee_attacks())
 
     def break_engagement(self) -> None:
         for i, j in [(0,1), (1,0)]:
@@ -81,11 +129,6 @@ class MeleeCombat:
             creature.remove_melee_combat(opponent)
         del self.combatants
 
-    def get_range_shift(self, target_range: MeleeRange, max_shift: int = MAX_RANGE_SHIFT) -> MeleeRange:
-        shift = min(abs(target_range - self._separation), max_shift)
-        if target_range < self._separation:
-            shift *= -1
-        return self._separation.get_step(shift)
 
 ## MeleeChangeRangeAction - change melee range (max 4)
 class ChangeMeleeRangeAction(CreatureAction):

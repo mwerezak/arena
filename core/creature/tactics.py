@@ -114,7 +114,8 @@ class CombatTactics:
 
     def get_melee_range_priority(self, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
         range_priority = {}
-        for reach in MeleeRange.range(self.parent.get_melee_engage_distance() + 1):
+        melee = self.parent.get_melee_combat(opponent)
+        for reach in MeleeRange.range(melee.get_min_separation(), self.parent.get_melee_engage_distance() + 1):
             pro_attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(reach))
             attack_priority = _get_melee_attack_priority(self.parent, opponent, pro_attacks)
             power = max(attack_priority.values(), default=0.0)
