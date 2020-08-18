@@ -218,7 +218,7 @@ if __name__ == '__main__':
     # orc2.name = 'Orc 2'
 
     melee = join_melee_combat(satyr, goblin)
-    melee.change_separation(MeleeRange(0))
+    # melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')

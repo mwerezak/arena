@@ -7,6 +7,7 @@ from core.constants import Stance
 from core.contest import OpposedResult, UnopposedResult, ContestResult, DifficultyGrade, ContestModifier, SKILL_EVADE, SKILL_ACROBATICS
 from core.combat.criticals import DEFAULT_CRITICALS, CriticalUsage
 from core.combat.damage import DamageType
+from core.creature.traits import EvadeTrait
 
 if TYPE_CHECKING:
     from core.dice import DicePool
@@ -109,7 +110,6 @@ class MeleeCombatResolver:
             self._resolve_melee_evade()
             return True
         if force_nodefence:
-
             self._resolve_melee_nodefence()
             return True
 
@@ -117,10 +117,7 @@ class MeleeCombatResolver:
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
-            # if we are able to defend, but no defence is available (e.g. because of reach),
-            # evade instead but must make an acrobatics check to avoid falling prone
-            self._resolve_melee_evade()
-            self._resolve_evade_knockdown()
+            self._resolve_melee_nodefence()
             return True
 
         self._resolve_melee_defence()
@@ -199,6 +196,10 @@ class MeleeCombatResolver:
         self.armpen = self.use_attack.armpen
 
     def _resolve_melee_nodefence(self) -> None:
+        if self.defender.has_trait(EvadeTrait):
+            self._resolve_melee_evade()
+            return
+
         separation = self.melee.get_separation()
 
         attack_modifier = get_combat_difficulty(self.attacker).get_step(-1).to_modifier()
@@ -305,7 +306,7 @@ class MeleeCombatResolver:
         else:
             dam_text = f'{damage:.0f}'
 
-        mult_text = f' (x{self.damage_mult:.0f})' if self.damage_mult != 1.0 else ''
+        mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
         print(f'{self.attacker} strikes {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
         self.hitloc.apply_damage(damage, armpen, self.attack_result)

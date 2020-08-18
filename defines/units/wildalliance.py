@@ -3,7 +3,7 @@ from core.creature.loadout import Loadout, LoadoutChoice
 from core.equipment.armor import Armor, ArmorTemplate
 from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL, SPECIES_HORSE
 from defines.traits import *
-from core.creature.traits import FinesseTrait
+from core.creature.traits import FinesseTrait, EvadeTrait
 from defines.weapons import (
     WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
     WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE,
@@ -96,6 +96,7 @@ CREATURE_SATYR_WARDEN = (
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
         FinesseTrait(),
+        EvadeTrait(),
     )
     .set_loadout(Loadout(
         [ WEAPON_SCIMITAR, SHIELD_MEDIUM, Armor(LINEN_ARMOR, SPECIES_SATYR) ],
@@ -113,6 +114,7 @@ CREATURE_SATYR_OUTRIDER = (
         SkillTrait(SKILL_RIDING, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
         FinesseTrait(),
+        EvadeTrait(),
     )
     .set_loadout(Loadout(
         [WEAPON_LONGSPEAR],
