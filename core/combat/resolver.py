@@ -105,8 +105,6 @@ class MeleeCombatResolver:
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             return False # no attack happens
 
-        if force_nodefence and force_evade:
-            pass  # todo allow one or the other
         if force_evade:
             self._resolve_melee_evade()
             return True

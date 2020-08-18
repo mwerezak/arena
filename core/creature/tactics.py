@@ -42,8 +42,8 @@ def choose_attack(attack_priority: Mapping[MeleeAttack, float]) -> Optional[Mele
     if best_value is None:
         return None
     top = { attack : value**3 for attack, value in attack_priority.items() if value > 0.75*best_value }
-    result = random.choices(list(top.keys()), list(top.values()))
-    if len(result) > 0:
+    if len(top) > 0:
+        result = random.choices(*zip(*top.items()))
         return result[0]
     return None
 
@@ -90,7 +90,9 @@ class CombatTactics:
         to_score = range_scores.get(to_range, 0)
         if from_score == 0:
             return 1.0
-        return min(max(-1.0, (to_score/from_score - 1.0)/0.25), 1.0)
+
+        success_chance = Contest.get_opposed_chance(self.parent, SKILL_EVADE, opponent)
+        return min(max(-1.0, (to_score/from_score - 1.0)/0.25 * success_chance), 1.0)
 
     def choose_change_range_response(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""
@@ -115,9 +117,6 @@ class CombatTactics:
     def _can_attack(self, ranges: Iterable[MeleeRange]) -> bool:
         ranges = list(ranges)
         return any(any(attack.can_attack(r) for r in ranges) for attack in self.parent.get_melee_attacks())
-
-    def choose_evade_attack(self, attacker: Creature, attack: MeleeAttack) -> bool:
-        return False # TODO
 
     def get_melee_range_priority(self, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
         range_priority = {}

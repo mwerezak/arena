@@ -283,6 +283,9 @@ class Creature(Entity):
         prev_health = self.health
         self._health -= amount
 
+        if self.health <= 0 < prev_health:
+            self.stun(can_defend=False)
+
         if self.health <= -self.max_health:
             injury_test = ContestResult(self, SKILL_ENDURANCE)
             injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
@@ -296,8 +299,6 @@ class Creature(Entity):
                 print(f'{self} is incapacitated!')
 
         elif self.health <= 0:
-            if prev_health > 0:
-                self.stun(can_defend=False)
 
             injury_test = ContestResult(self, SKILL_ENDURANCE)
             injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)

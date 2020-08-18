@@ -83,7 +83,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
             if value > 0:
                 available[bp] = value
 
-    print(available)
+    # print(available)
 
     candidate = max(available.keys(), key=lambda k: available[k], default=None)
     if candidate is not None:
@@ -146,7 +146,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     )
     if best_range is not None and best_range != melee.get_separation():
         change_desire = tactics.get_range_change_desire(opponent, melee.get_separation(), best_range)
-        #print(f'{protagonist} range change desire: {change_desire:.2f}')
+        print(f'{protagonist} range change desire: {change_desire:.2f}')
         if change_desire > 0 and random.random() < change_desire:
             return ChangeMeleeRangeAction(opponent, best_range)
 
@@ -209,21 +209,25 @@ if __name__ == '__main__':
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
     gnoll2 = add_creature(CREATURE_GNOLL_WARRIOR)
-    goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
-    satyr = add_creature(CREATURE_SATYR_BRAVE)
+    goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
+    satyr = add_creature(CREATURE_SATYR_WARRIOR)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
     mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
-    orc.name = 'Orc 1'
-    orc2.name = 'Orc 2'
+    # orc.name = 'Orc 1'
+    # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(orc, orc2)
+    melee = join_melee_combat(satyr, orc)
+    melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')
         print()
 
     arena = Arena(loop, melee)
+
+    while True:
+        arena.next_turn()
 
     def next_turn():
         last_tick = arena.action_loop.get_tick()
