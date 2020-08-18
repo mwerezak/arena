@@ -209,15 +209,15 @@ if __name__ == '__main__':
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
     gnoll2 = add_creature(CREATURE_GNOLL_WARRIOR)
-    goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
-    satyr = add_creature(CREATURE_SATYR_WARRIOR)
+    goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
+    satyr = add_creature(CREATURE_SATYR_BRAVE)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
     mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(satyr, orc)
+    melee = join_melee_combat(satyr, goblin)
     melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
@@ -225,9 +225,6 @@ if __name__ == '__main__':
         print()
 
     arena = Arena(loop, melee)
-
-    while True:
-        arena.next_turn()
 
     def next_turn():
         last_tick = arena.action_loop.get_tick()

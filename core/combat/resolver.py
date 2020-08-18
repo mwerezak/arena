@@ -116,7 +116,16 @@ class MeleeCombatResolver:
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
-            #print(repr(self.use_defence))
+
+            if self.defender.tactics.choose_evade_attack(self.attacker, self.use_attack):
+                self._resolve_melee_evade()
+                acro_test = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
+                acro_result = OpposedResult(acro_test, self.attack_result)
+                print(acro_result.format_details())
+                if not acro_result.success:
+                    self.defender.knock_down()
+                return True
+
             self._resolve_melee_nodefence()
             return True
 
