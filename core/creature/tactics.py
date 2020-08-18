@@ -130,7 +130,9 @@ class CombatTactics:
             ant_attacks = (attack for attack in opponent.get_melee_attacks() if attack.can_attack(reach))
             threat_priority = get_melee_attack_priority(opponent, self.parent, ant_attacks)
             threat = max(threat_priority.values(), default=0.0)
-            danger = (2 * caution * threat + self.parent.health) / self.parent.health
+
+            health = self.parent.health + self.parent.max_health
+            danger = (2 * caution * threat + health) / health
 
             range_priority[reach] = power/danger
         return range_priority
@@ -148,7 +150,7 @@ class CombatTactics:
 
         attack_priority = get_melee_attack_priority(self.parent, opponent, self.parent.get_melee_attacks())
         attack_value = max(attack_priority.values(), default=0.0)
-        return threat_value * attack_value / opponent.health
+        return threat_value * attack_value / (opponent.health + opponent.max_health)
 
     def get_weapon_value(self, item: Equipment, opponent: Creature, reach: Optional[MeleeRange] = None) -> float:
         return max((
@@ -160,4 +162,8 @@ class CombatTactics:
     def get_weapon_change_desire(self, from_item: Equipment, to_item: Equipment, opponent: Creature, reach: Optional[MeleeRange] = None) -> float:
         from_value = self.get_weapon_value(from_item, opponent, reach)
         to_value = self.get_weapon_value(to_item, opponent, reach)
+        return self.get_switch_attack_desire(from_value, to_value)
+
+    @staticmethod
+    def get_switch_attack_desire(from_value: float, to_value: float) -> float:
         return min(max(-1.0, (to_value/from_value - 1.0)/2.0), 1.0)

@@ -98,7 +98,7 @@ class AttackForce(IntClass):
 @total_ordering
 class Stance(Enum):
     Prone    = 0
-    Crouched = 1
+    Crouching = 1
     Standing = 2
     Mounted  = 3
 

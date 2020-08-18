@@ -5,8 +5,10 @@ from __future__ import annotations
 
 from core.action import ActionLoop
 from core.creature import Creature
+from core.creature.bodypart import BodyPart
 from core.creature.tactics import SKILL_FACTOR, get_melee_attack_value
 from core.creature.actions import *
+from core.equipment import Equipment
 from core.combat.melee import *
 
 if TYPE_CHECKING:
@@ -39,6 +41,7 @@ def try_equip_best_weapons(creature: Creature) -> None:
         _, max_hands = item.get_required_hands(creature)
         inventory.try_equip_item(item, use_hands=max_hands)
 
+# TODO move this to own module
 def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     tactics = protagonist.tactics
 
@@ -62,43 +65,76 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
     equipped = [*protagonist.inventory.get_held_items()]
     available = (item for item in protagonist.inventory if item.is_weapon() and item not in equipped)
     available = {
-        item : protagonist.tactics.get_weapon_value(item, opponent, melee.get_separation())
-        for item in available
+        item : value for item in available
+        if (value := protagonist.tactics.get_weapon_value(item, opponent, melee.get_separation())) > 0
     }
+    # unarmed attacks that are unavailable due to equipped weapons
+    inv = protagonist.inventory
+    occupied = [
+        bp for bp in inv.get_equip_slots() if (item := inv.get_item_in_slot(bp)) is not None and not item.is_shield()
+    ]
+    for bp in occupied:
+        if protagonist.inventory.get_item_in_slot(bp) is not None:
+            value = max((
+                get_melee_attack_value(attack, protagonist, opponent)
+                for attack in bp.get_unarmed_attacks()
+                if attack.can_attack(melee.get_separation())
+            ), default=0)
+            if value > 0:
+                available[bp] = value
 
-    candidate = max(available.keys(), key=lambda k: available[k],default=None)
+    print(available)
+
+    candidate = max(available.keys(), key=lambda k: available[k], default=None)
     if candidate is not None:
         candidate_score = available[candidate]
-        change_desire = min(max(0.0, (candidate_score/best_score-1.0)/2.0), 1.0)
 
-        #print(f'{protagonist} weapon change desire: {change_desire:.2f}')
+        if best_score > 0:
+            change_desire = min(max(0.0, (candidate_score/best_score-1.0)/2.0), 1.0)
+        else:
+            change_desire = 1.0 if candidate_score > 0 else 0.0
+
+        # print(f'{protagonist} weapon change desire: {change_desire:.2f}')
         if change_desire > 0 and random.random() < change_desire:
-            min_hands, max_hands = candidate.get_required_hands(protagonist)
-
-            unequip_candidates = sorted(
-                protagonist.inventory.get_held_items(),
-                key=lambda o: (
-                    1 if o.is_shield() else 0, # unequip shields last
-                    protagonist.tactics.get_weapon_value(o, opponent, melee.get_separation())
-                )
-            )
-            unequip = []
-
             change_weapon = True
-            for i, item in enumerate(unequip_candidates):
-                if i < min_hands:
-                    # if candidate is worse overall, we may just want to change range instead
-                    change_desire = 1.0 + protagonist.tactics.get_weapon_change_desire(item, candidate, opponent)
-                    # print(f'{item}->{candidate}: {change_desire}')
-                    if random.random() > change_desire:
-                        change_weapon = False
-                        break
-                else:
-                    change_desire = protagonist.tactics.get_weapon_change_desire(item, candidate, opponent, melee.get_separation())
-                    if random.random() > change_desire:
-                        break
 
-                unequip.append(item)
+            if isinstance(candidate, Equipment):
+                min_hands, max_hands = candidate.get_required_hands(protagonist)
+
+                unequip_candidates = sorted(
+                    protagonist.inventory.get_held_items(),
+                    key=lambda o: protagonist.tactics.get_weapon_value(o, opponent, melee.get_separation())
+                )
+
+                unequip = []
+                for i, item in enumerate(unequip_candidates):
+                    if i < min_hands:
+                        # if candidate is worse overall, we may just want to change range instead
+                        change_desire = 1.0 + protagonist.tactics.get_weapon_change_desire(item, candidate, opponent)
+                        # print(f'{item}->{candidate}: {change_desire}')
+                        if random.random() > change_desire:
+                            change_weapon = False
+                            break
+                    else:
+                        change_desire = protagonist.tactics.get_weapon_change_desire(item, candidate, opponent, melee.get_separation())
+                        if random.random() > change_desire:
+                            break
+
+                    unequip.append(item)
+
+            elif isinstance(candidate, BodyPart):
+                # if candidate is worse overall, we may just want to change range instead
+                item = protagonist.inventory.get_item_in_slot(candidate)
+                change_desire = 1.0 + protagonist.tactics.get_switch_attack_desire(
+                    protagonist.tactics.get_weapon_value(item, opponent), candidate_score,
+                )
+                # print(f'{item}->{candidate}: {change_desire}')
+                if random.random() > change_desire:
+                    change_weapon = False
+                unequip = [item]
+                candidate = None
+            else:
+                raise ValueError
 
             if change_weapon:
                 return SwitchHeldItemAction(candidate, *unequip)
@@ -173,14 +209,14 @@ if __name__ == '__main__':
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
     goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
-    satyr = add_creature(CREATURE_SATYR_WARRIOR)
+    satyr = add_creature(CREATURE_SATYR_BRAVE)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
     mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(satyr, orc)
+    melee = join_melee_combat(gnoll, orc)
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')

@@ -53,7 +53,7 @@ class CriticalEffect:
 class MaxDamageCritical(CriticalEffect):
     name = 'Max Damage'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
-    weight = 5
+    weight = 9
 
     def can_use(self) -> bool:
         return self.combat.is_effective_hit() and self.combat.damage.min() < self.combat.damage.max()
@@ -65,7 +65,7 @@ class MaxDamageCritical(CriticalEffect):
 class HitLocationCritical(CriticalEffect):
     name = 'Choose Hit Location'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
-    weight = 4
+    weight = 5
 
     hitloc: Optional[BodyPart]
 
@@ -76,7 +76,10 @@ class HitLocationCritical(CriticalEffect):
             bp : bp.get_effective_damage(attack.damage.mean(), attack.armpen.mean())
             for bp in target.get_bodyparts()
         }
-        self.hitloc = max(hitlocs.keys(), key=lambda k: (hitlocs[k], random.random()), default=None)
+
+        self.hitloc = None
+        if len(hitlocs) > 0 and max(hitlocs.values()) > min(hitlocs.values()):
+            self.hitloc = max(hitlocs.keys(), key=lambda k: (hitlocs[k], random.random()))
 
     def can_use(self) -> bool:
         return self.combat.is_effective_hit() and self.combat.hitloc != self.hitloc and self.hitloc is not None
@@ -219,7 +222,7 @@ class ChangeStanceCritical(CriticalEffect):
 
     _action_text = {
         Stance.Standing : 'stands up',
-        Stance.Crouched : 'crouches',
+        Stance.Crouching : 'crouches',
         Stance.Prone    : 'goes prone',
     }
 

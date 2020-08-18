@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tup
 from core.constants import Stance
 from core.contest import OpposedResult, UnopposedResult, ContestResult, DifficultyGrade, ContestModifier, SKILL_EVADE, SKILL_ACROBATICS
 from core.combat.criticals import DEFAULT_CRITICALS, CriticalUsage
+from core.combat.damage import DamageType
 
 if TYPE_CHECKING:
     from core.dice import DicePool
@@ -32,9 +33,9 @@ def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
     return None
 
 # affects attack, parry, and evade, but not blocking
-def get_combat_modifier(creature: Creature) -> ContestModifier:
+def get_combat_difficulty(creature: Creature) -> DifficultyGrade:
     grade = DifficultyGrade.Standard
-    if creature.stance == Stance.Crouched:
+    if creature.stance == Stance.Crouching:
         grade = DifficultyGrade.Hard
     elif creature.stance == Stance.Prone:
         grade = DifficultyGrade.Formidable
@@ -42,13 +43,13 @@ def get_combat_modifier(creature: Creature) -> ContestModifier:
     if creature.is_seriously_wounded():
         grade = grade.get_step(+1)
 
-    return grade.to_modifier()
+    return grade
 
-def get_block_modifier(creature: Creature) -> ContestModifier:
+def get_block_difficulty(creature: Creature) -> DifficultyGrade:
     grade = DifficultyGrade.Standard
     if creature.is_seriously_wounded():
         grade = grade.get_step(+1)
-    return grade.to_modifier()
+    return grade
 
 class MeleeCombatResolver:
     melee: MeleeCombat
@@ -128,8 +129,8 @@ class MeleeCombatResolver:
     def _resolve_melee_defence(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_modifier = get_combat_modifier(self.attacker)
-        defend_modifier = get_combat_modifier(self.defender)
+        attack_modifier = get_combat_difficulty(self.attacker).to_modifier()
+        defend_modifier = get_combat_difficulty(self.defender).to_modifier()
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         defend_result = ContestResult(self.defender, self.use_defence.combat_test, defend_modifier)
@@ -166,8 +167,8 @@ class MeleeCombatResolver:
     def _resolve_melee_evade(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_modifier = get_combat_modifier(self.attacker)
-        evade_modifier = get_combat_modifier(self.defender)
+        attack_modifier = get_combat_difficulty(self.attacker).to_modifier()
+        evade_modifier = get_combat_difficulty(self.defender).to_modifier()
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         evade_result = ContestResult(self.defender, SKILL_EVADE, evade_modifier)
@@ -200,7 +201,7 @@ class MeleeCombatResolver:
     def _resolve_melee_nodefence(self) -> None:
         separation = self.melee.get_separation()
 
-        attack_modifier = get_combat_modifier(self.attacker)
+        attack_modifier = get_combat_difficulty(self.attacker).get_step(-1).to_modifier()
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         primary_result = UnopposedResult(attack_result)
@@ -236,7 +237,7 @@ class MeleeCombatResolver:
         if self.use_shield is not None and self.use_shield.shield.can_block(separation):
             block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
             if block_damage_mult < damage_mult:
-                modifier = get_block_modifier(self.defender) + ContestModifier(self.use_shield.shield.block_bonus)
+                modifier = get_block_difficulty(self.defender).to_modifier() + ContestModifier(self.use_shield.shield.block_bonus)
                 shield_result = ContestResult(self.defender, self.use_shield.combat_test, modifier)
                 block_result = OpposedResult(shield_result, attack_result)
 
@@ -292,20 +293,29 @@ class MeleeCombatResolver:
         armpen = round(self.armpen.get_roll_result() * self.damage_mult)
 
         if armpen > 0:
-            dam_text = f'{damage}/{armpen}* ({self.use_attack.damtype.format_type_code()})'
+            dam_text = f'{damage:.0f}/{armpen:.0f}*'
         else:
-            dam_text = f'{damage} ({self.use_attack.damtype.format_type_code()})'
+            dam_text = f'{damage:.0f}'
 
-        mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
-        print(f'{self.attacker} hits {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
+        mult_text = f' (x{self.damage_mult:.0f})' if self.damage_mult != 1.0 else ''
+        print(f'{self.attacker} strikes {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
         self.hitloc.apply_damage(damage, armpen, self.attack_result)
 
         # knockdown due to damage
-        if self.defender.stance > Stance.Prone and damage > self.defender.size * 2/3:
+        self._resolve_knockdown(damage)
+
+    def _resolve_knockdown(self, damage: float) -> None:
+        knockdown_threshold = self.defender.size * 2/3
+        if self.use_attack.damtype == DamageType.Bludgeon:
+            knockdown_threshold = self.defender.size * 1/2
+        elif self.use_attack.damtype == DamageType.Puncture:
+            knockdown_threshold = self.defender.size * 4/3
+
+        if self.defender.stance > Stance.Prone and damage > knockdown_threshold:
             modifier = +1
-            if damage >= self.defender.size:
-                modifier = int(self.defender.size - damage)
+            if damage >= float(self.defender.size):
+                modifier = int(float(self.defender.size) - damage)
             modifier = ContestModifier(modifier) + self.defender.get_resist_knockdown_modifier()
 
             acro_result = ContestResult(self.defender, SKILL_ACROBATICS, modifier)

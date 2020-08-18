@@ -114,10 +114,9 @@ class Creature(Entity):
             return
 
         # equipped items occupy exactly one of the bodyparts used to hold them
-        occupied = {item : bp for bp, item in self.inventory.get_slot_equipment() if item is not None}
-        occupied = set(occupied.values())
+        occupied = [bp for bp in self.inventory.get_equip_slots() if self.inventory.get_item_in_slot(bp) is not None]
         for bp in self.get_bodyparts():
-            if bp not in occupied:
+            if bp.can_use() and bp not in occupied:
                 yield from bp.get_unarmed_attacks()
 
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:
@@ -128,7 +127,8 @@ class Creature(Entity):
         for item in self.inventory.get_held_items():
             if item.is_weapon():
                 using_hands = sum(1 for bp in self.inventory.get_item_held_by(item) if bp.can_use())
-                yield from item.get_melee_attacks(self, using_hands, item)
+                if using_hands > 0:
+                    yield from item.get_melee_attacks(self, using_hands, item)
 
     def get_held_shields(self) -> Iterable[Equipment]:
         if not self.is_conscious():
@@ -184,7 +184,7 @@ class Creature(Entity):
         if cur_stance > threshold:
             return Stance.Standing
         if cur_stance >= threshold:
-            return Stance.Crouched
+            return Stance.Crouching
         return Stance.Prone
 
     def get_stance_count(self) -> Tuple[int, int]:
@@ -198,8 +198,8 @@ class Creature(Entity):
         return cur_stance, total_stance
 
     _lost_stance_text = {
-        Stance.Standing : 'can no longer stand',
-        Stance.Crouched : 'falls over'
+        Stance.Standing  : 'can no longer stand',
+        Stance.Crouching : 'falls over'
     }
     def check_stance(self) -> None:
         if self.stance > self.max_stance:
@@ -208,7 +208,7 @@ class Creature(Entity):
 
     def get_resist_knockdown_modifier(self, difficulty_step: int = 0) -> ContestModifier:
         grade = DifficultyGrade.Standard
-        if self.stance < self.max_stance:
+        if self.stance == Stance.Crouching or self.stance == Stance.Mounted:
             grade = DifficultyGrade.Easy
         grade = grade.get_step(difficulty_step)
 

@@ -111,7 +111,7 @@ class ChangeStanceAction(CreatureAction):
 
     _action_text = {
         Stance.Standing : 'gets up',
-        Stance.Crouched : 'crouches',
+        Stance.Crouching : 'crouches',
         Stance.Prone    : 'goes prone',
     }
 

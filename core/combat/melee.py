@@ -7,7 +7,7 @@ from core.constants import MeleeRange, SizeCategory, Stance
 from core.contest import Contest
 from core.creature.actions import CreatureAction, InterruptCooldownAction, can_interrupt_action, SHORT_ACTION_WINDUP
 from core.contest import ContestResult, OpposedResult, DifficultyGrade, ContestModifier, SKILL_EVADE
-from core.combat.resolver import MeleeCombatResolver, get_combat_modifier
+from core.combat.resolver import MeleeCombatResolver
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -164,7 +164,7 @@ class ChangeMeleeRangeAction(CreatureAction):
     @staticmethod
     def _get_contest_modifier(creature: Creature) -> ContestModifier:
         grade = DifficultyGrade.Standard
-        if creature.stance == Stance.Crouched:
+        if creature.stance == Stance.Crouching:
             grade = DifficultyGrade.Formidable
         elif creature.stance == Stance.Prone:
             grade = DifficultyGrade.Herculean

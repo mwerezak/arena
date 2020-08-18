@@ -10,6 +10,9 @@ class DamageType(Enum):
     Puncture = 'puncture'
     Bludgeon = 'bludgeon'
 
+    def __str__(self):
+        return self.value
+
     def format_type_code(self) -> str:
         return self.value[0]
 

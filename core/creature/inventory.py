@@ -62,6 +62,9 @@ class Inventory:
         for bp in self._slots.keys():
             self._slots[bp] = None
 
+    def get_item_in_slot(self, slot: BodyPart) -> Optional[Equipment]:
+        return self._slots[slot]
+
     def get_slot_equipment(self) -> Iterable[Tuple[BodyPart, Optional[Equipment]]]:
         return iter(self._slots.items())
 
