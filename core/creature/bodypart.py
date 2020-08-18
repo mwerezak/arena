@@ -88,8 +88,8 @@ class BodyPart:
         armor = self.get_armor()
         damage = max(damage - armor, min(armpen, damage))
 
-        if not self._injured and damage > self.size * self.parent.max_health:
-            print(f'{self.parent} suffers an injury to the {self}...')
+        if damage > 3/2 * self.size * self.parent.max_health:
+            print(f'{self.parent} suffers an injury to the {self}.')
             injury_result = self.parent.get_injury_result(attack_result)
             print(injury_result.format_details())
             if not injury_result.success:
@@ -117,8 +117,10 @@ class BodyPart:
         if self.is_vital():
             self.parent.stun(can_defend=True)
         if self.is_grasp_part():
-            held_items = (item for bp, item in self.parent.inventory.get_held_items() if bp == self)
+            held_items = (
+                item for bp, item in self.parent.inventory.get_slot_equipment() if bp == self and item is not None
+            )
             for item in held_items:
                 self.parent.inventory.remove(item)
-                print(f'{self} drops the {item}.')
+                print(f'{self.parent} drops the {item}.')
 

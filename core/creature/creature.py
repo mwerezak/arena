@@ -213,7 +213,7 @@ class Creature(Entity):
         grade = grade.get_step(difficulty_step)
 
         leg_count, leg_total = self.get_stance_count()
-        return grade.to_modifier() + ContestModifier(leg_count - 2 + (leg_count - leg_total))
+        return grade.to_modifier() + ContestModifier(leg_total - 2 + (leg_count - leg_total))
 
     def knock_down(self) -> None:
         if self._mount is not None:

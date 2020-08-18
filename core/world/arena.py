@@ -89,7 +89,7 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
                 if i < min_hands:
                     # if candidate is worse overall, we may just want to change range instead
                     change_desire = 1.0 + protagonist.tactics.get_weapon_change_desire(item, candidate, opponent)
-                    print(f'{item}->{candidate}: {change_desire}')
+                    # print(f'{item}->{candidate}: {change_desire}')
                     if random.random() > change_desire:
                         change_weapon = False
                         break
@@ -196,6 +196,6 @@ if __name__ == '__main__':
                 break
 
     next_turn()
-    orc.apply_wounds(12)
+    # orc.apply_wounds(12)
 
 

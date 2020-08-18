@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Iterable, Sequence, Mapping, NamedTuple
 
 from core.constants import PrimaryAttribute
 from core.dice import dice
+from core.creature.traits import FinesseTrait
 if TYPE_CHECKING:
     from core.creature import Creature
 
@@ -303,7 +304,14 @@ SKILL_BRAWN      = Contest('Brawn',      ['STR', 'SIZ'], innate=True)
 ## Combat Contest Types
 
 class CombatTest(Contest):
-    pass
+    def get_attribute_modifier(self, protagonist: Creature) -> int:
+        if protagonist.has_trait(FinesseTrait):
+            return sum(
+                max(protagonist.get_attribute(attr), protagonist.get_attribute(PrimaryAttribute.DEX))
+                if attr == PrimaryAttribute.STR else protagonist.get_attribute(attr)
+                for attr in self.key_attr
+            )
+        return super().get_attribute_modifier(protagonist)
 
 ## Melee
 SKILL_BLADE    = CombatTest('Blades',   ['STR', 'DEX'])

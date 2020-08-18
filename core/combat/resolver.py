@@ -31,7 +31,7 @@ def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
         return result[0]
     return None
 
-# affects attack and parry, but not blocking
+# affects attack, parry, and evade, but not blocking
 def get_combat_modifier(creature: Creature) -> ContestModifier:
     grade = DifficultyGrade.Standard
     if creature.stance == Stance.Crouched:
@@ -118,7 +118,7 @@ class MeleeCombatResolver:
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
-            print(repr(self.use_defence))
+            #print(repr(self.use_defence))
             self._resolve_melee_nodefence()
             return True
 
@@ -215,7 +215,7 @@ class MeleeCombatResolver:
             is_blocking, damage_mult = self._resolve_shield_block(attack_result, damage_mult)
 
         # if the attacker succeeds, they always get at least 1 critical effect
-        self.attacker_crit = max(primary_result.crit_level, 1) if primary_result.success else 0
+        self.attacker_crit = primary_result.crit_level if primary_result.success else 0
         self.defender_crit = 0
 
         hitloc = None
@@ -299,11 +299,16 @@ class MeleeCombatResolver:
         mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
         print(f'{self.attacker} hits {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
-        wound = self.hitloc.apply_damage(damage, armpen, self.attack_result)
+        self.hitloc.apply_damage(damage, armpen, self.attack_result)
 
         # knockdown due to damage
         if self.defender.stance > Stance.Prone and damage > self.defender.size * 2/3:
-            acro_result = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
+            modifier = +1
+            if damage >= self.defender.size:
+                modifier = int(self.defender.size - damage)
+            modifier = ContestModifier(modifier) + self.defender.get_resist_knockdown_modifier()
+
+            acro_result = ContestResult(self.defender, SKILL_ACROBATICS, modifier)
             test_result = UnopposedResult(acro_result)
             print(test_result.format_details())
             if not test_result.success:

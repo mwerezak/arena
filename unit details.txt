@@ -351,7 +351,6 @@ Stealth I
 Endurance I
 Evade I
 Acrobatics I
-Finesse
 
 Spear (50%) or Halfspear (50%)
 Medium Shield (50%) or Small Shield (50%)
@@ -375,7 +374,6 @@ Shield I
 Endurance II
 Unarmed I
 Evade I
-Finesse
 
 Spear (40%) or Shortsword (30%) or Scimitar (30%)
 Medium Shield (70%) or Small Shield (30%)
@@ -407,6 +405,7 @@ Endurance III
 Unarmed I
 Evade I
 Acrobatics I
+Finesse
 
 Longspear
 Medium Shield (70%) or Small Shield (30%)
