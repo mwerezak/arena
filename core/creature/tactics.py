@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Iterable, Mapping, Optional
 import random
 from core.constants import MeleeRange
 from core.combat.resolver import get_parry_damage_mult
-from core.contest import SkillLevel, Contest, SKILL_EVADE, SKILL_ACROBATICS
+from core.contest import SkillLevel, Contest, SKILL_EVADE
 from core.combat.melee import ChangeMeleeRangeAction, can_interrupt_action
 
 if TYPE_CHECKING:
@@ -117,15 +117,6 @@ class CombatTactics:
     def _can_attack(self, ranges: Iterable[MeleeRange]) -> bool:
         ranges = list(ranges)
         return any(any(attack.can_attack(r) for r in ranges) for attack in self.parent.get_melee_attacks())
-
-    def choose_evade_attack(self, attacker: Creature, attack: MeleeAttack) -> bool:
-        chance = Contest.get_opposed_chance(
-            self.parent, SKILL_ACROBATICS,
-            attacker, attack.combat_test,
-            self.parent.get_resist_knockdown_modifier().contest
-        )
-        print(chance)
-        return random.random() < chance + 0.5
 
     def get_melee_range_priority(self, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
         range_priority = {}

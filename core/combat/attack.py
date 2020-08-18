@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Tuple, Collection, Type, Iterable, Optional, A
 from core.dice import dice
 from core.constants import SizeCategory, PrimaryAttribute
 from core.combat.damage import format_damage
-from core.combat.attacktraits import NaturalWeaponTrait, AttackTrait, CannotDefendTrait
+from core.combat.attacktraits import NaturalWeaponTrait, AttackTrait, CannotDefendTrait, FormidableNatural
+from core.creature.traits import MartialArtistTrait
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -95,7 +96,7 @@ class MeleeAttack:
     def can_defend(self, range: MeleeRange) -> bool:
         if self.has_trait(CannotDefendTrait):
             return False
-        if self.has_trait(NaturalWeaponTrait):
+        if self.has_trait(NaturalWeaponTrait) and not self.has_trait(FormidableNatural) and not self.attacker.has_trait(MartialArtistTrait):
             return self.can_reach(range)
         return self.min_reach <= range
 

@@ -4,7 +4,6 @@ from core.creature.bodyplan import Morphology
 from core.creature.template import CreatureTemplate
 from defines.bodyplan import STANDARD_HUMANOID, HUMANOID_NOTAIL, QUADRUPED_UNGULATE, QUADRUPED_PACHYDERM, QUADRUPED_CANIFORME
 from defines.traits import *
-from core.creature.traits import FinesseTrait, EvadeTrait
 from core.combat.attacktraits import CannotDefendTrait, FormidableNatural
 from core.combat.criticals import KnockdownCritical
 

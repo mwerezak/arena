@@ -25,11 +25,6 @@ class SkillTrait(FeatTrait):
     def key(self) -> Any:
         return SkillTrait, self.skill
 
-# TODO implement
-class EvadeTrait(FeatTrait):
-    name = 'Improved Evade'
-    desc = 'When this creature evades, it may make an Acrobatics check to avoid falling prone.'
-
 class FinesseTrait(FeatTrait):
     name = 'Combat Finesse'
     desc = 'This creature may replace STR with DEX when making an attack or defence roll in melee combat.'

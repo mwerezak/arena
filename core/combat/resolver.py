@@ -91,7 +91,7 @@ class MeleeCombatResolver:
         secondary = MeleeCombatResolver(attacker, defender, use_attack, is_secondary=True)
         self.seconary_attacks.append(secondary)
 
-    def generate_attack_results(self, *, force_nodefence: bool = False, force_evade = False) -> bool:
+    def generate_attack_results(self, *, opportunity_attack: bool = False, force_nodefence: bool = False) -> bool:
         melee = self.attacker.get_melee_combat(self.defender)
         if melee is None:
             return False
@@ -105,10 +105,11 @@ class MeleeCombatResolver:
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             return False # no attack happens
 
-        if force_evade:
+        if opportunity_attack:
             self._resolve_melee_evade()
             return True
         if force_nodefence:
+
             self._resolve_melee_nodefence()
             return True
 
@@ -116,17 +117,10 @@ class MeleeCombatResolver:
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
-
-            if self.defender.tactics.choose_evade_attack(self.attacker, self.use_attack):
-                self._resolve_melee_evade()
-                acro_test = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
-                acro_result = OpposedResult(acro_test, self.attack_result)
-                print(acro_result.format_details())
-                if not acro_result.success:
-                    self.defender.knock_down()
-                return True
-
-            self._resolve_melee_nodefence()
+            # if we are able to defend, but no defence is available (e.g. because of reach),
+            # evade instead but must make an acrobatics check to avoid falling prone
+            self._resolve_melee_evade()
+            self._resolve_evade_knockdown()
             return True
 
         self._resolve_melee_defence()
@@ -253,6 +247,14 @@ class MeleeCombatResolver:
                 if block_result.success:
                     return True, block_damage_mult
         return False, damage_mult
+
+    def _resolve_evade_knockdown(self):
+        if self.defender.stance > Stance.Prone:
+            acro_test = ContestResult(self.defender, SKILL_ACROBATICS, self.defender.get_resist_knockdown_modifier())
+            acro_result = OpposedResult(acro_test, self.attack_result)
+            print(acro_result.format_details())
+            if not acro_result.success:
+                self.defender.knock_down()
 
     def resolve_critical_effects(self) -> None:
         if self.attacker_crit > 0:

@@ -209,7 +209,7 @@ class ChangeMeleeRangeAction(CreatureAction):
                 if attack_range is not None:
                     melee.change_separation(attack_range)
                     combat = MeleeCombatResolver(self.opponent, self.protagonist)
-                    if combat.generate_attack_results(force_evade=True):
+                    if combat.generate_attack_results(opportunity_attack=True):
                         # interrupt their current action to make the opportunity attack
                         action = self.opponent.get_current_action()
                         attack_action = OpportunityAttackAction(action)
@@ -282,10 +282,8 @@ class MeleeCombatAction(CreatureAction):
         other_action = self.target.get_current_action()
         can_defend = other_action is None or getattr(other_action, 'can_defend', False)
 
-        # TODO defender may choose to evade
-
         attack = MeleeCombatResolver(self.protagonist, self.target)
-        if attack.generate_attack_results(force_nodefence= not can_defend):
+        if attack.generate_attack_results(force_nodefence = not can_defend):
             if can_defend:
                 defend_action = MeleeDefendAction(other_action)
                 self.target.set_current_action(defend_action)
