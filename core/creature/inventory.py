@@ -40,13 +40,12 @@ class Inventory:
         empty_hands = list(self.get_empty_slots())
 
         min_hands, max_hands = equipment.get_required_hands(self.parent)
-        if len(empty_hands) < min_hands:
-            return False
+        if use_hands is None:
+            use_hands = min_hands
 
-        use_hands = (
-            min(max(min_hands, use_hands), max_hands)
-            if use_hands is not None else min_hands
-        )
+        use_hands = min(max(min_hands, use_hands), max_hands, len(empty_hands))
+        if use_hands < min_hands:
+            return False
 
         self.add(equipment)  # ensure that it's actually in our inventory
         for i in range(use_hands):

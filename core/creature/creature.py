@@ -294,11 +294,11 @@ class Creature(Entity):
             if not injury_result.success:
                 self.kill()
                 print(f'{self} is killed!')
-            else:
+            elif self.is_conscious():
                 self.set_conscious(False)
                 print(f'{self} is incapacitated!')
 
-        elif self.health <= 0:
+        elif self.health <= 0 and self.is_conscious():
 
             injury_test = ContestResult(self, SKILL_ENDURANCE)
             injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)

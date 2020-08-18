@@ -127,5 +127,10 @@ class BodyPart:
                 item for bp, item in self.parent.inventory.get_slot_equipment() if bp == self and item is not None
             )
             for item in held_items:
-                self.parent.inventory.remove(item)
-                print(f'{self.parent} drops the {item}.')
+                inventory = self.parent.inventory
+                use_hands = sum(1 for bp in inventory.get_item_held_by(item))
+
+                inventory.unequip_item(item)
+                if not inventory.try_equip_item(item, use_hands=use_hands):
+                    self.parent.inventory.remove(item)
+                    print(f'{self.parent} drops the {item}.')
