@@ -91,7 +91,6 @@ class MeleeCombatResolver:
         secondary = MeleeCombatResolver(attacker, defender, use_attack, is_secondary=True)
         self.seconary_attacks.append(secondary)
 
-    # TODO collect log output to be accessed later instead of printing immediately
     def generate_attack_results(self, *, force_nodefence: bool = False, force_evade = False) -> bool:
         melee = self.attacker.get_melee_combat(self.defender)
         if melee is None:

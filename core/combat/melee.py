@@ -22,8 +22,13 @@ def resolve_opposed_initiative(a: Creature, b: Creature) -> Optional[Creature]:
     a_total = a_roll + a_initiative
     b_total = b_roll + b_initiative
 
+    a_crit = 1 if a_roll >= 10 else (-1 if a_roll <= 1 else 0)
+    b_crit = 1 if b_roll >= 10 else (-1 if b_roll <= 1 else 0)
+
     winner = None
-    if a_total != b_total:
+    if a_crit != b_crit:
+        winner = a if a_crit > b_crit else b
+    elif a_total != b_total:
         winner = a if a_total > b_total else b
     elif round(a_initiative) != round(b_initiative):
         winner = a if a_initiative > b_initiative else b
@@ -159,7 +164,7 @@ class ChangeMeleeRangeAction(CreatureAction):
             return False  # no longer engaged in melee combat
         if melee.get_separation() == self.target_range:
             return False  # nothing to do
-        return True  # TODO check for movement impairment
+        return True
 
     @staticmethod
     def _get_contest_modifier(creature: Creature) -> ContestModifier:
