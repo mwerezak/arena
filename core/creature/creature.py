@@ -279,18 +279,13 @@ class Creature(Entity):
     def is_seriously_wounded(self) -> bool:
         return self.health <= 0
 
-    def get_injury_result(self, attack_result: Optional[ContestResult] = None) -> Union[OpposedResult, UnopposedResult]:
-        endurance_test = ContestResult(self, SKILL_ENDURANCE)
-        if attack_result is None:
-            return UnopposedResult(endurance_test)
-        return OpposedResult(endurance_test, attack_result)
-
     def apply_wounds(self, amount: float, attack_result: Optional[ContestResult] = None) -> None:
         prev_health = self.health
         self._health -= amount
 
-        if prev_health > -self.max_health >= self.health:
-            injury_result = self.get_injury_result(attack_result)
+        if self.health <= -self.max_health:
+            injury_test = ContestResult(self, SKILL_ENDURANCE)
+            injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
 
             print(injury_result.format_details())
             if not injury_result.success:
@@ -300,9 +295,12 @@ class Creature(Entity):
                 self.set_conscious(False)
                 print(f'{self} is incapacitated!')
 
-        elif prev_health > 0 >= self.health:
-            self.stun(can_defend=False)
-            injury_result = self.get_injury_result(attack_result)
+        elif self.health <= 0:
+            if prev_health > 0:
+                self.stun(can_defend=False)
+
+            injury_test = ContestResult(self, SKILL_ENDURANCE)
+            injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
 
             print(f'{self} is seriously wounded!')
             print(injury_result.format_details())

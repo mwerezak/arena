@@ -208,15 +208,16 @@ if __name__ == '__main__':
         return c
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
+    gnoll2 = add_creature(CREATURE_GNOLL_WARRIOR)
     goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
     satyr = add_creature(CREATURE_SATYR_BRAVE)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
     mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
-    # orc.name = 'Orc 1'
-    # orc2.name = 'Orc 2'
+    orc.name = 'Orc 1'
+    orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(gnoll, orc)
+    melee = join_melee_combat(orc, orc2)
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
         print(*c.inventory, sep='\n')

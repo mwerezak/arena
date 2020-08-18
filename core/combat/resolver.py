@@ -204,7 +204,7 @@ class MeleeCombatResolver:
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         primary_result = UnopposedResult(attack_result)
-        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name}!')
+        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs no defence!')
         print(primary_result.format_details())
 
         damage_mult = 1.0 if primary_result.success else 0.0

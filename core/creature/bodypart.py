@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Iterable, Optional
 
 from core.creature.bodyplan import BodyPartFlag, BodyElementType
-from core.contest import ContestResult
+from core.contest import ContestResult, DifficultyGrade, OpposedResult, UnopposedResult, SKILL_ENDURANCE
 
 if TYPE_CHECKING:
     from core.creature import Creature
@@ -88,9 +89,14 @@ class BodyPart:
         armor = self.get_armor()
         damage = max(damage - armor, min(armpen, damage))
 
-        if damage > 3/2 * self.size * self.parent.max_health:
+        threshold = self.size * self.parent.max_health
+        injury_steps = int(damage / threshold - 1.0)
+        if injury_steps > 0:
+            grade = DifficultyGrade.VeryEasy.get_step(injury_steps)
+            injury_test = ContestResult(self.parent, SKILL_ENDURANCE, grade.to_modifier())
+            injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
+
             print(f'{self.parent} suffers an injury to the {self}.')
-            injury_result = self.parent.get_injury_result(attack_result)
             print(injury_result.format_details())
             if not injury_result.success:
                 self.injure_part()
@@ -102,7 +108,7 @@ class BodyPart:
             wound *= 1.5
 
         if wound > 0:
-            print(f'{self.parent} is wounded for {wound:.1f} damage (armour {armor}).')
+            print(f'{self.parent} is wounded for {wound:.0f} damage (armour {armor}).')
             self.parent.apply_wounds(wound, attack_result)
         else:
             print(f'The armor absorbs the blow (armour {armor}).')
@@ -123,4 +129,3 @@ class BodyPart:
             for item in held_items:
                 self.parent.inventory.remove(item)
                 print(f'{self.parent} drops the {item}.')
-
