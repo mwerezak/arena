@@ -150,7 +150,6 @@ Shields I
 
 Longspear, Medium Shield
 Dagger (40%) or Short Sword (10%) or Nothing (50%)
-Tunic
 Nothing (70%) or Doublet (20%) or Gambeson (10%)
 Leather Helmet (40%) or Leather Cap (40%) or Nothing (20%)
 
@@ -183,9 +182,9 @@ Steel Chain Hauberk (40%) or Steel Brigandine Hauberk (60%)
 =Outland Rangers
 High-tier archers. Experienced, decent equipment, effective at range or in melee.
 
-Archery II
+Archery III
 Swords II
-Shields I
+Shields II
 Endurance II
 Unarmed I
 Evade I

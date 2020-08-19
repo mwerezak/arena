@@ -2,7 +2,7 @@ from core.creature.template import CreatureTemplate
 from core.creature.loadout import Loadout, LoadoutChoice
 from core.creature.traits import EvadeTrait, FinesseTrait
 from core.equipment.armor import ArmorTemplate, Armor
-from defines.species import SPECIES_GOBLIN, SPECIES_OGRE, SPECIES_ORC
+from defines.species import SPECIES_GOBLIN, SPECIES_OGRE, SPECIES_ORC, SPECIES_BOAR
 from defines.armor import (
     ARMORTYPE_HIDE, ARMORTYPE_PADDED, ARMORTYPE_LAMINATED, ARMORTYPE_SCALED, MATERIAL_LEATHER, MATERIAL_IRON,
     PATTERN_CUIRASS, PATTERN_SUIT, PATTERN_HAUBERK, PATTERN_HELMET,
@@ -139,6 +139,15 @@ CREATURE_GOBLIN_BOAR_RIDER = (
             (2, Armor(LEATHER_ARMOR, SPECIES_GOBLIN)),
         ]),
     ))
+)
+
+CREATURE_WAR_BOAR = (
+    CreatureTemplate(template=SPECIES_BOAR)
+    .modify_attributes(INT=-1, POW=-1)  # domesticated
+    .add_trait(
+        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
+    )
 )
 
 CREATURE_OGRE_BRUTE = (

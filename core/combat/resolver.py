@@ -26,9 +26,8 @@ def get_parry_damage_mult(attack_force: AttackForce, defend_force: AttackForce) 
     return 0
 
 def get_random_hitloc(creature: Creature) -> Optional[BodyPart]:
-    bodyparts = list(creature.get_bodyparts())
-    weights = [ bp.exposure for bp in bodyparts ]
-    result = random.choices(bodyparts, weights)
+    bodyparts = [ (bp, bp.exposure) for bp in creature.get_bodyparts() ]
+    result = random.choices(*zip(*bodyparts))
     if len(result) > 0:
         return result[0]
     return None

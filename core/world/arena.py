@@ -25,11 +25,27 @@ def try_equip_best_weapons(creature: Creature) -> None:
     inventory.unequip_all()
 
     weapon_value = {}
+    shield_value = {}
     for item in inventory:
         if item.is_weapon():
             weapon_value[item] = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=0.0)
+            if item.is_shield():
+                shield_value[item] = (item.shield.block_bonus, item.shield.block_force)
 
-    for item in sorted(weapon_value.keys(), key=lambda k: weapon_value[k], reverse=True):
+    # equip one weapon, then one shield, then the rest
+    weapons = sorted(weapon_value.keys(), key=lambda k: weapon_value[k])
+    best_shield = max(shield_value.keys(), key=lambda k: shield_value[k], default=None)
+
+    item = weapons.pop()
+    inventory.try_equip_item(item)
+    if item == best_shield:
+        best_shield = None
+
+    if best_shield is not None:
+        inventory.try_equip_item(best_shield)
+        weapons.remove(best_shield)
+
+    for item in reversed(weapons):
         if len(list(inventory.get_empty_slots())) == 0:
             break
         inventory.try_equip_item(item)
@@ -103,11 +119,17 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
 
                 unequip_candidates = sorted(
                     protagonist.inventory.get_held_items(),
-                    key=lambda o: protagonist.tactics.get_weapon_value(o, opponent, melee.get_separation())
+                    key=lambda o: (
+                        1 if o.is_shield() else 0,  # sort shields last and only unequip if necessary
+                        protagonist.tactics.get_weapon_value(o, opponent, melee.get_separation())
+                    )
                 )
 
                 unequip = []
                 for i, item in enumerate(unequip_candidates):
+                    if i >= max_hands:
+                        break
+
                     if i < min_hands:
                         # if candidate is worse overall, we may just want to change range instead
                         change_desire = 1.0 + protagonist.tactics.get_weapon_change_desire(item, candidate, opponent)
@@ -115,6 +137,8 @@ def get_next_action(protagonist: Creature) -> Optional[CreatureAction]:
                         if random.random() > change_desire:
                             change_weapon = False
                             break
+                    elif item.is_shield():
+                        break
                     else:
                         change_desire = protagonist.tactics.get_weapon_change_desire(item, candidate, opponent, melee.get_separation())
                         if random.random() > change_desire:
@@ -195,7 +219,7 @@ if __name__ == '__main__':
 
     from defines.units.wildalliance import *
     from defines.units.barbarians import *
-    from defines.units.wildalliance import CREATURE_SATYR_WARRIOR
+    from defines.units.feudal import *
 
     loop = ActionLoop()
 
@@ -209,15 +233,20 @@ if __name__ == '__main__':
 
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
     gnoll2 = add_creature(CREATURE_GNOLL_WARRIOR)
-    goblin = add_creature(CREATURE_GOBLIN_SPEARMAN)
-    satyr = add_creature(CREATURE_SATYR_BRAVE)
+    goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
+    gob_inf = add_creature(CREATURE_GOBLIN_INFANTRY)
+    satyr = add_creature(CREATURE_SATYR_WARDEN)
+    satyr_brave = add_creature(CREATURE_SATYR_BRAVE)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
+    ogre = add_creature(CREATURE_OGRE_BRUTE)
     mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
 
-    melee = join_melee_combat(satyr, goblin)
+    spearman = add_creature(CREATURE_SERGEANT_SPEARMAN)
+
+    melee = join_melee_combat(satyr_brave, spearman)
     # melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
@@ -235,5 +264,7 @@ if __name__ == '__main__':
 
     next_turn()
     # orc.apply_wounds(12)
+    # while True:
+    #     next_turn()
 
 

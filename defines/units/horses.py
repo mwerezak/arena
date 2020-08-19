@@ -16,3 +16,12 @@ CREATURE_WAR_HORSE = (
     )
 )
 
+# companions of the satyr outriders
+CREATURE_WILD_HORSE = (
+    CreatureTemplate('Wild Horse', template = SPECIES_HORSE)
+    .modify_attributes(SIZ=-4, POW=+1) # smaller but more personality
+    .add_trait(
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+    )
+)

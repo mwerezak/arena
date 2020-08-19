@@ -1,9 +1,10 @@
 from core.creature.template import CreatureTemplate
 from core.creature.loadout import Loadout, LoadoutChoice
 from core.equipment.armor import Armor, ArmorTemplate
-from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL, SPECIES_HORSE
-from defines.traits import *
+from defines.species import SPECIES_SATYR, SPECIES_MINOTAUR, SPECIES_GNOLL
 from core.creature.traits import FinesseTrait, EvadeTrait
+from defines.traits import *
+from defines.units.horses import CREATURE_WILD_HORSE
 from defines.weapons import (
     WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
     WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE,
@@ -121,16 +122,6 @@ CREATURE_SATYR_OUTRIDER = (
         LoadoutChoice([(3, SHIELD_MEDIUM), (1, SHIELD_SMALL)]),
         LoadoutChoice([(1, Armor(LINEN_CUIRASS, SPECIES_SATYR)), (1, None)])
     ))
-)
-
-# companions of the satyr outriders
-CREATURE_WILD_HORSE = (
-    CreatureTemplate('Wild Horse', template = SPECIES_HORSE)
-    .modify_attributes(SIZ=-4, POW=+1) # smaller but more personality
-    .add_trait(
-        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
-        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
-    )
 )
 
 CREATURE_MINOTAUR_MILITIA = (

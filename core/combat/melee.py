@@ -167,7 +167,7 @@ class ChangeMeleeRangeAction(CreatureAction):
         return True
 
     @staticmethod
-    def _get_contest_modifier(creature: Creature) -> ContestModifier:
+    def get_contest_modifier(creature: Creature) -> ContestModifier:
         grade = DifficultyGrade.Standard
         if creature.stance == Stance.Crouching:
             grade = DifficultyGrade.Formidable
@@ -193,8 +193,8 @@ class ChangeMeleeRangeAction(CreatureAction):
 
         if reaction == 'contest':
             contest = OpposedResult(
-                ContestResult(self.protagonist, SKILL_EVADE, self._get_contest_modifier(self.protagonist)),
-                ContestResult(self.opponent, SKILL_EVADE, self._get_contest_modifier(self.opponent))
+                ContestResult(self.protagonist, SKILL_EVADE, self.get_contest_modifier(self.protagonist)),
+                ContestResult(self.opponent, SKILL_EVADE, self.get_contest_modifier(self.opponent))
             )
 
             print(contest.format_details())

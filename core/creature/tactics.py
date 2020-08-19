@@ -91,7 +91,8 @@ class CombatTactics:
         if from_score == 0:
             return 1.0
 
-        success_chance = Contest.get_opposed_chance(self.parent, SKILL_EVADE, opponent)
+        modifier = ChangeMeleeRangeAction.get_contest_modifier(self.parent) - ChangeMeleeRangeAction.get_contest_modifier(opponent)
+        success_chance = Contest.get_opposed_chance(self.parent, SKILL_EVADE, opponent, SKILL_EVADE, modifier.contest)
         return min(max(-1.0, (to_score/from_score - 1.0)/0.25 * success_chance), 1.0)
 
     def choose_change_range_response(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
@@ -165,4 +166,6 @@ class CombatTactics:
 
     @staticmethod
     def get_switch_attack_desire(from_value: float, to_value: float) -> float:
+        if from_value == 0:
+            return 1.0
         return min(max(-1.0, (to_value/from_value - 1.0)/2.0), 1.0)
