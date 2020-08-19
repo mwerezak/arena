@@ -1,4 +1,5 @@
 CRIT_THRESH: 4
+SIDES: 8
 
 function: combat helper AROLL:s vs DROLL:s CRIT:n MOD:n {
   ROLL: AROLL - DROLL
@@ -13,12 +14,12 @@ function: combat helper AROLL:s vs DROLL:s CRIT:n MOD:n {
 }
 
 function: combat result ASKILL:n AMOD:n vs DSKILL:n DMOD:n {
-  AROLL: [highest 3 of (3+ASKILL)d6]
-  DROLL: [highest 3 of (3+DSKILL)d6]
+  AROLL: [highest 3 of (3+ASKILL)d SIDES]
+  DROLL: [highest 3 of (3+DSKILL)d SIDES]
   MOD: AMOD + ASKILL - DMOD - DSKILL
   result: [combat helper AROLL vs DROLL 0 MOD]
 }
 
-output [combat result 1 0 vs 1 0]
-output [combat result 2 0 vs 1 0]
-output [combat result 1 2 vs 1 0]
+output [combat result 1 0 vs 1 0] named "I vs I"
+output [combat result 2 0 vs 1 0] named "II vs I"
+output [combat result 1 2 vs 1 0] named "I+2 vs I"

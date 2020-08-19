@@ -44,14 +44,31 @@ CREATURE_GOBLIN_SLAVE_SPEARMAN = (
     ))
 )
 
+CREATURE_GOBLIN_SLAVE_SLINGER = (
+    CreatureTemplate('Goblin Slave Slinger', template=SPECIES_GOBLIN)
+    .set_loadout(Loadout(
+        # sling, bullets
+        LoadoutChoice([
+            (1, WEAPON_DAGGER),
+            (2, WEAPON_CLUB),
+            (2, None),
+        ])
+    ))
+)
+
+
 ## Slave Slingers
 
 CREATURE_GOBLIN_SPEARMAN = (
     CreatureTemplate('Goblin Spearman', template=SPECIES_GOBLIN)
-    .add_trait(SkillTrait(SKILL_POLEARM, SkillLevel(1)))
+    .add_trait(
+        SkillTrait(SKILL_POLEARM, SkillLevel(1)),
+        SkillTrait(SKILL_EVADE, SkillLevel(1)),
+    )
     .set_loadout(Loadout(
         LoadoutChoice([
-            (2, [WEAPON_LONGSPEAR, WEAPON_DAGGER, SkillTrait(SKILL_BLADE, SkillLevel(1))]),
+            (1, [WEAPON_LONGSPEAR, WEAPON_DAGGER, SkillTrait(SKILL_BLADE, SkillLevel(1))]),
+            (1, [WEAPON_LONGSPEAR, WEAPON_MACE, SkillTrait(SKILL_MACE, SkillLevel(1))]),
             (1, [WEAPON_SPEAR, SHIELD_SMALL, SkillTrait(SKILL_SHIELD, SkillLevel(1))]),
             (1, [WEAPON_SPEAR, SHIELD_MEDIUM, SkillTrait(SKILL_SHIELD, SkillLevel(1))]),
         ]),
@@ -73,6 +90,7 @@ CREATURE_GOBLIN_INFANTRY = (
     .add_trait(
         SkillTrait(SKILL_MACE, SkillLevel(1)),
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(1)),
     )
     .set_loadout(Loadout(
         LoadoutChoice([(3, WEAPON_MACE), (1, WEAPON_CLUB)]),
@@ -98,7 +116,7 @@ CREATURE_GOBLIN_ENFORCER = (
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
         SkillTrait(SKILL_EVADE, SkillLevel(2)),
         SkillTrait(SKILL_ACROBATICS, SkillLevel(1)),
-        EvadeTrait(),
+        FinesseTrait(),
     )
     .set_loadout(Loadout(
         LoadoutChoice([
@@ -117,10 +135,10 @@ CREATURE_GOBLIN_BOAR_RIDER = (
     .modify_attributes(CON=+1)
     .add_trait(
         SkillTrait(SKILL_POLEARM, SkillLevel(2)),
-        SkillTrait(SKILL_BLADE, SkillLevel(1)),
+        SkillTrait(SKILL_BLADE, SkillLevel(2)),
         SkillTrait(SKILL_RIDING, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
-        SkillTrait(SKILL_ENDURANCE, SkillLevel(1)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
         SkillTrait(SKILL_EVADE, SkillLevel(1)),
         SkillTrait(SKILL_ACROBATICS, SkillLevel(1)),
     )
@@ -153,9 +171,10 @@ CREATURE_WAR_BOAR = (
 CREATURE_OGRE_BRUTE = (
     CreatureTemplate('Ogre Brute', template=SPECIES_OGRE)
     .add_trait(
-        SkillTrait(SKILL_MACE, SkillLevel(3)),
-        SkillTrait(SKILL_UNARMED, SkillLevel(3)),
-        SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
+        SkillTrait(SKILL_MACE, SkillLevel(2)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
+        SkillTrait(SKILL_EVADE, SkillLevel(1)),
     )
     .set_loadout(Loadout(
         [WEAPON_GREAT_CLUB],
@@ -170,8 +189,8 @@ CREATURE_OGRE_BRUTE = (
 CREATURE_ORC_BARBARIAN = (
     CreatureTemplate('Orc Barbarian', template=SPECIES_ORC)
     .add_trait(
-        SkillTrait(SKILL_SHIELD, SkillLevel(2)),
-        SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+        SkillTrait(SKILL_SHIELD, SkillLevel(1)),
+        SkillTrait(SKILL_UNARMED, SkillLevel(1)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
     )
     .set_loadout(Loadout(

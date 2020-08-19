@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     spearman = add_creature(CREATURE_SERGEANT_SPEARMAN)
 
-    melee = join_melee_combat(satyr_brave, spearman)
+    melee = join_melee_combat(orc, spearman)
     # melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')

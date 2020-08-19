@@ -57,7 +57,7 @@ SPECIES_GOBLIN = (
 
 SPECIES_ORC = (
     CreatureTemplate('Orc', BODYPLAN_HUMANLIKE)
-    .set_attributes(STR=+3, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
+    .set_attributes(STR=+2, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
 )
 
 SPECIES_OGRE = (

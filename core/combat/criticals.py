@@ -94,7 +94,7 @@ class HitLocationCritical(CriticalEffect):
 class SecondaryAttackCritical(CriticalEffect):
     name = 'Secondary Attack'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
-    weight = 1
+    weight = 2
 
     target: Creature
     attack: MeleeAttack
@@ -137,7 +137,12 @@ class ImproveParryCritical(CriticalEffect):
 class DisruptCritical(CriticalEffect):
     name = 'Disrupt Opponent'
     usage = CriticalUsage.General | CriticalUsage.Melee
-    weight = 5
+
+    @property
+    def weight(self) -> float:
+        if CriticalUsage.Defensive in self.usage:
+            return 5
+        return 3
 
     def can_use(self) -> bool:
         opponent = self.combat.melee.get_opponent(self.user)
@@ -168,7 +173,7 @@ class CloseRangeCritical(CriticalEffect):
         self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
-        return self.target_range is not None and self.target_range < self.combat.melee.get_separation()
+        return self.user.stance == Stance.Standing and self.target_range is not None and self.target_range < self.combat.melee.get_separation()
 
     def apply(self) -> None:
         prev = self.combat.melee.get_separation()
@@ -191,7 +196,7 @@ class OpenRangeCritical(CriticalEffect):
         self.target_range = self.user.tactics.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
-        return self.target_range is not None and self.target_range > self.combat.melee.get_separation()
+        return self.user.stance == Stance.Standing and self.target_range is not None and self.target_range > self.combat.melee.get_separation()
 
     def apply(self) -> None:
         prev = self.combat.melee.get_separation()

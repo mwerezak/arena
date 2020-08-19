@@ -36,7 +36,7 @@ class SkillLevel(Enum):
 
     @property
     def contest_mod(self) -> int:
-        return self.value - 1
+        return 0
 
     @property
     def critical_mod(self) -> int:
@@ -53,9 +53,9 @@ class SkillLevel(Enum):
 
 class Contest:
     BASE_DICE = 3
-    BASE_SIDES = 6
+    BASE_SIDES = 8
 
-    CRIT_THRESH = 4
+    CRIT_THRESH = 5
     MAX_CRIT = 3
 
     def __init__(self, name: str, key_attr: Iterable[str], innate: bool = False):
@@ -107,12 +107,12 @@ class Contest:
         return sum(p for result, p in roll_table.items() if result > target)
 
 class DifficultyGrade(Enum):
-    VeryEasy   = +4
+    VeryEasy   = +5
     Easy       = +2
     Standard   = +0
     Hard       = -2
-    Formidable = -4
-    Herculean  = -8
+    Formidable = -5
+    Herculean  = -10
 
     @property
     def contest_mod(self) -> int:
@@ -183,11 +183,11 @@ class ContestResult:
         return self.base_total + self.crit_modifier + self.modifier.critical
 
     def get_crit_level(self, versus: int) -> int:
-        crit = int((self.crit_total - versus) / Contest.CRIT_THRESH)
+        crit = int((self.crit_total - versus - 1) / Contest.CRIT_THRESH)
         return min(max(0, crit), Contest.MAX_CRIT)
 
 class UnopposedResult:
-    DEFAULT_TARGET = 10  # 50% chance of success
+    DEFAULT_TARGET = 13  # 50% chance of success
 
     def __init__(self, result: ContestResult, target: int = DEFAULT_TARGET):
         self.result = result
@@ -260,7 +260,7 @@ def get_roll_table(bonus_dice: int) -> Mapping[int, float]:
         raise ValueError  # it's going to take too long
 
     result = Counter()
-    for roll in itertools.product([1,2,3,4,5,6], repeat = Contest.BASE_DICE + bonus_dice):
+    for roll in itertools.product(list(range(1, Contest.BASE_SIDES + 1)), repeat = Contest.BASE_DICE + bonus_dice):
         roll_value = sum( sorted(roll, reverse=True)[:Contest.BASE_DICE] )
         result[roll_value] += 1
 

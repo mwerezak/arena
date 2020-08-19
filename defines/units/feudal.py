@@ -88,7 +88,7 @@ CREATURE_SERGEANT_SPEARMAN = (
         [WEAPON_LONGSPEAR],
         LoadoutChoice([(3, SHIELD_LARGE), (1, SHIELD_MEDIUM)]),
         LoadoutChoice([
-            (1, [WEAPON_BROADSWORD, SkillTrait(SKILL_BLADE, SkillLevel(2))]),
+            (1, [WEAPON_BROADSWORD, SkillTrait(SKILL_BLADE, SkillLevel(1))]),
             (2, [WEAPON_SHORTSWORD, SkillTrait(SKILL_BLADE, SkillLevel(1))]),
             (3, [WEAPON_MACE, SkillTrait(SKILL_MACE, SkillLevel(1))]),
         ]),

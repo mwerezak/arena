@@ -7,7 +7,7 @@ from defines.traits import *
 from defines.units.horses import CREATURE_WILD_HORSE
 from defines.weapons import (
     WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
-    WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE,
+    WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE, WEAPON_WARHAMMER, WEAPON_GREAT_HAMMER,
 )
 from defines.shields import (
     SHIELD_SMALL, SHIELD_MEDIUM
@@ -72,7 +72,7 @@ CREATURE_SATYR_ARCHER = (
 CREATURE_SATYR_WARRIOR = (
     CreatureTemplate('Satyr Warrior', template = SPECIES_SATYR)
     .add_trait(
-        SkillTrait(SKILL_SHIELD, SkillLevel(1)),
+        SkillTrait(SKILL_SHIELD, SkillLevel(2)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
     )
@@ -96,8 +96,8 @@ CREATURE_SATYR_WARDEN = (
         SkillTrait(SKILL_SHIELD, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
+        SkillTrait(SKILL_EVADE, SkillLevel(2)),
         FinesseTrait(),
-        EvadeTrait(),
     )
     .set_loadout(Loadout(
         [ WEAPON_SCIMITAR, SHIELD_MEDIUM, Armor(LINEN_ARMOR, SPECIES_SATYR) ],
@@ -111,11 +111,10 @@ CREATURE_SATYR_OUTRIDER = (
     .add_trait(
         SkillTrait(SKILL_POLEARM, SkillLevel(2)),
         SkillTrait(SKILL_SHIELD, SkillLevel(2)),
-        SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
         SkillTrait(SKILL_RIDING, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
         FinesseTrait(),
-        EvadeTrait(),
     )
     .set_loadout(Loadout(
         [WEAPON_LONGSPEAR],
@@ -127,11 +126,13 @@ CREATURE_SATYR_OUTRIDER = (
 CREATURE_MINOTAUR_MILITIA = (
     CreatureTemplate('Minotaur Militia', template=SPECIES_MINOTAUR)
     .add_trait(
-        SkillTrait(SKILL_AXE, SkillLevel(1)),
         SkillTrait(SKILL_SHIELD, SkillLevel(1)),
     )
     .set_loadout(Loadout(
-        [WEAPON_BATTLEAXE],  # basically a hatchet for a minotaur
+        LoadoutChoice([
+            (2, [WEAPON_BATTLEAXE, SkillTrait(SKILL_AXE, SkillLevel(1))]), # basically a hatchet for a minotaur
+            (1, [WEAPON_WARHAMMER, SkillTrait(SKILL_MACE, SkillLevel(1))]),
+        ]),
         LoadoutChoice([(1, SHIELD_SMALL), (1, SHIELD_MEDIUM)]),
         LoadoutChoice([(1, LINEN_CUIRASS), (1, LINEN_APRON), (1, None)]),
         LoadoutChoice([(1, Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR)), (1, None)]),
@@ -142,13 +143,14 @@ CREATURE_MINOTAUR_WARRIOR = (
     CreatureTemplate('Minotaur Fighter', template=SPECIES_MINOTAUR)
     .modify_attributes(STR=+1)
     .add_trait(
-        SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
     )
     .set_loadout(Loadout(
         LoadoutChoice([
-            (1, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(3))]),
+            (1, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(2))]),
             (2, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(2)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
+            (1, [WEAPON_GREAT_HAMMER, SHIELD_MEDIUM, SkillTrait(SKILL_MACE, SkillLevel(2)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
         ]),
         LoadoutChoice([(1, Armor(BRONZE_HELMET, SPECIES_MINOTAUR)), (1, None)]),
         [Armor(LINEN_APRON, SPECIES_MINOTAUR), Armor(BRONZE_HALF_PLATE_CUIRASS, SPECIES_MINOTAUR)],
@@ -165,8 +167,9 @@ CREATURE_MINOTAUR_CHAMPION = (
     )
     .set_loadout(Loadout(
         LoadoutChoice([
-            (1, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(5))]),
-            (1, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(4)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
+            (2, [WEAPON_MINOTAUR_AXE, SkillTrait(SKILL_AXE, SkillLevel(4))]),
+            (1, [WEAPON_GREATAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(4)), SkillTrait(SKILL_SHIELD, SkillLevel(3))]),
+            (1, [WEAPON_GREAT_HAMMER, SHIELD_MEDIUM, SkillTrait(SKILL_MACE, SkillLevel(4)), SkillTrait(SKILL_SHIELD, SkillLevel(3))]),
         ]),
         LoadoutChoice([(1, Armor(BRONZE_BARBUTE, SPECIES_MINOTAUR)), (3, Armor(BRONZE_HELMET, SPECIES_MINOTAUR))]),
         [Armor(LINEN_APRON, SPECIES_MINOTAUR), Armor(LINEN_TAILGUARD, SPECIES_MINOTAUR)],
@@ -177,9 +180,10 @@ CREATURE_MINOTAUR_CHAMPION = (
 CREATURE_GNOLL_WARRIOR = (
     CreatureTemplate('Gnoll Warrior', template=SPECIES_GNOLL)
     .add_trait(
-        SkillTrait(SKILL_SHIELD, SkillLevel(1)),
+        SkillTrait(SKILL_SHIELD, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
+        SkillTrait(SKILL_EVADE, SkillLevel(2)),
     )
     .set_loadout(Loadout(
         LoadoutChoice([
@@ -197,11 +201,12 @@ CREATURE_GNOLL_CHIEFTAINS_SON = (
     .add_trait(
         SkillTrait(SKILL_UNARMED, SkillLevel(3)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(3)),
+        SkillTrait(SKILL_EVADE, SkillLevel(3)),
     )
     .set_loadout(Loadout(
         LoadoutChoice([
-            (1, [WEAPON_BATTLEAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(3)), SkillTrait(SKILL_SHIELD, SkillLevel(1))]),
-            (1, [WEAPON_GREATAXE, SkillTrait(SKILL_AXE, SkillLevel(4))]),
+            (1, [WEAPON_BATTLEAXE, SHIELD_MEDIUM, SkillTrait(SKILL_AXE, SkillLevel(3)), SkillTrait(SKILL_SHIELD, SkillLevel(2))]),
+            (1, [WEAPON_GREATAXE, SkillTrait(SKILL_AXE, SkillLevel(3))]),
         ]),
         LoadoutChoice([(3, Armor(LEATHER_ARMOR, SPECIES_GNOLL)), (1, None)]),
         LoadoutChoice([(3, Armor(BRONZE_SCALE_HAUBERK, SPECIES_GNOLL)), (1, Armor(BRONZE_SCALE_CUIRASS, SPECIES_GNOLL))]),
