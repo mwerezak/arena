@@ -152,6 +152,7 @@ Padded Barding (50%) or Leather Barding (30%) or Steel Brigandine Barding (20%)
 =Levy Spearmen
 Low-tier peasant infantry. Poorly trained and equipped.
 
+Polearm I
 Shields I
 
 Longspear, Medium Shield
@@ -163,6 +164,7 @@ Leather Helmet (40%) or Leather Cap (40%) or Nothing (20%)
 Low-tier peasant archers. They have effective bows and can use them, but otherwise poorly trained and equipped.
 
 Archery I
+Evade I
 
 Longbow, 30 Arrows
 Dagger (60%) or Short Sword (10%) or Nothing (30%)
@@ -175,7 +177,7 @@ Medium-tier infantry.
 
 Polearms II
 Shields II
-Swords/Maces I
+Swords/Maces II
 Endurance I
 
 Longspear

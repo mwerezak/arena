@@ -141,7 +141,6 @@ CREATURE_MINOTAUR_MILITIA = (
 
 CREATURE_MINOTAUR_WARRIOR = (
     CreatureTemplate('Minotaur Fighter', template=SPECIES_MINOTAUR)
-    .modify_attributes(STR=+1)
     .add_trait(
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),

@@ -14,12 +14,12 @@ if TYPE_CHECKING:
 
 # relative mean calculated using anydice.com
 SKILL_FACTOR = {
-    SkillLevel(0) : 0.78, # none
-    SkillLevel(1) : 1.00, # competent
-    SkillLevel(2) : 1.18, # proficient
-    SkillLevel(3) : 1.33, # talented
-    SkillLevel(4) : 1.46, # expert
-    SkillLevel(5) : 1.58, # master
+    SkillLevel(0) : 0.78**2, # none
+    SkillLevel(1) : 1.00**2, # competent
+    SkillLevel(2) : 1.18**2, # proficient
+    SkillLevel(3) : 1.33**2, # talented
+    SkillLevel(4) : 1.46**2, # expert
+    SkillLevel(5) : 1.58**2, # master
 }
 
 def get_expected_damage(attack: MeleeAttack, target: Creature) -> float:
@@ -93,7 +93,7 @@ class CombatTactics:
 
         modifier = ChangeMeleeRangeAction.get_contest_modifier(self.parent) - ChangeMeleeRangeAction.get_contest_modifier(opponent)
         success_chance = Contest.get_opposed_chance(self.parent, SKILL_EVADE, opponent, SKILL_EVADE, modifier.contest)
-        return min(max(-1.0, (to_score/from_score - 1.0)/0.25 * success_chance), 1.0)
+        return min(max(-1.0, (to_score/from_score - 1.0) * success_chance), 1.0)
 
     def choose_change_range_response(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""

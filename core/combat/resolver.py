@@ -321,9 +321,10 @@ class MeleeCombatResolver:
             knockdown_threshold = self.defender.size * 4/3
 
         if self.defender.stance > Stance.Prone and damage > knockdown_threshold:
-            modifier = +1
             if damage >= float(self.defender.size):
                 modifier = int(float(self.defender.size) - damage)
+            else:
+                modifier = DifficultyGrade.Easy.contest_mod
             modifier = ContestModifier(modifier) + self.defender.get_resist_knockdown_modifier()
 
             acro_result = ContestResult(self.defender, SKILL_ACROBATICS, modifier)

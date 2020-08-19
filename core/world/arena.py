@@ -28,7 +28,9 @@ def try_equip_best_weapons(creature: Creature) -> None:
     shield_value = {}
     for item in inventory:
         if item.is_weapon():
-            weapon_value[item] = max((get_attack_value(creature, attack) for attack in item.get_melee_attacks(creature)), default=0.0)
+            weapon_value[item] = max((
+                (attack.max_reach, get_attack_value(creature, attack)) for attack in item.get_melee_attacks(creature)
+            ), default=(None, 0))[1]
             if item.is_shield():
                 shield_value[item] = (item.shield.block_bonus, item.shield.block_force)
 
@@ -243,10 +245,10 @@ if __name__ == '__main__':
     mino = add_creature(CREATURE_MINOTAUR_WARRIOR)
     # orc.name = 'Orc 1'
     # orc2.name = 'Orc 2'
-
     spearman = add_creature(CREATURE_SERGEANT_SPEARMAN)
+    ranger = add_creature(CREATURE_OUTLAND_RANGER)
 
-    melee = join_melee_combat(orc, spearman)
+    melee = join_melee_combat(orc, ranger)
     # melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
