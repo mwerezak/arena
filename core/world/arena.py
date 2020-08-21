@@ -238,7 +238,7 @@ if __name__ == '__main__':
     goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
     gob_inf = add_creature(CREATURE_GOBLIN_SPEARMAN)
     satyr = add_creature(CREATURE_SATYR_WARDEN)
-    satyr_brave = add_creature(CREATURE_SATYR_BRAVE)
+    satyr_brave = add_creature(CREATURE_SATYR_WARRIOR)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
     orc2 = add_creature(CREATURE_ORC_BARBARIAN)
     ogre = add_creature(CREATURE_OGRE_BRUTE)
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     spearman = add_creature(CREATURE_SERGEANT_SPEARMAN)
     ranger = add_creature(CREATURE_OUTLAND_RANGER)
 
-    melee = join_melee_combat(orc, goblin)
+    melee = join_melee_combat(satyr_brave, spearman)
     # melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')

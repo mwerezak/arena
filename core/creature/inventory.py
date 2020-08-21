@@ -52,10 +52,13 @@ class Inventory:
             self._slots[empty_hands.pop()] = equipment
         return True
 
-    def unequip_item(self, equipment: Equipment) -> None:
+    def unequip_item(self, equipment: Equipment) -> bool:
+        found = False
         for bp, item in self._slots.items():
             if item == equipment:
                 self._slots[bp] = None
+                found = True
+        return found
 
     def unequip_all(self) -> None:
         for bp in self._slots.keys():

@@ -143,12 +143,12 @@ class SwitchHeldItemAction(CreatureAction):
         inventory = self.protagonist.inventory
 
         for item in self.unequip_items:
-            inventory.unequip_item(item)
-            print(f'{self.protagonist} unequips {item}.')
+            if inventory.unequip_item(item):
+                print(f'{self.protagonist} unequips {item}.')
         if self.equip_item is not None:
             min_hands, max_hands = self.equip_item.get_required_hands(self.protagonist)
-            inventory.try_equip_item(self.equip_item, use_hands=max_hands)
-            print(f'{self.protagonist} equips {self.equip_item}.')
+            if inventory.try_equip_item(self.equip_item, use_hands=max_hands):
+                print(f'{self.protagonist} equips {self.equip_item}.')
 
         return None
 

@@ -347,17 +347,18 @@ class MeleeCombatResolver:
         self._resolve_knockdown(damage)
 
     def _resolve_knockdown(self, damage: float) -> None:
-        knockdown_threshold = self.defender.size * 2/3
+        knockdown_threshold = self.defender.size
         if self.use_attack.damtype == DamageType.Bludgeon:
-            knockdown_threshold = self.defender.size * 1/2
+            knockdown_threshold = self.defender.size * 2/3
         elif self.use_attack.damtype == DamageType.Puncture:
-            knockdown_threshold = self.defender.size * 4/3
+            knockdown_threshold = self.defender.size * 3/2
 
-        if self.defender.stance > Stance.Prone and damage > knockdown_threshold:
+        if self.defender.stance > Stance.Prone and damage >= knockdown_threshold:
             if damage >= float(self.defender.size):
                 modifier = int(float(self.defender.size) - damage)
             else:
                 modifier = DifficultyGrade.Easy.contest_mod
+
             modifier = ContestModifier(modifier) + self.defender.get_resist_knockdown_modifier()
 
             acro_result = ContestResult(self.defender, SKILL_ACROBATICS, modifier)
