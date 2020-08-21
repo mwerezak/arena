@@ -96,7 +96,8 @@ class BodyPart:
             wound *= 1.5
 
         if wound > 0:
-            print(f'{self.parent} is wounded for {wound:.0f} damage (armour {armor}).')
+            armor_text = f' (armour {armor})' if armor > 0 else ''
+            print(f'{self.parent} is wounded for {wound:.0f} damage{armor_text}.')
             self._injury_check(wound, attack_result)
             self.parent.apply_wounds(wound, self, attack_result)
         else:

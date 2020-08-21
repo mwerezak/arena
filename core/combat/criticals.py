@@ -94,7 +94,7 @@ class HitLocationCritical(CriticalEffect):
 class SecondaryAttackCritical(CriticalEffect):
     name = 'Secondary Attack'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
-    weight = 3
+    weight = 5
 
     target: Creature
     attack: MeleeAttack
@@ -119,7 +119,7 @@ class SecondaryAttackCritical(CriticalEffect):
 class CounterAttackCritical(SecondaryAttackCritical):
     name = 'Counter Attack'
     usage = CriticalUsage.Defensive | CriticalUsage.Melee
-    weight = 3
+    weight = 5
 
 # ImproveParryCritical - (defensive) ignore weapon force difference for defence
 class ImproveParryCritical(CriticalEffect):

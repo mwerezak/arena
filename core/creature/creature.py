@@ -117,8 +117,11 @@ class Creature(Entity):
         # equipped items occupy exactly one of the bodyparts used to hold them
         occupied = [bp for bp in self.inventory.get_equip_slots() if self.inventory.get_item_in_slot(bp) is not None]
         for bp in self.get_bodyparts():
-            if bp.can_use() and bp not in occupied:
-                yield from bp.get_unarmed_attacks()
+            if not bp.can_use() or bp in occupied:
+                continue
+            if self.stance == Stance.Mounted and bp.is_stance_part():
+                continue  # no kicking while mounted
+            yield from bp.get_unarmed_attacks()
 
     def get_melee_attacks(self) -> Iterable[MeleeAttack]:
         if not self.is_conscious():
@@ -181,10 +184,9 @@ class Creature(Entity):
 
         cur_stance, total_stance = self.get_stance_count()
 
-        threshold = math.ceil(total_stance/2)
-        if cur_stance > threshold:
+        if cur_stance >= int(math.ceil(total_stance/2 + 0.5)):
             return Stance.Standing
-        if cur_stance >= threshold:
+        if cur_stance >= int(math.floor(total_stance/2)):
             return Stance.Crouching
         return Stance.Prone
 

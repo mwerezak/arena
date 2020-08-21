@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import math
 import random
-from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tuple, Any
+from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tuple, Any, Collection
 
 from core.constants import Stance
 from core.contest import OpposedResult, UnopposedResult, ContestResult, DifficultyGrade, ContestModifier, SKILL_EVADE, SKILL_ACROBATICS
@@ -61,7 +62,7 @@ class MeleeCombatResolver:
                  defender: Creature,
                  use_attack: MeleeAttack = None,
                  use_defence: MeleeAttack = None,
-                 used_attacks: Iterable[Any] = ()):
+                 used_sources: Collection[Any] = None):
 
         self.attacker = attacker
         self.defender = defender
@@ -77,9 +78,29 @@ class MeleeCombatResolver:
         self.hitloc: Optional[BodyPart] = None
 
         # attacks and blocks can only be used once per attack resolution - this mainly affects secondary attacks
-        self.used_sources = list(used_attacks)
+        if used_sources is not None:
+            self.used_sources = used_sources
+        else:
+            self.used_sources = [ *self._get_standing_bodyparts(attacker), *self._get_standing_bodyparts(defender) ]
+
         self.seconary_attacks: MutableSequence[MeleeCombatResolver] = []
 
+    # prevent creatures from kicking with all their legs in one attack resolution
+    @staticmethod
+    def _get_standing_bodyparts(creature: Creature) -> Iterable[BodyPart]:
+        if creature.stance == Stance.Prone:
+            return ()
+
+        current, total = creature.get_stance_count()
+        used = total
+        if creature.stance == Stance.Crouching:
+            used = int(total / 2)
+        elif creature.stance == Stance.Standing:
+            used = min(total / 2 + 1, total - 1)
+        used = min(used, current)
+
+        stance_parts = list(bp for bp in creature.get_bodyparts() if bp.is_stance_part())
+        return random.sample(stance_parts, used)
 
     @property
     def attack_result(self) -> ContestResult:
@@ -89,7 +110,8 @@ class MeleeCombatResolver:
         return self.damage_mult > 0 and self.damage.max() > 0
 
     def add_secondary_attack(self, attacker: Creature, defender: Creature, use_attack: MeleeAttack):
-        secondary = MeleeCombatResolver(attacker, defender, use_attack, used_attacks=self.used_sources)
+        secondary = MeleeCombatResolver(attacker, defender, use_attack, used_sources=self.used_sources)
+        self.used_sources.append(use_attack.source)
         self.seconary_attacks.append(secondary)
 
     def generate_attack_results(self, *, opportunity_attack: bool = False, force_nodefence: bool = False) -> bool:
@@ -308,8 +330,8 @@ class MeleeCombatResolver:
         if self.damage_mult <= 0:
             return
 
-        damage = round(self.damage.get_roll_result() * self.damage_mult)
-        armpen = round(self.armpen.get_roll_result() * self.damage_mult)
+        damage = self.damage.get_roll_result() * self.damage_mult
+        armpen = self.armpen.get_roll_result() * self.damage_mult
 
         if armpen > 0:
             dam_text = f'{damage:.0f}/{armpen:.0f}*'
