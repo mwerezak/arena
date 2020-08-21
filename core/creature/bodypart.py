@@ -89,18 +89,6 @@ class BodyPart:
         armor = self.get_armor()
         damage = max(damage - armor, min(armpen, damage))
 
-        threshold = self.size * self.parent.max_health
-        injury_steps = int(damage / threshold - 1.0)
-        if injury_steps > 0:
-            grade = DifficultyGrade.VeryEasy.get_step(injury_steps)
-            injury_test = ContestResult(self.parent, SKILL_ENDURANCE, grade.to_modifier())
-            injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
-
-            print(f'{self.parent} suffers an injury to the {self}.')
-            print(injury_result.format_details())
-            if not injury_result.success:
-                self.injure_part()
-
         wound = damage
         if not self.is_vital():
             wound /= 1.5
@@ -109,12 +97,26 @@ class BodyPart:
 
         if wound > 0:
             print(f'{self.parent} is wounded for {wound:.0f} damage (armour {armor}).')
+            self._injury_check(wound, attack_result)
             self.parent.apply_wounds(wound, attack_result)
         else:
             print(f'The armor absorbs the blow (armour {armor}).')
         print(f'{self.parent} health: {round(self.parent.health)}/{self.parent.max_health}')
 
         return wound
+
+    def _injury_check(self, amount: float, attack_result: ContestResult) -> None:
+        threshold = 4/3 * self.size * self.parent.max_health
+        injury_steps = int(amount / threshold - 1.0)
+        if injury_steps > 0:
+            grade = DifficultyGrade.VeryEasy.get_step(injury_steps)
+            injury_test = ContestResult(self.parent, SKILL_ENDURANCE, grade.to_modifier())
+            injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
+
+            print(injury_result.format_details())
+            if not injury_result.success:
+                print(f'{self.parent} suffers an injury to the {self}.')
+                self.injure_part()
 
     def injure_part(self) -> None:
         self._injured = True

@@ -94,26 +94,21 @@ class HitLocationCritical(CriticalEffect):
 class SecondaryAttackCritical(CriticalEffect):
     name = 'Secondary Attack'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
-    weight = 2
+    weight = 3
 
     target: Creature
     attack: MeleeAttack
 
     def setup(self) -> None:
-        used_attacks = [self.combat.use_attack]
-        used_attacks.extend(secondary.use_attack for secondary in self.combat.seconary_attacks)
-        used_sources = [ attack.source for attack in used_attacks if attack is not None ]
-
         secondary_attacks = (
-            attack for attack in self.user.get_melee_attacks()
-            if attack.source not in used_sources and attack.can_attack(self.combat.melee.get_separation())
+            attack for attack in self.user.get_melee_attacks() if attack.source not in self.combat.used_sources
         )
 
         self.target = self.combat.melee.get_opponent(self.user)
-        self.attack = self.user.tactics.get_secondary_attack(self.target, self.combat.melee.get_separation(), secondary_attacks)
+        self.attack = self.user.tactics.get_melee_attack(self.target, self.combat.melee.get_separation(), secondary_attacks)
 
     def can_use(self) -> bool:
-        return not self.combat.is_secondary and self.attack is not None and self.attack.can_attack(self.combat.melee.get_separation())
+        return self.attack is not None and self.attack.can_attack(self.combat.melee.get_separation())
 
     def apply(self) -> None:
         self.combat.add_secondary_attack(self.user, self.target, self.attack)

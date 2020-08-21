@@ -470,7 +470,7 @@ Linen Tailguard
 Axe I
 Javelin I
 Unarmed I
-Stealth I
+Stealth II
 Endurance I
 Evade I
 
@@ -483,7 +483,7 @@ Leather Cuirass (50%) or Nothing (50%)
 Archery I
 Axe I
 Unarmed I
-Stealth I
+Stealth II
 Endurance I
 Evade I
 
@@ -493,7 +493,7 @@ Leather Cuirass (50%) or Nothing (50%)
 
 =Gnoll Warrior
 Axe/Mace II
-Shield II
+Shield I
 Unarmed II
 Endurance II
 Evade II

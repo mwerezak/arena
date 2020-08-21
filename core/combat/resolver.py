@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tuple
+from typing import TYPE_CHECKING, MutableSequence, Optional, Iterable, Type, Tuple, Any
 
 from core.constants import Stance
 from core.contest import OpposedResult, UnopposedResult, ContestResult, DifficultyGrade, ContestModifier, SKILL_EVADE, SKILL_ACROBATICS
@@ -61,13 +61,12 @@ class MeleeCombatResolver:
                  defender: Creature,
                  use_attack: MeleeAttack = None,
                  use_defence: MeleeAttack = None,
-                 is_secondary: bool = False):
+                 used_attacks: Iterable[Any] = ()):
 
         self.attacker = attacker
         self.defender = defender
         self.use_attack = use_attack
         self.use_defence = use_defence
-        self.use_shield = None
 
         self.primary_result = None
         self.attacker_crit = 0
@@ -77,8 +76,10 @@ class MeleeCombatResolver:
         self.damage_mult: float = 0
         self.hitloc: Optional[BodyPart] = None
 
-        self.is_secondary = is_secondary
+        # attacks and blocks can only be used once per attack resolution - this mainly affects secondary attacks
+        self.used_sources = list(used_attacks)
         self.seconary_attacks: MutableSequence[MeleeCombatResolver] = []
+
 
     @property
     def attack_result(self) -> ContestResult:
@@ -88,7 +89,7 @@ class MeleeCombatResolver:
         return self.damage_mult > 0 and self.damage.max() > 0
 
     def add_secondary_attack(self, attacker: Creature, defender: Creature, use_attack: MeleeAttack):
-        secondary = MeleeCombatResolver(attacker, defender, use_attack, is_secondary=True)
+        secondary = MeleeCombatResolver(attacker, defender, use_attack, used_attacks=self.used_sources)
         self.seconary_attacks.append(secondary)
 
     def generate_attack_results(self, *, opportunity_attack: bool = False, force_nodefence: bool = False) -> bool:
@@ -101,7 +102,8 @@ class MeleeCombatResolver:
 
         # Choose Attack
         if self.use_attack is None or not self.use_attack.can_attack(separation):
-            self.use_attack = self.attacker.tactics.get_normal_attack(self.defender, separation)
+            attacks = (attack for attack in self.attacker.get_melee_attacks() if attack.source not in self.used_sources)
+            self.use_attack = self.attacker.tactics.get_melee_attack(self.defender, separation, attacks)
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             return False # no attack happens
 
@@ -114,7 +116,8 @@ class MeleeCombatResolver:
 
         # Choose Defence
         if self.use_defence is None or not self.use_defence.can_defend(separation):
-            self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation)
+            defence = (defence for defence in self.defender.get_melee_attacks() if defence.source not in self.used_sources)
+            self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation, defence)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self._resolve_melee_nodefence()
             return True
@@ -159,6 +162,8 @@ class MeleeCombatResolver:
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
+        self.used_sources.append(self.use_attack.source)
+        self.used_sources.append(self.use_defence.source)
 
     def _resolve_melee_evade(self) -> None:
         separation = self.melee.get_separation()
@@ -193,6 +198,7 @@ class MeleeCombatResolver:
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
+        self.used_sources.append(self.use_attack.source)
 
     def _resolve_melee_nodefence(self) -> None:
         if self.defender.has_trait(EvadeTrait):
@@ -229,23 +235,27 @@ class MeleeCombatResolver:
         self.damage_mult = damage_mult
         self.damage = self.use_attack.damage
         self.armpen = self.use_attack.armpen
+        self.used_sources.append(self.use_attack.source)
 
     def _resolve_shield_block(self, attack_result: ContestResult, damage_mult: float) -> Tuple[bool, float]:
         separation = self.melee.get_separation()
 
-        self.use_shield = self.defender.tactics.get_melee_shield(separation)
-        if self.use_shield is not None and self.use_shield.shield.can_block(separation):
-            block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.shield.block_force)
+        blocks = (block for block in self.defender.get_shield_blocks() if block.source not in self.used_sources)
+        self.use_shield = self.defender.tactics.get_melee_block(separation, blocks)
+        if self.use_shield is not None and self.use_shield.can_block(separation):
+            block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.force)
             if block_damage_mult < damage_mult:
-                modifier = get_block_difficulty(self.defender).to_modifier() + ContestModifier(self.use_shield.shield.block_bonus)
+                modifier = get_block_difficulty(self.defender).to_modifier() + self.use_shield.contest_modifier
                 shield_result = ContestResult(self.defender, self.use_shield.combat_test, modifier)
                 block_result = OpposedResult(shield_result, attack_result)
 
-                print(f'{self.defender} attempts to block with {self.use_shield}!')
+                print(f'{self.defender} attempts to block with {self.use_shield.source}!')
                 print(block_result.format_details())
 
+                self.used_sources.append(self.use_shield.source)
                 if block_result.success:
                     return True, block_damage_mult
+
         return False, damage_mult
 
     def _resolve_evade_knockdown(self):
@@ -333,9 +343,13 @@ class MeleeCombatResolver:
             if not test_result.success:
                 self.defender.knock_down()
 
-    def resolve_seconary_attacks(self) -> None:
-        # secondary attacks are similar to primary attacks but do not get to resolve secondary attacks of their own
+    def resolve_secondary_attacks(self) -> None:
+        resolved = []
         for secondary in self.seconary_attacks:
             if secondary.generate_attack_results():
                 secondary.resolve_critical_effects()
                 secondary.resolve_damage()
+                resolved.append(secondary)
+
+        for secondary in resolved:
+            secondary.resolve_secondary_attacks()

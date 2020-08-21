@@ -7,10 +7,11 @@ from defines.traits import *
 from defines.units.horses import CREATURE_WILD_HORSE
 from defines.weapons import (
     WEAPON_SPEAR, WEAPON_HALFSPEAR, WEAPON_LONGSPEAR, WEAPON_SHORTSWORD, WEAPON_SCIMITAR, WEAPON_DAGGER,
-    WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE, WEAPON_MACE, WEAPON_WARHAMMER, WEAPON_GREAT_HAMMER,
+    WEAPON_HATCHET, WEAPON_BATTLEAXE, WEAPON_GREATAXE, WEAPON_MINOTAUR_AXE,
+    WEAPON_MACE, WEAPON_WARHAMMER, WEAPON_GREAT_HAMMER,
 )
 from defines.shields import (
-    SHIELD_SMALL, SHIELD_MEDIUM
+    SHIELD_BUCKLER, SHIELD_SMALL, SHIELD_MEDIUM
 )
 from defines.armor import (
     PATTERN_HELMET, PATTERN_CUIRASS, PATTERN_ARMOR, PATTERN_HAUBERK, PATTERN_CHESTPIECE, PATTERN_TAILGUARD,
@@ -176,10 +177,26 @@ CREATURE_MINOTAUR_CHAMPION = (
     ))
 )
 
+CREATURE_GNOLL_HUNTER = (
+    CreatureTemplate('Gnoll Hunter', template=SPECIES_GNOLL)
+    .add_trait(
+        SkillTrait(SKILL_AXE, SkillLevel(1)),
+        SkillTrait(SKILL_SHIELD, SkillLevel(1)),
+        SkillTrait(SKILL_STEALTH, SkillLevel(1)),
+        SkillTrait(SKILL_ENDURANCE, SkillLevel(1)),
+    )
+    .set_loadout(Loadout(
+        #LoadoutChoice([()]),  # bow or javelin
+        LoadoutChoice([(3, WEAPON_HATCHET), (1, WEAPON_BATTLEAXE)]),
+        LoadoutChoice([(1, SHIELD_SMALL), (1, SHIELD_BUCKLER)]),
+        LoadoutChoice([(1, LEATHER_CUIRASS), (1, None)]),
+    ))
+)
+
 CREATURE_GNOLL_WARRIOR = (
     CreatureTemplate('Gnoll Warrior', template=SPECIES_GNOLL)
     .add_trait(
-        SkillTrait(SKILL_SHIELD, SkillLevel(2)),
+        SkillTrait(SKILL_SHIELD, SkillLevel(1)),
         SkillTrait(SKILL_UNARMED, SkillLevel(2)),
         SkillTrait(SKILL_ENDURANCE, SkillLevel(2)),
         SkillTrait(SKILL_EVADE, SkillLevel(2)),

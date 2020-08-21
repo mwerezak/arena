@@ -1,24 +1,17 @@
 from __future__ import annotations
 
 from copy import copy as shallow_copy
-from typing import TYPE_CHECKING, Iterable, Optional, NamedTuple, Tuple, Any
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Any
 
+from core.combat.shield import ShieldTemplate
 from core.equipment.template import EquipmentTemplate
 
 if TYPE_CHECKING:
     from core.creature import Creature
-    from core.combat.attack import MeleeAttackTemplate, MeleeAttack, MeleeRange
-    from core.constants import AttackForce, SizeCategory
+    from core.combat.attack import MeleeAttackTemplate, MeleeAttack
+    from core.constants import SizeCategory
     from core.contest import CombatSkillClass, CombatTest
 
-class ShieldBlock(NamedTuple):
-    block_reach: MeleeRange
-    block_force: AttackForce
-    block_bonus: int
-    block_ranged: float
-
-    def can_block(self, range: MeleeRange):
-        return range >= self.block_reach
 
 class Weapon(EquipmentTemplate):
     def __init__(self,
@@ -28,7 +21,7 @@ class Weapon(EquipmentTemplate):
                  encumbrance: float,
                  cost: int,
                  melee_attacks: Iterable[MeleeAttackTemplate] = (),
-                 shield: Optional[ShieldBlock] = None):
+                 shield: Optional[ShieldTemplate] = None):
 
         self.name = name
         self.size = size

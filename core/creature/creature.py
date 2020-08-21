@@ -17,6 +17,7 @@ from core.contest import (
 if TYPE_CHECKING:
     from core.constants import CreatureSize
     from core.combat.attack import MeleeAttack
+    from core.combat.shield import ShieldBlock
     from core.combat.melee import MeleeCombat
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
@@ -130,13 +131,13 @@ class Creature(Entity):
                 if using_hands > 0:
                     yield from item.get_melee_attacks(self, using_hands, item)
 
-    def get_held_shields(self) -> Iterable[Equipment]:
+    def get_shield_blocks(self) -> Iterable[ShieldBlock]:
         if not self.is_conscious():
             return
 
         for item in self.inventory.get_held_items():
             if item.is_weapon() and item.is_shield():
-                yield item
+                yield item.shield.create_instance(self, item)
 
     def get_melee_engage_distance(self) -> MeleeRange:
         attack_reach = (attack.max_reach for attack in self.get_melee_attacks())

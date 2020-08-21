@@ -57,7 +57,7 @@ SPECIES_GOBLIN = (
 
 SPECIES_ORC = (
     CreatureTemplate('Orc', BODYPLAN_HUMANLIKE)
-    .set_attributes(STR=+3, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
+    .set_attributes(STR=+2, CON=+1, SIZ=+1, INT=-1, POW=-2, CHA=-2)
 )
 
 SPECIES_OGRE = (
@@ -82,7 +82,7 @@ BODYPLAN_GNOLL = (
 
 SPECIES_GNOLL = (
     CreatureTemplate('Gnoll', BODYPLAN_GNOLL)
-    .set_attributes(STR=+2, CON=+1, SIZ=+2, POW=+1, CHA=-1)
+    .set_attributes(STR=+3, CON=+1, SIZ=+2, POW=+1, CHA=-1)
     .add_trait(
         SkillTrait(SKILL_UNARMED, SkillLevel(1)),
         SkillTrait(SKILL_EVADE, SkillLevel(1)),

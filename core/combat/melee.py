@@ -219,7 +219,7 @@ class ChangeMeleeRangeAction(CreatureAction):
                         melee.change_separation(final_range)
                         combat.resolve_critical_effects()
                         combat.resolve_damage()
-                        combat.resolve_seconary_attacks()
+                        combat.resolve_secondary_attacks()
                         if melee.get_separation() != final_range:
                             success = False # range change disrupted by a critical effect
 
@@ -290,7 +290,7 @@ class MeleeCombatAction(CreatureAction):
 
             attack.resolve_critical_effects()
             attack.resolve_damage()
-            attack.resolve_seconary_attacks()
+            attack.resolve_secondary_attacks()
             return True
         return False
 
@@ -303,7 +303,7 @@ class MeleeCombatAction(CreatureAction):
             # no need to create a MeleeDefendAction - this action is wasted
             attack.resolve_critical_effects()
             attack.resolve_damage()
-            attack.resolve_seconary_attacks()
+            attack.resolve_secondary_attacks()
             return True
         return False
 
@@ -334,7 +334,7 @@ class MeleeCombatAction(CreatureAction):
 
         random.shuffle(attacks)
         for attack in attacks:
-            if has_result[attack]: attack.resolve_seconary_attacks()
+            if has_result[attack]: attack.resolve_secondary_attacks()
 
 ## MeleeDefendAction - when interrupted by an attack
 class MeleeDefendAction(InterruptCooldownAction):
