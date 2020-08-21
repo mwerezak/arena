@@ -208,9 +208,10 @@ class MeleeCombatResolver:
         separation = self.melee.get_separation()
 
         attack_modifier = get_combat_difficulty(self.attacker).get_step(-1).to_modifier()
+        attack_target = UnopposedResult.DEFAULT_TARGET + get_combat_difficulty(self.defender).contest_mod
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
-        primary_result = UnopposedResult(attack_result)
+        primary_result = UnopposedResult(attack_result, attack_target)
         print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs no defence!')
         print(primary_result.format_details())
 

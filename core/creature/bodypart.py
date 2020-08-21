@@ -98,7 +98,7 @@ class BodyPart:
         if wound > 0:
             print(f'{self.parent} is wounded for {wound:.0f} damage (armour {armor}).')
             self._injury_check(wound, attack_result)
-            self.parent.apply_wounds(wound, attack_result)
+            self.parent.apply_wounds(wound, self, attack_result)
         else:
             print(f'The armor absorbs the blow (armour {armor}).')
         print(f'{self.parent} health: {round(self.parent.health)}/{self.parent.max_health}')

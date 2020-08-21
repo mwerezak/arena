@@ -236,7 +236,7 @@ if __name__ == '__main__':
     gnoll = add_creature(CREATURE_GNOLL_WARRIOR)
     gnoll2 = add_creature(CREATURE_GNOLL_WARRIOR)
     goblin = add_creature(CREATURE_GOBLIN_ENFORCER)
-    gob_inf = add_creature(CREATURE_GOBLIN_INFANTRY)
+    gob_inf = add_creature(CREATURE_GOBLIN_SPEARMAN)
     satyr = add_creature(CREATURE_SATYR_WARDEN)
     satyr_brave = add_creature(CREATURE_SATYR_BRAVE)
     orc = add_creature(CREATURE_ORC_BARBARIAN)
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     spearman = add_creature(CREATURE_SERGEANT_SPEARMAN)
     ranger = add_creature(CREATURE_OUTLAND_RANGER)
 
-    melee = join_melee_combat(mino, spearman)
+    melee = join_melee_combat(gob_inf, ranger)
     # melee.change_separation(MeleeRange(0))
     for c in melee.combatants:
         print(c.name, f'({sum(item.cost for item in c.inventory)}sp)')
@@ -265,6 +265,7 @@ if __name__ == '__main__':
                 break
 
     next_turn()
+    # mino.get_bodypart('r_arm').injure_part()
     # orc.apply_wounds(12)
     # while True:
     #     next_turn()

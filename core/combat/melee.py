@@ -148,9 +148,7 @@ class ChangeMeleeRangeAction(CreatureAction):
         melee = self.protagonist.get_melee_combat(self.opponent)
         start_separation = melee.get_separation()
         final_separation = melee.get_range_shift(self.target_range)
-        min_range = min(start_separation, final_separation)
-        max_range = max(start_separation, final_separation)
-        return MeleeRange.range(min_range, max_range+1)
+        return MeleeRange.between(start_separation, final_separation)
 
     def allow_opportunity_attack(self) -> bool:
         melee = self.opponent.get_melee_combat(self.protagonist)

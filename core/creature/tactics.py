@@ -89,7 +89,17 @@ class CombatTactics:
 
         modifier = ChangeMeleeRangeAction.get_contest_modifier(self.parent) - ChangeMeleeRangeAction.get_contest_modifier(opponent)
         success_chance = Contest.get_opposed_chance(self.parent, SKILL_EVADE, opponent, SKILL_EVADE, modifier.contest)
-        return min(max(-1.0, (to_score/from_score - 1.0) * success_chance), 1.0)
+        score = min(max(-1.0, (to_score/from_score - 1.0) * success_chance), 1.0)
+
+        # account for possible attack of opportunity
+        if score > 0 and from_range > to_range and can_interrupt_action(opponent):
+            attack_ranges = list(MeleeRange.between(from_range, to_range))
+            attacks = (attack for attack in opponent.get_melee_attacks() if any(attack.can_attack(r) for r in attack_ranges))
+            attack = max(attacks, key=lambda a: opponent.get_skill_level(a.combat_test), default=None)
+            safety = 1.0 - Contest.get_opposed_chance(opponent, attack.combat_test, self.parent, SKILL_EVADE)
+            if attack is not None:
+                return min(score, safety**2)
+        return score
 
     def choose_change_range_response(self, change_range: ChangeMeleeRangeAction) -> Optional[str]:
         """Return True if the creature will try to contest an opponent's range change, giving up their attack of opportunity"""
@@ -118,7 +128,7 @@ class CombatTactics:
     def get_melee_range_priority(self, opponent: Creature, *, caution: float = 1.0) -> Mapping[MeleeRange, float]:
         range_priority = {}
         melee = self.parent.get_melee_combat(opponent)
-        for reach in MeleeRange.range(melee.get_min_separation(), self.parent.get_melee_engage_distance() + 1):
+        for reach in MeleeRange.between(melee.get_min_separation(), self.parent.get_melee_engage_distance()):
             pro_attacks = (attack for attack in self.parent.get_melee_attacks() if attack.can_attack(reach))
             attack_priority = get_melee_attack_priority(self.parent, opponent, pro_attacks)
             power = max(attack_priority.values(), default=0.0)

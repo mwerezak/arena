@@ -77,6 +77,13 @@ class MeleeRange(IntClass):
             return self.__NAMES[self]
         return f'{self.__NAMES[-1]} (+{self - len(self.__NAMES) + 1 :d})'
 
+    @classmethod
+    def between(cls, from_range: MeleeRange, to_range: MeleeRange) -> Iterable[MeleeRange]:
+        """Iterate all values between two given MeleeRanges, inclusive"""
+        min_range = min(from_range, to_range)
+        max_range = max(from_range, to_range)
+        return MeleeRange.range(min_range, max_range+1)
+
 class AttackForce(IntClass):
     __NAMES = [
         'None',

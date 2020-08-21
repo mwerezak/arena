@@ -280,7 +280,7 @@ class Creature(Entity):
     def is_seriously_wounded(self) -> bool:
         return self.health <= 0
 
-    def apply_wounds(self, amount: float, attack_result: Optional[ContestResult] = None) -> None:
+    def apply_wounds(self, amount: float, bodypart: BodyPart, attack_result: Optional[ContestResult] = None) -> None:
         prev_health = self.health
         self._health -= amount
 
@@ -288,7 +288,9 @@ class Creature(Entity):
             self.stun(can_defend=False)
 
         if self.health <= -self.max_health:
-            injury_test = ContestResult(self, SKILL_ENDURANCE)
+            # unlikely to die instantly if taking damage to a non-vital body part
+            grade = DifficultyGrade.Standard if bodypart.is_vital() else DifficultyGrade.VeryEasy
+            injury_test = ContestResult(self, SKILL_ENDURANCE, grade.to_modifier())
             injury_result = OpposedResult(injury_test, attack_result) if attack_result is not None else UnopposedResult(injury_test)
 
             print(injury_result.format_details())
