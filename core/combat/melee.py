@@ -272,6 +272,7 @@ class MeleeCombatAction(CreatureAction):
                 for resolve in priority:
                     if resolve():
                         break
+
         else:
             self._resolve_attack()
 
@@ -284,7 +285,7 @@ class MeleeCombatAction(CreatureAction):
 
         attack = MeleeCombatResolver(self.protagonist, self.target)
         if attack.generate_attack_results(force_nodefence = not can_defend):
-            if can_defend:
+            if can_defend and attack.use_defence is not None:
                 defend_action = MeleeDefendAction(other_action)
                 self.target.set_current_action(defend_action)
 

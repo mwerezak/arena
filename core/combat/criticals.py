@@ -65,7 +65,7 @@ class MaxDamageCritical(CriticalEffect):
 class HitLocationCritical(CriticalEffect):
     name = 'Choose Hit Location'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
-    weight = 5
+    weight = 6
 
     hitloc: Optional[BodyPart]
 
@@ -116,11 +116,16 @@ class SecondaryAttackCritical(CriticalEffect):
     def __str__(self) -> str:
         return f'{self.name}: {self.attack.name}'
 
+class CounterAttackCritical(SecondaryAttackCritical):
+    name = 'Counter Attack'
+    usage = CriticalUsage.Defensive | CriticalUsage.Melee
+    weight = 3
+
 # ImproveParryCritical - (defensive) ignore weapon force difference for defence
 class ImproveParryCritical(CriticalEffect):
     name = 'Improved Parry'
     usage = CriticalUsage.Defensive | CriticalUsage.Melee
-    weight = 2
+    weight = 3
 
     def can_use(self) -> bool:
         return self.combat.is_effective_hit()
@@ -136,7 +141,7 @@ class DisruptCritical(CriticalEffect):
     @property
     def weight(self) -> float:
         if CriticalUsage.Defensive in self.usage:
-            return 5
+            return 9  # really valuable in defence as otherwise we may not be able to attack
         return 3
 
     def can_use(self) -> bool:
@@ -232,6 +237,7 @@ class ChangeStanceCritical(CriticalEffect):
 # GripTargetCritical - (offensive) grapple target for free - only for certain natural weapons
 # EntangleCritical - (both) use an entangling weapon
 
+# Only for certain attacks
 class KnockdownCritical(CriticalEffect):
     name = 'Knock Down'
     usage = CriticalUsage.Offensive | CriticalUsage.Melee
@@ -256,6 +262,7 @@ DEFAULT_CRITICALS = [
     MaxDamageCritical,
     HitLocationCritical,
     SecondaryAttackCritical,
+    CounterAttackCritical,
     ImproveParryCritical,
     DisruptCritical,
     CloseRangeCritical,

@@ -14,10 +14,10 @@ UNARMED_PAW   = NaturalWeaponTemplate('Strike', DamageType.Bludgeon, criticals=[
 UNARMED_CLAW  = NaturalWeaponTemplate('Claw',   DamageType.Slashing)
 UNARMED_WING  = NaturalWeaponTemplate('Strike', DamageType.Bludgeon, reach=+1, criticals=[KnockdownCritical])
 
-UNARMED_KICK      = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, criticals=[KnockdownCritical])
+UNARMED_KICK      = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, min_reach=+1, criticals=[KnockdownCritical])
 UNARMED_KICK_QUAD = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, reach=+1, criticals=[KnockdownCritical])  # quadripeds can kick out with more force
 
-UNARMED_HOOF_BIPED = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, criticals=[KnockdownCritical])
+UNARMED_HOOF_BIPED = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, min_reach=+1, criticals=[KnockdownCritical])
 UNARMED_HOOF       = NaturalWeaponTemplate('Kick', DamageType.Bludgeon, armpen=+1, reach=+1, criticals=[KnockdownCritical])
 
 UNARMED_BITE       = NaturalWeaponTemplate('Bite', DamageType.Puncture, reach=-1, damage=+1)

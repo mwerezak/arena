@@ -75,7 +75,7 @@ BASE_MIN_REACH = 1.0/3 # REACH_CLOSE
 class NaturalWeaponTemplate:
     def __init__(self,
                  name: str, damtype: DamageType,
-                 force: float = 0, reach: float = 0,
+                 force: float = 0, reach: float = 0, min_reach: float = 0,
                  damage: float = 0, armpen: Optional[float] = None,
                  criticals: Iterable[Type[CriticalEffect]] = (),
                  traits: Iterable[AttackTrait] = ()):
@@ -83,6 +83,7 @@ class NaturalWeaponTemplate:
         self.name = name
         self.damtype = damtype
         self.reach = reach
+        self.min_reach = min_reach
         self.force = force  # affects both damage and armor penetration as well
         self.damage = damage
         self.armpen = armpen
@@ -93,7 +94,7 @@ class NaturalWeapon:
     def __init__(self,
                  template: Union[NaturalWeapon, NaturalWeaponTemplate],
                  name: str = None,
-                 force: float = 0, reach: float = 0,
+                 force: float = 0, reach: float = 0, min_reach: float = 0,
                  damage: float = 0, armpen: Optional[float] = None,
                  criticals: Iterable[Type[CriticalEffect]] = (),
                  traits: Iterable[AttackTrait] = ()):
@@ -111,6 +112,7 @@ class NaturalWeapon:
         self.traits.extend(traits)
 
         self.reach = template.reach + reach
+        self.min_reach = template.min_reach + min_reach
         self.force = template.force + force  # affects both damage and armor penetration as well
         self.damage = template.damage + damage
 
@@ -120,14 +122,14 @@ class NaturalWeapon:
 
     def as_template(self) -> NaturalWeaponTemplate:
         return NaturalWeaponTemplate(
-            self.name, self.damtype, self.force, self.reach, self.damage, self.armpen, self.criticals
+            self.name, self.damtype, self.force, self.reach, self.min_reach, self.damage, self.armpen, self.criticals
         )
 
     def create_attack(self, creature: CreatureTemplate) -> MeleeAttackTemplate:
         rel_size = creature.size/SizeCategory.Medium.to_size()
 
         max_reach = BASE_MAX_REACH * rel_size + self.reach
-        min_reach = BASE_MIN_REACH * rel_size + self.reach
+        min_reach = BASE_MIN_REACH * rel_size + (self.reach + self.min_reach)
 
         force = FORCE_MEDIUM.get_step(round(math.log2(rel_size) + self.force))
 
