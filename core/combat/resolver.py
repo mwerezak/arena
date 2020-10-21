@@ -125,7 +125,7 @@ class MeleeCombatResolver:
         # Choose Attack
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             attacks = (attack for attack in self.attacker.get_melee_attacks() if attack.source not in self.used_sources)
-            self.use_attack = self.attacker.tactics.get_melee_attack(self.defender, separation, attacks)
+            self.use_attack = self.attacker.mind.get_melee_attack(self.defender, separation, attacks)
         if self.use_attack is None or not self.use_attack.can_attack(separation):
             return False # no attack happens
 
@@ -139,7 +139,7 @@ class MeleeCombatResolver:
         # Choose Defence
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             defence = (defence for defence in self.defender.get_melee_attacks() if defence.source not in self.used_sources)
-            self.use_defence = self.defender.tactics.get_melee_defence(self.attacker, self.use_attack, separation, defence)
+            self.use_defence = self.defender.mind.get_melee_defence(self.attacker, self.use_attack, separation, defence)
         if self.use_defence is None or not self.use_defence.can_defend(separation):
             self._resolve_melee_nodefence()
             return True
@@ -264,7 +264,7 @@ class MeleeCombatResolver:
         separation = self.melee.get_separation()
 
         blocks = (block for block in self.defender.get_shield_blocks() if block.source not in self.used_sources)
-        self.use_shield = self.defender.tactics.get_melee_block(separation, blocks)
+        self.use_shield = self.defender.mind.get_melee_block(separation, blocks)
         if self.use_shield is not None and self.use_shield.can_block(separation):
             block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.force)
             if block_damage_mult < damage_mult:
@@ -341,10 +341,10 @@ class MeleeCombatResolver:
         mult_text = f' (x{self.damage_mult:.1f})' if self.damage_mult != 1.0 else ''
         print(f'{self.attacker} strikes {self.defender} in the {self.hitloc} for {dam_text} damage{mult_text}: {self.use_attack.name}!')
 
-        self.hitloc.apply_damage(damage, armpen, self.attack_result)
+        wounds = self.hitloc.apply_damage(damage, armpen, self.attack_result)
 
         # knockdown due to damage
-        self._resolve_knockdown(damage)
+        self._resolve_knockdown((damage + wounds)/2)  # blocked damage is only counted as half for knockdown
 
     def _resolve_knockdown(self, damage: float) -> None:
         knockdown_threshold = self.defender.size

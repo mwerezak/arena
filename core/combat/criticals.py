@@ -105,7 +105,7 @@ class SecondaryAttackCritical(CriticalEffect):
         )
 
         self.target = self.combat.melee.get_opponent(self.user)
-        self.attack = self.user.tactics.get_melee_attack(self.target, self.combat.melee.get_separation(), secondary_attacks)
+        self.attack = self.user.mind.get_melee_attack(self.target, self.combat.melee.get_separation(), secondary_attacks)
 
     def can_use(self) -> bool:
         return self.attack is not None and self.attack.can_attack(self.combat.melee.get_separation())
@@ -170,7 +170,7 @@ class CloseRangeCritical(CriticalEffect):
 
     def setup(self) -> None:
         opponent = self.combat.melee.get_opponent(self.user)
-        self.target_range = self.user.tactics.get_desired_melee_range(opponent)
+        self.target_range = self.user.mind.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
         return self.user.stance == Stance.Standing and self.target_range is not None and self.target_range < self.combat.melee.get_separation()
@@ -193,7 +193,7 @@ class OpenRangeCritical(CriticalEffect):
 
     def setup(self) -> None:
         opponent = self.combat.melee.get_opponent(self.user)
-        self.target_range = self.user.tactics.get_desired_melee_range(opponent)
+        self.target_range = self.user.mind.get_desired_melee_range(opponent)
 
     def can_use(self) -> bool:
         return self.user.stance == Stance.Standing and self.target_range is not None and self.target_range > self.combat.melee.get_separation()

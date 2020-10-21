@@ -7,7 +7,7 @@ from core.constants import MeleeRange, PrimaryAttribute, Stance
 from core.creature.traits import SkillTrait
 from core.creature.bodypart import BodyPart
 from core.creature.inventory import Inventory
-from core.creature.tactics import CombatTactics
+from core.creature.mind.combat import CreatureMind
 from core.creature.actions import StunnedAction
 from core.contest import (
     Contest, ContestResult, ContestModifier, DifficultyGrade, SkillLevel,
@@ -21,17 +21,16 @@ if TYPE_CHECKING:
     from core.combat.melee import MeleeCombat
     from core.creature.template import CreatureTemplate
     from core.creature.bodyplan import Morphology
-    from core.equipment import Equipment
     from core.creature.traits import CreatureTrait
 
 class Creature(Entity):
     health: float
     inventory: Inventory
 
-    def __init__(self, template: CreatureTemplate, tactics: CombatTactics = None):
+    def __init__(self, template: CreatureTemplate, mind: CreatureMind = None):
         self.template = template
         self.name = template.name
-        self.tactics = tactics or CombatTactics(self)
+        self.mind = mind or CreatureMind(self)
 
         self._stance = Stance.Standing
         self._health = template.max_health

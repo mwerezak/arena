@@ -184,7 +184,7 @@ class ChangeMeleeRangeAction(CreatureAction):
         final_range = melee.get_range_shift(self.target_range)
 
         # determine opponent's reaction
-        reaction = self.opponent.tactics.choose_change_range_response(self)
+        reaction = self.opponent.mind.choose_change_range_response(self)
         if reaction == 'attack':
             if not self.allow_opportunity_attack() or not can_interrupt_action(self.opponent):
                 reaction = 'contest'
@@ -200,7 +200,7 @@ class ChangeMeleeRangeAction(CreatureAction):
 
         elif reaction == 'attack':
             # an attack of opportunity is allowed only if the change is not contested
-            use_attack = self.opponent.tactics.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
+            use_attack = self.opponent.mind.get_opportunity_attack(self.protagonist, self.get_opportunity_attack_ranges())
             if use_attack is not None:
                 attack_ranges = (reach for reach in self.get_opportunity_attack_ranges() if use_attack.can_attack(reach))
                 attack_range = max(attack_ranges, default=None)
