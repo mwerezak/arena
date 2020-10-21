@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from core.constants import AttackForce
     from core.creature import Creature
     from core.creature.bodypart import BodyPart
-    from core.combat.melee import MeleeCombat
+    from core.combat.melee import MeleeCombat, MeleeRange
     from core.combat.attack import MeleeAttack
     from core.combat.criticals import CriticalEffect
 
@@ -106,6 +106,14 @@ class MeleeCombatResolver:
     def attack_result(self) -> ContestResult:
         return self.primary_result.pro_result
 
+    @property
+    def melee(self) -> Optional[MeleeCombat]:
+        return self.attacker.get_melee_combat(self.defender)
+
+    @property
+    def separation(self) -> MeleeRange:
+        return self.melee.get_separation()
+
     def is_effective_hit(self) -> bool:
         return self.damage_mult > 0 and self.damage.max() > 0
 
@@ -115,18 +123,14 @@ class MeleeCombatResolver:
         self.seconary_attacks.append(secondary)
 
     def generate_attack_results(self, *, opportunity_attack: bool = False, force_nodefence: bool = False) -> bool:
-        melee = self.attacker.get_melee_combat(self.defender)
-        if melee is None:
+        if self.melee is None:
             return False
 
-        self.melee = melee
-        separation = melee.get_separation()
-
         # Choose Attack
-        if self.use_attack is None or not self.use_attack.can_attack(separation):
+        if self.use_attack is None or not self.use_attack.can_attack(self.separation):
             attacks = (attack for attack in self.attacker.get_melee_attacks() if attack.source not in self.used_sources)
-            self.use_attack = self.attacker.mind.get_melee_attack(self.defender, separation, attacks)
-        if self.use_attack is None or not self.use_attack.can_attack(separation):
+            self.use_attack = self.attacker.mind.get_melee_attack(self.defender, self.separation, attacks)
+        if self.use_attack is None or not self.use_attack.can_attack(self.separation):
             return False # no attack happens
 
         if opportunity_attack:
@@ -137,10 +141,10 @@ class MeleeCombatResolver:
             return True
 
         # Choose Defence
-        if self.use_defence is None or not self.use_defence.can_defend(separation):
+        if self.use_defence is None or not self.use_defence.can_defend(self.separation):
             defence = (defence for defence in self.defender.get_melee_attacks() if defence.source not in self.used_sources)
-            self.use_defence = self.defender.mind.get_melee_defence(self.attacker, self.use_attack, separation, defence)
-        if self.use_defence is None or not self.use_defence.can_defend(separation):
+            self.use_defence = self.defender.mind.get_melee_defence(self.attacker, self.use_attack, self.separation, defence)
+        if self.use_defence is None or not self.use_defence.can_defend(self.separation):
             self._resolve_melee_nodefence()
             return True
 
@@ -148,8 +152,6 @@ class MeleeCombatResolver:
         return True
 
     def _resolve_melee_defence(self) -> None:
-        separation = self.melee.get_separation()
-
         attack_modifier = get_combat_difficulty(self.attacker).to_modifier()
         defend_modifier = get_combat_difficulty(self.defender).to_modifier()
 
@@ -157,7 +159,7 @@ class MeleeCombatResolver:
         defend_result = ContestResult(self.defender, self.use_defence.combat_test, defend_modifier)
         primary_result = OpposedResult(attack_result, defend_result)
 
-        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs {self.use_defence.name}!')
+        print(f'{self.attacker} attacks {self.defender} at {self.separation} distance: {self.use_attack.name} vs {self.use_defence.name}!')
         print(primary_result.format_details())
 
         damage_mult = 1.0
@@ -188,8 +190,6 @@ class MeleeCombatResolver:
         self.used_sources.append(self.use_defence.source)
 
     def _resolve_melee_evade(self) -> None:
-        separation = self.melee.get_separation()
-
         attack_modifier = get_combat_difficulty(self.attacker).to_modifier()
         evade_modifier = get_combat_difficulty(self.defender).to_modifier()
 
@@ -197,7 +197,7 @@ class MeleeCombatResolver:
         evade_result = ContestResult(self.defender, SKILL_EVADE, evade_modifier)
         primary_result = OpposedResult(attack_result, evade_result)
 
-        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs {SKILL_EVADE}!')
+        print(f'{self.attacker} attacks {self.defender} at {self.separation} distance: {self.use_attack.name} vs {SKILL_EVADE}!')
         print(primary_result.format_details())
 
         damage_mult = 1.0 if primary_result.success else 0.0
@@ -227,14 +227,12 @@ class MeleeCombatResolver:
             self._resolve_melee_evade()
             return
 
-        separation = self.melee.get_separation()
-
         attack_modifier = get_combat_difficulty(self.attacker).get_step(-1).to_modifier()
         attack_target = UnopposedResult.DEFAULT_TARGET + get_combat_difficulty(self.defender).contest_mod
 
         attack_result = ContestResult(self.attacker, self.use_attack.combat_test, attack_modifier)
         primary_result = UnopposedResult(attack_result, attack_target)
-        print(f'{self.attacker} attacks {self.defender} at {separation} distance: {self.use_attack.name} vs no defence!')
+        print(f'{self.attacker} attacks {self.defender} at {self.separation} distance: {self.use_attack.name} vs no defence!')
         print(primary_result.format_details())
 
         damage_mult = 1.0 if primary_result.success else 0.0
@@ -261,11 +259,9 @@ class MeleeCombatResolver:
         self.used_sources.append(self.use_attack.source)
 
     def _resolve_shield_block(self, attack_result: ContestResult, damage_mult: float) -> Tuple[bool, float]:
-        separation = self.melee.get_separation()
-
         blocks = (block for block in self.defender.get_shield_blocks() if block.source not in self.used_sources)
-        self.use_shield = self.defender.mind.get_melee_block(separation, blocks)
-        if self.use_shield is not None and self.use_shield.can_block(separation):
+        self.use_shield = self.defender.mind.get_melee_block(self.separation, blocks)
+        if self.use_shield is not None and self.use_shield.can_block(self.separation):
             block_damage_mult = get_parry_damage_mult(self.use_attack.force, self.use_shield.force)
             if block_damage_mult < damage_mult:
                 modifier = get_block_difficulty(self.defender).to_modifier() + self.use_shield.contest_modifier

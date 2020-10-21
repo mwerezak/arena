@@ -75,15 +75,15 @@ class MeleeAttackTemplate:
         return format_damage(self.damage, self.armpen, self.damtype)
 
 class MeleeAttack:
-    def __init__(self, template: MeleeAttackTemplate, attacker: Creature, use_hands: int, source: Any):
+    def __init__(self, template: MeleeAttackTemplate, user: Creature, use_hands: int, source: Any):
         self.template = template
-        self.attacker = attacker
+        self.user = user
         self.use_hands = use_hands
         self.source = source
 
         self.traits = { trait.key : trait for trait in template.traits }
 
-        reach_bonus = get_natural_reach_bonus(attacker.size)
+        reach_bonus = get_natural_reach_bonus(user.size)
         self.max_reach = template.max_reach.get_step(reach_bonus)
         self.min_reach = template.min_reach.get_step(reach_bonus)
 
@@ -96,7 +96,7 @@ class MeleeAttack:
     def can_defend(self, range: MeleeRange) -> bool:
         if self.has_trait(CannotDefendTrait):
             return False
-        if self.has_trait(NaturalWeaponTrait) and not self.has_trait(FormidableNatural) and not self.attacker.has_trait(MartialArtistTrait):
+        if self.has_trait(NaturalWeaponTrait) and not self.has_trait(FormidableNatural) and not self.user.has_trait(MartialArtistTrait):
             return self.can_reach(range)
         return self.min_reach <= range
 
@@ -122,7 +122,7 @@ class MeleeAttack:
     def str_modifier(self) -> int:
         if self.use_hands < 1:
             return 0
-        str_mod = self.attacker.get_attribute(PrimaryAttribute.STR)
+        str_mod = self.user.get_attribute(PrimaryAttribute.STR)
 
         # not sure if this makes two-handed weapons too strong
         # maybe make it just excesss hands? (e.g. using 1-handed weapon in two hands)

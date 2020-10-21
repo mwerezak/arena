@@ -4,12 +4,14 @@ Arena mode: individual creature combat
 from __future__ import annotations
 
 from core.creature.actions import *
-from core.creature.mind.combat import try_equip_best_weapons
 from core.combat.melee import *
+
+from core.creature.mind.tactics import SKILL_FACTOR
 
 if TYPE_CHECKING:
     from core.creature.inventory import Inventory
     from core.combat.melee import MeleeCombat
+    from core.combat.attack import MeleeAttackTemplate
 
 def print_held_items(inventory: Inventory) -> None:
     for item in inventory.get_held_items():
@@ -18,6 +20,48 @@ def print_held_items(inventory: Inventory) -> None:
 def print_melee_attacks(creature: Creature) -> None:
     for attack in creature.get_melee_attacks():
         print(attack)
+
+def get_attack_value(creature: Creature, attack: MeleeAttackTemplate) -> float:
+    return attack.damage.mean() * SKILL_FACTOR[creature.get_skill_level(attack.combat_test)]
+
+def try_equip_best_weapons(creature: Creature) -> None:
+    inventory = creature.inventory
+    inventory.unequip_all()
+
+    weapon_value = {}
+    shield_value = {}
+    for item in inventory:
+        if item.is_weapon():
+            weapon_value[item] = max((
+                (attack.max_reach, get_attack_value(creature, attack)) for attack in item.get_melee_attacks(creature)
+            ), default=(None, 0))[1]
+            if item.is_shield():
+                shield_value[item] = (item.shield.block_bonus, item.shield.block_force)
+
+    # equip one weapon, then one shield, then the rest
+    weapons = sorted(weapon_value.keys(), key=lambda k: weapon_value[k])
+    best_shield = max(shield_value.keys(), key=lambda k: shield_value[k], default=None)
+
+    item = weapons.pop()
+    inventory.try_equip_item(item)
+    if item == best_shield:
+        best_shield = None
+
+    if best_shield is not None:
+        inventory.try_equip_item(best_shield)
+        weapons.remove(best_shield)
+
+    for item in reversed(weapons):
+        if len(list(inventory.get_empty_slots())) == 0:
+            break
+        inventory.try_equip_item(item)
+
+    ## if there are any left over hands, increase hand count of existing weapons
+    for item in sorted(inventory.get_held_items(), key=lambda k: weapon_value[k], reverse=True):
+        if len(list(inventory.get_empty_slots())) == 0:
+            break
+        _, max_hands = item.get_required_hands(creature)
+        inventory.try_equip_item(item, use_hands=max_hands)
 
 class Arena:
     def __init__(self, loop: ActionLoop, melee: MeleeCombat):
