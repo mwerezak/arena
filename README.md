@@ -1,8 +1,6 @@
 # arena
 RPG combat engine inspired by the RuneQuest PnP ruleset
 
-A somewhat old project that I'm not working on anymore. I'm releasing the source code to the public in case anyone finds it useful.
-
 Right now it's just a demonstration of the engine, you can setup a pair of NPCs to fight each other and read the combat logs.
 
 Produces output like the following (with some after-the-fact formatting):
