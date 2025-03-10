@@ -3,7 +3,7 @@ RPG combat engine inspired by the RuneQuest PnP ruleset
 
 Right now it's just a demonstration of the engine, you can setup a pair of NPCs to fight each other and read the combat logs.
 
-Produces output like the following (with some after-the-fact formatting):
+Produces output like the following:
 ```
 Gnoll Warrior (797sp)
 Leather Cuirass
